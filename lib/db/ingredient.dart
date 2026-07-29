@@ -1,7 +1,6 @@
 
 import 'package:sqflite/sqflite.dart';
 
-
 enum UnitType {
   g,
   ml,
@@ -21,7 +20,7 @@ enum UnitType {
   }
 }
 
-enum IngredientType {
+enum IngredientCategory {
   recipe,
   task;
 
@@ -29,10 +28,10 @@ enum IngredientType {
   String toMap() => name;
 
   // Convert string → enum
-  static IngredientType fromMap(String value) {
-    return IngredientType.values.firstWhere(
+  static IngredientCategory fromMap(String value) {
+    return IngredientCategory.values.firstWhere(
       (t) => t.name == value,
-      orElse: () => IngredientType.recipe,
+      orElse: () => IngredientCategory.recipe,
     );
   }
 }
@@ -42,14 +41,14 @@ class Ingredient {
   final String name;
   final double amount;
   final UnitType unit;
-  final IngredientType type;
+  final IngredientCategory category;
 
   Ingredient({
     required this.id,
     required this.name,
     required this.amount,
     required this.unit,
-    required this.type,
+    required this.category,
   });
 
   Map<String, dynamic> toMap() => {
@@ -57,7 +56,7 @@ class Ingredient {
     'name': name,
     'amount': amount,
     'unit': unit.toMap(),
-    'type': type.toMap(),
+    'category': category.toMap(),
   };
 
   factory Ingredient.fromMap(Map<String, dynamic> map) => Ingredient(
@@ -65,11 +64,12 @@ class Ingredient {
     name: map['name'] as String,
     amount: (map['amount'] as num).toDouble(),
     unit: UnitType.fromMap(map['unit'] as String),
-    type: IngredientType.fromMap(map['type'] as String),
+    category: IngredientCategory.fromMap(map['category'] as String),
   );
 
   Future<int> save(
     Database db, {
+    String? category,
     String? recipeId,
     String? taskId,
   }) async {
@@ -79,7 +79,7 @@ class Ingredient {
         'id': id,
         'recipe_id': recipeId,
         'task_id': taskId,
-        'type': type.toMap(),
+        'category': category ?? this.category.toMap(),
         'name': name,
         'amount': amount,
         'unit': unit.toMap(),
