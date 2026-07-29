@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart';
-import 'category.dart';
+import 'type.dart';
 import 'recipe.dart';
 import 'task.dart';
 
@@ -137,33 +137,80 @@ class MCService {
     return await recipe.save(db);
   }
 
+  Future<List<Recipe>> loadRecipes({Database? database}) async {
+    final db = database ?? await _databaseInstance;
+    return await Recipe.loadAll(db);
+  }
+
+  Future<List<Type>> loadTypes({Database? database}) async {
+    final db = database ?? await _databaseInstance;
+    final rows = await db.query('types');
+    return rows.map((row) {
+      final matchedDoughTypeValue = row['matched_dough_type'];
+      return Type.fromMap({
+        'id': row['id']?.toString(),
+        'category': row['category']?.toString(),
+        'name': row['name']?.toString(),
+        'matchedDoughType': matchedDoughTypeValue == null
+            ? null
+            : jsonDecode(matchedDoughTypeValue as String),
+      });
+    }).toList();
+  }
+
+  Future<Recipe?> loadRecipe(String id, {Database? database}) async {
+    final db = database ?? await _databaseInstance;
+    return await Recipe.load(db, id);
+  }
+
+  Future<int> updateRecipeFavorite(String id, bool isFavorite, {Database? database}) async {
+    final db = database ?? await _databaseInstance;
+    return await db.update(
+      'recipes',
+      {
+        'is_favorite': isFavorite ? 1 : 0,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteRecipe(String id, {Database? database}) async {
+    final db = database ?? await _databaseInstance;
+    await db.delete(
+      'directions',
+      where: 'recipe_id = ?',
+      whereArgs: [id],
+    );
+    await db.delete(
+      'ingredients',
+      where: 'recipe_id = ?',
+      whereArgs: [id],
+    );
+    return await db.delete(
+      'recipes',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<String> saveTask(Task task, {Database? database}) async {
     final db = database ?? await _databaseInstance;
     return await task.save(db);
   }
 
- 
-  Future<List<Type>> getDoughType({Database? database}) async {
+  Future<Task?> loadTask(String id, {Database? database}) async {
     final db = database ?? await _databaseInstance;
-    final rows = await db.query(
-      'types',
-      where: 'category = ?',
-      whereArgs: [Category.dough.toMap()],
-    );
-    return rows.map((row) => Type.fromMap(_rowToMap(row))).toList();
+    return await Task.load(db, id);
   }
 
-  Map<String, dynamic> _rowToMap(Map<String, Object?> row) {
-    final map = <String, dynamic>{
-      'id': row['id'] as String,
-      'category': row['category'] as String,
-      'name': row['name'] as String,
-    };
-    if (row['matched_dough_type'] != null) {
-      map['matchedDoughType'] = jsonDecode(row['matched_dough_type'] as String) as List<dynamic>;
-    }
-    return map;
+  Future<List<Task>> loadTasks({Database? database}) async {
+    final db = database ?? await _databaseInstance;
+    return await Task.loadAll(db);
   }
+
+
 }
 
 
