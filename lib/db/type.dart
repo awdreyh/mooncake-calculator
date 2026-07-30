@@ -50,6 +50,29 @@ class Type {
               .toList(),
     );
   }
+
+  static String nameById(String? id, {required List<Type> types}) {
+    if (id == null || id.isEmpty) {
+      return '';
+    }
+    final match = types.firstWhere(
+      (type) => type.id == id,
+      orElse: () => Type(id: id, category: Category.dough, name: id),
+    );
+    return match.name;
+  }
+
+  static Category? categoryById(String? id, {required List<Type> types}) {
+    if (id == null || id.isEmpty) {
+      return null;
+    }
+    final match = types.firstWhere(
+      (type) => type.id == id,
+      orElse: () => Type(id: id, category: Category.dough, name: id),
+    );
+    return match.category;
+  }
+
   static List<Type> matchedDoughTypesIds(List<Type> types) {
     return types.where((type) => type.category == Category.dough).toList();
   }

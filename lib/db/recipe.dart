@@ -9,7 +9,6 @@ class Recipe {
   final String id;
   final String name; // eg: '祖母的广式月饼食谱'
   final String? typeId; 
-
   final int quantity;
   final int size;
   final double? ratio;  //ratio is the percentage of dough weight / total weight
@@ -197,6 +196,7 @@ class Recipe {
       'amount': row['amount'],
       'unit': row['unit'] as String,
       'type': row['type'] as String,
+      'category': row['type'] as String,
     }).toList();
   }
 
@@ -252,6 +252,7 @@ class Recipe {
       await ingredient.save(
         db,
         category: 'recipe',
+        recipeId: id,
       );
     }
 
@@ -306,7 +307,6 @@ class Recipe {
           Ingredient(id: 'eb4c35b7-a69f-4c3a-bd91-8f7d6e5c4b02', category: IngredientCategory.recipe, name: '糯米粉', amount: 41.0, unit: UnitType.g),
           Ingredient(id: 'a19f2e3d-4c6b-48d2-9e1f-2a3b4c5d6e07', category: IngredientCategory.recipe, name: '澄粉', amount: 26.0, unit: UnitType.g),
           Ingredient(id: 'c8f7e6d5-b4a3-4c2d-9e1f-0a1b2c3d4e05', category: IngredientCategory.recipe, name: '粘米粉', amount: 34.0, unit: UnitType.g),
-          Ingredient(id: 'd6e5f4c3-b2a1-49d8-9f0e-1a2b3c4d5e06', category: IngredientCategory.recipe, name: '糯米粉', amount: 25.0, unit: UnitType.g),
           Ingredient(id: 'f2d1c3b4-a5e6-4d7c-9f8a-0b1c2d3e4f06', category: IngredientCategory.recipe, name: '牛奶', amount: 172.0, unit: UnitType.g),
           Ingredient(id: 'b3c4d5e6-f7a8-4b9c-8d0e-1f2a3b4c5d07', category: IngredientCategory.recipe, name: '植物油', amount: 25.0, unit: UnitType.g),
         ],

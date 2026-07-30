@@ -59,13 +59,17 @@ class Ingredient {
     'category': category.toMap(),
   };
 
-  factory Ingredient.fromMap(Map<String, dynamic> map) => Ingredient(
-    id: map['id'] == null ? '' : map['id'].toString(),
-    name: map['name'] as String,
-    amount: (map['amount'] as num).toDouble(),
-    unit: UnitType.fromMap(map['unit'] as String),
-    category: IngredientCategory.fromMap(map['category'] as String),
-  );
+  factory Ingredient.fromMap(Map<String, dynamic> map) {
+    final categoryValue = map['category'] ?? map['type'];
+
+    return Ingredient(
+      id: map['id'] == null ? '' : map['id'].toString(),
+      name: map['name'] as String,
+      amount: (map['amount'] as num).toDouble(),
+      unit: UnitType.fromMap(map['unit'] as String),
+      category: IngredientCategory.fromMap(categoryValue as String),
+    );
+  }
 
   Future<int> save(
     Database db, {
@@ -79,7 +83,7 @@ class Ingredient {
         'id': id,
         'recipe_id': recipeId,
         'task_id': taskId,
-        'category': category ?? this.category.toMap(),
+        'type': category ?? this.category.toMap(),
         'name': name,
         'amount': amount,
         'unit': unit.toMap(),

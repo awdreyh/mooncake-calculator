@@ -25,8 +25,12 @@ class _TaskListPageState extends State<TaskListPage> {
   @override
   void initState() {
     super.initState();
-    //initializeDateFormatting();
-    _tasksFuture = _mcService.loadTasks();
+    _tasksFuture = _loadTasks();
+  }
+
+  Future<List<Task>> _loadTasks() async {
+    await initializeDateFormatting();
+    return _mcService.loadTasks();
   }
 
   void _showTaskDetailsModal(Task task, String lang) {

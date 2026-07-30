@@ -226,8 +226,10 @@ class _AddRecipePageState extends State<AddRecipePage> {
 
   @override
   Widget build(BuildContext context) {
+     final languageProvider = Provider.of<LanguageProvider>(context);
+    final lang = languageProvider.languageCode;
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Recipe')),
+      appBar: AppBar(title:  Text(AppStrings.get('addRecipe', lang))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -237,9 +239,9 @@ class _AddRecipePageState extends State<AddRecipePage> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppStrings.get('name', lang),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -249,7 +251,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 },
               ),
               const SizedBox(height: 16),
-              const Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
+               Text(AppStrings.get('type', lang) , style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -331,9 +333,9 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _fillingTypeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Filling type',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.get('fillingType', lang),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (_recipeType == 'Filling' &&
@@ -344,34 +346,9 @@ class _AddRecipePageState extends State<AddRecipePage> {
                   },
                 ),
               ],
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('Favorite'),
-                value: _isFavorite,
-                onChanged: (value) {
-                  setState(() {
-                    _isFavorite = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Rating: ${_rating.toStringAsFixed(1)}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Slider(
-                value: _rating,
-                min: 0,
-                max: 5,
-                divisions: 10,
-                label: _rating.toStringAsFixed(1),
-                onChanged: (value) {
-                  setState(() {
-                    _rating = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),           
+              
+             
               const Text(
                 'Ingredients',
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -390,7 +367,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
                         child: TextFormField(
                           controller: ingredient.nameController,
                           decoration: InputDecoration(
-                            labelText: 'Ingredient ${index + 1}',
+                            labelText: '${AppStrings.get('ingredient', lang)} ${index + 1}',
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
@@ -406,9 +383,9 @@ class _AddRecipePageState extends State<AddRecipePage> {
                         flex: 2,
                         child: TextFormField(
                           controller: ingredient.amountController,
-                          decoration: const InputDecoration(
-                            labelText: 'Amount',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.get('amount', lang),
+                            border: const OutlineInputBorder(),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,

@@ -52,8 +52,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   //int _counter = 0;
   final int _currentNavIndex = 0;
-  String? _selectedType = 'Cantonese-style';
-  String? _selectedRecipeId;
+
+ 
   final TextEditingController _sizeController = TextEditingController(
     text: '100',
   );
@@ -161,7 +161,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               const SizedBox(height: 12),
-              // Text(AppStrings.get('type', lang)),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AddTaskPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.add_task),
+                label: Text(AppStrings.get('addTask', lang)),
+              ),
               const SizedBox(height: 8),
              
        

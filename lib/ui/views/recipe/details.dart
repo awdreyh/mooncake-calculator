@@ -3,16 +3,14 @@ import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../db/recipe.dart';
+import '../../../db/type.dart';
 import '../../../db/db_helper.dart';
-
+import '../../../ui/utils/helper.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
   final Recipe recipe;
 
-  const RecipeDetailsPage({
-    super.key,
-    required this.recipe,
-  });
+  const RecipeDetailsPage({super.key, required this.recipe});
 
   @override
   State<RecipeDetailsPage> createState() => _RecipeDetailsPageState();
@@ -21,20 +19,32 @@ class RecipeDetailsPage extends StatefulWidget {
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   late Recipe _recipe;
   final MCService _mcService = MCService();
+  List<Type> _types = [];
+  bool _changed = false;
 
   @override
   void initState() {
     super.initState();
     _recipe = widget.recipe;
+    _loadTypes();
+  }
+
+  Future<void> _loadTypes() async {
+    final types = await _mcService.loadTypes();
+    if (!mounted) return;
+    setState(() {
+      _types = types;
+    });
   }
 
   void _toggleFavorite() async {
     final newStatus = !(_recipe.isFavorite ?? false);
     await _mcService.updateRecipeFavorite(_recipe.id, newStatus);
+    _changed = true;
     setState(() {
       _recipe = Recipe(
         id: _recipe.id,
-        name: _recipe.name,   
+        name: _recipe.name,
         typeId: _recipe.typeId,
         quantity: _recipe.quantity,
         size: _recipe.size,
@@ -47,24 +57,35 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         comment: _recipe.comment,
       );
     });
-   }
+  }
 
   void _deleteRecipe() async {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
     final lang = languageProvider.languageCode;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title:  Text(AppStrings.get('delete_recipe', lang)),
-        content: Text(AppStrings.get('confirm_delete_recipe', lang).replaceAll('{recipe_name}', _recipe.name)),
+        title: Text(AppStrings.get('delete_recipe', lang)),
+        content: Text(
+          AppStrings.get(
+            'confirm_delete_recipe',
+            lang,
+          ).replaceAll('{recipe_name}', _recipe.name),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child:  Text(AppStrings.get('cancel',lang)),
+            child: Text(AppStrings.get('cancel', lang)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child:  Text(AppStrings.get('delete', lang), style: TextStyle(color: Colors.red)),
+            child: Text(
+              AppStrings.get('delete', lang),
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -82,13 +103,16 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
+    final ratioString = Helper.ratioToString(_recipe.ratio ?? 0.0);
     return Scaffold(
       appBar: AppBar(
         title: Text(AppStrings.get('viewDetails', lang)),
         actions: [
           IconButton(
             icon: Icon(
-              _recipe.isFavorite ?? false ? Icons.favorite : Icons.favorite_border,
+              _recipe.isFavorite ?? false
+                  ? Icons.favorite
+                  : Icons.favorite_border,
               color: Colors.red,
             ),
             onPressed: _toggleFavorite,
@@ -116,15 +140,9 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            // color: _recipe.type == RecipeType.dough
-                            //     ? Colors.orange.shade100
-                            //     : Colors.pink.shade100,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
-                            Icons.grain
-                           
-                          ),
+                          child: Icon(Icons.grain),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -139,55 +157,45 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                            
+                              Builder(
+                                builder: (context) {
+                                  final recipeType = _types.firstWhere(
+                                    (type) => type.id == _recipe.typeId,
+                                    orElse: () => Type(
+                                      id: _recipe.typeId ?? '',
+                                      category: Category.dough,
+                                      name: '',
+                                    ),
+                                  );
+                                  final labelKey =
+                                      recipeType.category == Category.filling
+                                      ? 'filling_type'
+                                      : 'dough_type';
+                                  final typeName = Type.nameById(
+                                    _recipe.typeId,
+                                    types: _types,
+                                  );
+                                  return Text(
+                                    '${AppStrings.get(labelKey, lang)}: ${typeName.isEmpty ? AppStrings.get('unknown', lang) : typeName}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                    ),
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: 4),
+                              // Description
+                              if (_recipe.description != null &&
+                                  _recipe.description!.isNotEmpty)
                                 Text(
-                                  '${AppStrings.get('dough_type', lang)}: ${_recipe.typeId ?? AppStrings.get('unknown', lang)}',
+                                  _recipe.description!,
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.black54,
                                   ),
                                 ),
-                           
-                               const SizedBox(height: 4),
-                                 // Description
-                                if (_recipe.description != null && _recipe.description!.isNotEmpty)
-                                Text(_recipe.description!,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                                ),
-                                                        // ...existing code...
-                        
-                            
-                            if (_recipe.size != null && _recipe.size!.toString().isNotEmpty)
-                              Text(
-                                'Size: ${_recipe.size}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            
-                            if (_recipe.quantity != null && _recipe.quantity!.toString().isNotEmpty)
-                              Text(
-                                'Quantity: ${_recipe.quantity}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            
-                            if (_recipe.ratio != null && _recipe.ratio!.toString().isNotEmpty)
-                              Text(
-                                'Ratio: ${_recipe.ratio}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            
-                            // ...existing code...
                             ],
                           ),
                         ),
@@ -198,6 +206,45 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               ),
             ),
             const SizedBox(height: 16),
+            Text(
+              AppStrings.get('moonCakeWeight', lang),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${AppStrings.get('size', lang)}: ${_recipe.size}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${AppStrings.get('quantity', lang)}: ${_recipe.quantity}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+
+                    Text(
+                      '${AppStrings.get('ratio', lang)}: $ratioString',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
             // Rating
             if (_recipe.rating != null && _recipe.rating! > 0)
@@ -218,16 +265,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               ),
             const SizedBox(height: 16),
 
-           
-             
-
             // Ingredients
-             Text(
+            Text(
               AppStrings.get('ingredients', lang),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             if (_recipe.ingredients.isEmpty)
@@ -243,7 +284,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _recipe.ingredients.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final ingredient = _recipe.ingredients[index];
                     return Padding(
@@ -253,11 +295,9 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Text(ingredient.name),
-                          ),
+                          Expanded(child: Text(ingredient.name)),
                           Text(
-                            '${ingredient.amount} ${ingredient.unit}',
+                            '${ingredient.amount} ${ingredient.unit.toMap()}',
                             style: const TextStyle(
                               color: Colors.black54,
                               fontWeight: FontWeight.w500,
@@ -276,12 +316,9 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text(
+                  Text(
                     AppStrings.get('comment', lang),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Card(
@@ -301,10 +338,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 children: [
                   const Text(
                     'Reference URL',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Card(

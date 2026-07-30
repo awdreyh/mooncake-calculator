@@ -62,7 +62,6 @@ class MCService {
           CREATE TABLE recipes (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
-            category TEXT NOT NULL,
             typeId TEXT NOT NULL,
             quantity INTEGER NOT NULL,
             size INTEGER NOT NULL,
