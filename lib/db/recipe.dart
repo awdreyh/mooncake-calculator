@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:sqflite/sqflite.dart';
 import 'ingredient.dart';
-import 'type.dart';
 import 'direction.dart';
 
 class Recipe {
@@ -97,10 +94,7 @@ class Recipe {
       rating: (map['rating'] as num?)?.toDouble(),
       url: map['url'] as String?,
       comment: map['comment'] as String?,
-      directions: directionsData == null
-          ? null
-          : directionsData
-              .map((d) => Direction.fromMap(d as Map<String, dynamic>))
+      directions: directionsData?.map((d) => Direction.fromMap(d as Map<String, dynamic>))
               .toList(),
       createdAt: createdAtValue == null
           ? DateTime.now()
@@ -111,42 +105,49 @@ class Recipe {
     );
   }
 
-  Future<Category?> getCategory(Database db) async {
-    if (typeId == null || typeId!.isEmpty) {
-      return null;
-    }
+  // Future<Category?> getCategory(Database db) async {
 
-    final type = await getTypeById(db, typeId);
-    return type?.category;
-  }
+  //   final type = await getTypeById(db, typeId);
+  //   return type?.category;
+  // }
 
-  static Future<Type?> getTypeById(Database db, String? typeId) async {
-    if (typeId == null || typeId.isEmpty) {
-      return null;
-    }
+  // Future<List<Type>> getMatchDoughType(Database db) async {
+  //   final type = await getTypeById(db, typeId);
 
-    final rows = await db.query(
-      'types',
-      where: 'id = ?',
-      whereArgs: [typeId],
-    );
+  //   if (type == null || type.category != Category.filling) {
+  //     return <Type>[];
+  //   }
 
-    if (rows.isEmpty) {
-      return null;
-    }
+  //   return type.matchedDoughType ?? <Type>[];
+  // }
 
-    final row = rows.first;
-    final matchedDoughTypeValue = row['matched_dough_type'];
+  // static Future<Type?> getTypeById(Database db, String? typeId) async {
+  //   if (typeId == null || typeId.isEmpty) {
+  //     return null;
+  //   }
 
-    return Type.fromMap({
-      'id': row['id']?.toString(),
-      'category': row['category']?.toString(),
-      'name': row['name']?.toString(),
-      'matchedDoughType': matchedDoughTypeValue == null
-          ? null
-          : jsonDecode(matchedDoughTypeValue as String),
-    });
-  }
+  //   final rows = await db.query(
+  //     'types',
+  //     where: 'id = ?',
+  //     whereArgs: [typeId],
+  //   );
+
+  //   if (rows.isEmpty) {
+  //     return null;
+  //   }
+
+  //   final row = rows.first;
+  //   final matchedDoughTypeValue = row['matched_dough_type'];
+
+  //   return Type.fromMap({
+  //     'id': row['id']?.toString(),
+  //     'category': row['category']?.toString(),
+  //     'name': row['name']?.toString(),
+  //     'matchedDoughType': matchedDoughTypeValue == null
+  //         ? null
+  //         : jsonDecode(matchedDoughTypeValue as String),
+  //   });
+  // }
 
   static Future<Recipe?> load(Database db, String id) async {
     final rows = await db.query(

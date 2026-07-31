@@ -68,7 +68,14 @@ class AppStrings {
       'category': 'Category',
       'unknown': 'Unknown',
       'quantity': 'Quantity',
-  
+      'used_in_tasks': 'Used in {count} task(s)',
+      'matched_dough_types': 'Matched dough types',
+      'validRecipeNameMsg': 'Please enter a valid recipe name.',
+      'validRecipeTypeMsg': 'Please select a valid recipe type.',
+      'validFillingTypeMsg': 'Please select a valid filling type.',
+      'validIngredientNameMsg': 'Please enter a valid ingredient name.',
+      'validIngredientAmountMsg': 'Please enter a valid ingredient amount.',
+      'invalidNumber': 'Invalid number.',
 
     },
     'zh': {
@@ -140,6 +147,16 @@ class AppStrings {
       'category': '类别',
       'unknown': '未知',
       'quantity': '数量',
+      'used_in_tasks': '用于 {count} 个任务',
+      'matched_dough_types': '匹配的饼皮类型',
+      'validRecipeNameMsg': '请输入食谱名称。',
+      'validRecipeTypeMsg': '请选择食谱类型。',
+      'validFillingTypeMsg': '请选择馅料类型。',
+      'validIngredientNameMsg': '请输入配料名称。',
+      'validIngredientAmountMsg': '请输入配料数量。',
+      'invalidNumber': '无效的数字。',
+
+
     },
   };
 

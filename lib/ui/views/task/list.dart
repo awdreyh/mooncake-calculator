@@ -12,7 +12,9 @@ import 'details.dart';
 
 
 class TaskListPage extends StatefulWidget {
-  const TaskListPage({super.key});
+  final String? recipeId;
+
+  const TaskListPage({super.key, this.recipeId});
 
   @override
   State<TaskListPage> createState() => _TaskListPageState();
@@ -30,6 +32,9 @@ class _TaskListPageState extends State<TaskListPage> {
 
   Future<List<Task>> _loadTasks() async {
     await initializeDateFormatting();
+    if (widget.recipeId != null && widget.recipeId!.isNotEmpty) {
+      return _mcService.loadTasksUsingRecipe(widget.recipeId!);
+    }
     return _mcService.loadTasks();
   }
 

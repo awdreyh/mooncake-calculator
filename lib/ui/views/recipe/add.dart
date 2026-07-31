@@ -3,12 +3,11 @@ import 'package:moon_cake_app2/ui/utils/app_strings.dart';
 import 'package:uuid/uuid.dart';
 import 'package:moon_cake_app2/db/ingredient.dart';
 import '../../core/nav_bottom.dart';
-import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../db/recipe.dart';
 import '../../../db/db_helper.dart';
-
+import '../../../db/type.dart';
 
 class AddRecipePage extends StatefulWidget {
   const AddRecipePage({super.key});
@@ -20,10 +19,15 @@ class AddRecipePage extends StatefulWidget {
 class _IngredientInput {
   final TextEditingController nameController;
   final TextEditingController amountController;
+  UnitType unit;
 
-  _IngredientInput({String name = '', String amount = ''})
-    : nameController = TextEditingController(text: name),
-      amountController = TextEditingController(text: amount);
+  _IngredientInput({
+    String name = '',
+    String amount = '',
+    UnitType unit = UnitType.g,
+  }) : nameController = TextEditingController(text: name),
+       amountController = TextEditingController(text: amount),
+       unit = unit;
 
   void dispose() {
     nameController.dispose();
@@ -31,12 +35,17 @@ class _IngredientInput {
   }
 }
 
+class _CategoryOption {
+  final Category category;
+  final String label;
+
+  const _CategoryOption({required this.category, required this.label});
+}
+
 class _AddRecipePageState extends State<AddRecipePage> {
   final _formKey = GlobalKey<FormState>();
   final MCService _mcService = MCService();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _nameCategory = TextEditingController();
-  final TextEditingController _fillingTypeController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _sizeController = TextEditingController();
   final TextEditingController _ratioController = TextEditingController();
@@ -44,18 +53,24 @@ class _AddRecipePageState extends State<AddRecipePage> {
     3,
     (_) => _IngredientInput(),
   );
-  String _recipeType = 'Dough';
-  String _doughStyle = 'Cantonese style';
+  Category _recipeCategory = Category.dough;
+  Type? _selectedType;
+  List<Type> _selectedMatchedDoughTypes = [];
   bool _isFavorite = false;
   double _rating = 0.0;
   bool _isSaving = false;
-  
+
   Recipe? get recipe => null;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = _getDefaultType(Category.dough);
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _fillingTypeController.dispose();
     _quantityController.dispose();
     _sizeController.dispose();
     _ratioController.dispose();
@@ -65,13 +80,53 @@ class _AddRecipePageState extends State<AddRecipePage> {
     super.dispose();
   }
 
-  Widget _buildDoughStyleImageButton(
+  Type _getDefaultType(Category category) {
+    return defaultTypes.firstWhere(
+      (type) => type.category == category,
+      orElse: () => defaultTypes.first,
+    );
+  }
 
-    String title,
-    String styleValue,
-    String assetName,
-  ) {
-    final selected = _doughStyle == styleValue;
+  List<Type> get _doughTypes =>
+      defaultTypes.where((type) => type.category == Category.dough).toList();
+
+  List<Type> get _fillingTypes =>
+      defaultTypes.where((type) => type.category == Category.filling).toList();
+
+  List<_CategoryOption> _categoryOptions(String lang) => Category.values
+      .map(
+        (category) => _CategoryOption(
+          category: category,
+          label: category == Category.dough
+              ? AppStrings.get('dough', lang)
+              : AppStrings.get('filling', lang),
+        ),
+      )
+      .toList();
+
+  void _selectCategory(Category category) {
+    setState(() {
+      _recipeCategory = category;
+      _selectedType = _getDefaultType(category);
+      if (category == Category.dough) {
+        _selectedMatchedDoughTypes = [];
+      }
+    });
+  }
+
+  void _toggleMatchedDoughType(Type type) {
+    setState(() {
+      if (_selectedMatchedDoughTypes.any((item) => item.id == type.id)) {
+        _selectedMatchedDoughTypes.removeWhere((item) => item.id == type.id);
+      } else {
+        _selectedMatchedDoughTypes.add(type);
+      }
+    });
+  }
+
+  Widget _buildStyleImageButton(String title, Type type) {
+    final selected = _selectedType?.id == type.id;
+    final assetName = (type.imageName ?? 'cantoneseStyle').trim();
     final imageAsset = 'assets/${assetName}${selected ? '2' : ''}.jpg';
 
     return Expanded(
@@ -79,7 +134,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
         borderRadius: BorderRadius.circular(14),
         onTap: () {
           setState(() {
-            _doughStyle = styleValue;
+            _selectedType = type;
           });
         },
         child: Container(
@@ -158,7 +213,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
             id: uuid.v4(),
             name: input.nameController.text.trim(),
             amount: double.parse(input.amountController.text.trim()),
-            unit: UnitType.g,
+            unit: input.unit,
             category: IngredientCategory.recipe,
           ),
         )
@@ -171,37 +226,18 @@ class _AddRecipePageState extends State<AddRecipePage> {
       return;
     }
 
-    final recipe = Recipe(
-      id: uuid.v4(),
-      name: _nameController.text.trim(),
-      typeId: _nameCategory.text,
-      quantity: _quantityController.text.trim().isEmpty
-          ? 8
-          : int.parse(_quantityController.text.trim()),
-      size: _sizeController.text.trim().isEmpty
-          ? 100
-          : int.parse(_sizeController.text.trim()),
-      ratio: _ratioController.text.trim().isEmpty
-          ? 0.4
-          : double.parse(_ratioController.text.trim()),
-
-      description: 'Custom recipe for ${_nameController.text.trim()}',
-      ingredients: ingredients,
-      isFavorite: _isFavorite,
-      rating: _rating,
-    );
-
     setState(() {
       _isSaving = true;
     });
 
     try {
-       
-      final confirmMessage = await _mcService.saveRecipe(recipe);
       if (!mounted) {
         return;
       }
-      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+      final languageProvider = Provider.of<LanguageProvider>(
+        context,
+        listen: false,
+      );
       final lang = languageProvider.languageCode;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -210,10 +246,15 @@ class _AddRecipePageState extends State<AddRecipePage> {
       );
       Navigator.of(context).pop(true);
     } catch (error) {
-      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+      final languageProvider = Provider.of<LanguageProvider>(
+        context,
+        listen: false,
+      );
       final lang = languageProvider.languageCode;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.get('failedToSaveRecipe', lang) + ' $error')),
+        SnackBar(
+          content: Text('${AppStrings.get('failedToSaveRecipe', lang)} $error'),
+        ),
       );
     } finally {
       if (mounted) {
@@ -226,10 +267,10 @@ class _AddRecipePageState extends State<AddRecipePage> {
 
   @override
   Widget build(BuildContext context) {
-     final languageProvider = Provider.of<LanguageProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
     return Scaffold(
-      appBar: AppBar(title:  Text(AppStrings.get('addRecipe', lang))),
+      appBar: AppBar(title: Text(AppStrings.get('addRecipe', lang))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -245,112 +286,119 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a recipe name.';
+                    return AppStrings.get('validRecipeNameMsg', lang);
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
-               Text(AppStrings.get('type', lang) , style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                AppStrings.get('type', lang),
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _recipeType == 'Dough'
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey[300],
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _recipeType = 'Dough';
-                        });
-                      },
-                      child: Text(
-                        'Dough',
-                        style: TextStyle(
-                          color: _recipeType == 'Dough'
-                              ? Colors.white
-                              : Colors.black,
+                children: _categoryOptions(lang).map((option) {
+                  final isSelected = _recipeCategory == option.category;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey[300],
+                        ),
+                        onPressed: () => _selectCategory(option.category),
+                        child: Text(
+                          option.label,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _recipeType == 'Filling'
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey[300],
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _recipeType = 'Filling';
-                        });
-                      },
-                      child: Text(
-                        'Filling',
-                        style: TextStyle(
-                          color: _recipeType == 'Filling'
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 16),
-              if (_recipeType == 'Dough') ...[
-                const Text(
-                  'Style',
+              if (_recipeCategory == Category.dough) ...[
+                Text(
+                  AppStrings.get('type', lang),
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Row(
-                  children: [
-                    _buildDoughStyleImageButton(
-                      'Cantonese style',
-                      'Cantonese style',
-                      'cantoneseStyle',
-                    ),
-                    const SizedBox(width: 12),
-                    _buildDoughStyleImageButton(
-                      'Snow skin',
-                      'Snow skin',
-                      'snowSkin',
-                    ),
-                  ],
+                  children: _doughTypes.map((type) {
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: _buildStyleImageButton(type.name, type),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
-              if (_recipeType == 'Filling') ...[
-                const Text(
-                  'Filling type',
+              if (_recipeCategory == Category.filling) ...[
+                Text(
+                  AppStrings.get('fillingType', lang),
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                TextFormField(
-                  controller: _fillingTypeController,
+                DropdownButtonFormField<Type>(
+                  value: _selectedType,
                   decoration: InputDecoration(
                     labelText: AppStrings.get('fillingType', lang),
                     border: const OutlineInputBorder(),
                   ),
+                  items: _fillingTypes
+                      .map(
+                        (type) => DropdownMenuItem<Type>(
+                          value: type,
+                          child: Text(type.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedType = value;
+                      _selectedMatchedDoughTypes = [];
+                    });
+                  },
                   validator: (value) {
-                    if (_recipeType == 'Filling' &&
-                        (value == null || value.trim().isEmpty)) {
-                      return 'Please enter a filling type.';
+                    if (_recipeCategory == Category.filling && value == null) {
+                      return AppStrings.get('validFillingTypeMsg', lang);
                     }
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                if (_selectedType != null) ...[
+                  Text(
+                    AppStrings.get('matched_dough_types', lang),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _doughTypes.map((type) {
+                      final selected = _selectedMatchedDoughTypes.any(
+                        (item) => item.id == type.id,
+                      );
+                      return FilterChip(
+                        label: Text(type.name),
+                        selected: selected,
+                        onSelected: (_) => _toggleMatchedDoughType(type),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
-              const SizedBox(height: 16),           
-              
-             
-              const Text(
-                'Ingredients',
+              const SizedBox(height: 16),
+
+              Text(
+                AppStrings.get('ingredients', lang),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -367,12 +415,16 @@ class _AddRecipePageState extends State<AddRecipePage> {
                         child: TextFormField(
                           controller: ingredient.nameController,
                           decoration: InputDecoration(
-                            labelText: '${AppStrings.get('ingredient', lang)} ${index + 1}',
+                            labelText:
+                                '${AppStrings.get('ingredient', lang)} ${index + 1}',
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Enter ingredient name.';
+                              return AppStrings.get(
+                                'validIngredientNameMsg',
+                                lang,
+                              );
                             }
                             return null;
                           },
@@ -392,26 +444,41 @@ class _AddRecipePageState extends State<AddRecipePage> {
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Enter amount.';
+                              return AppStrings.get(
+                                'validIngredientAmountMsg',
+                                lang,
+                              );
                             }
                             if (double.tryParse(value.trim()) == null) {
-                              return 'Invalid number.';
+                              return AppStrings.get('invalidNumber', lang);
                             }
                             return null;
                           },
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 20,
+                      SizedBox(
+                        width: 90,
+                        child: DropdownButtonFormField<UnitType>(
+                          initialValue: ingredient.unit,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          items: UnitType.values
+                              .map(
+                                (unit) => DropdownMenuItem<UnitType>(
+                                  value: unit,
+                                  child: Text(unit.name),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              ingredient.unit = value ?? UnitType.g;
+                            });
+                          },
                         ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text('g'),
                       ),
                       const SizedBox(width: 8),
                       if (_ingredients.length > 1)
@@ -428,7 +495,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 child: TextButton.icon(
                   onPressed: _addIngredient,
                   icon: const Icon(Icons.add),
-                  label: const Text('Add ingredient'),
+                  label: Text(AppStrings.get('addIngredient', lang)),
                 ),
               ),
               const SizedBox(height: 32),
@@ -439,7 +506,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
                       onPressed: _isSaving
                           ? null
                           : () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.get('cancel', lang)),
                     ),
                   ),
                   const SizedBox(width: 16),

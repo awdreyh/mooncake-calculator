@@ -65,7 +65,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     if (_selectedDoughType == null) return [];
     return _allTypes.where((type) {
       if (type.category != Category.filling) return false;
-      return type.matchedDoughType?.any((matched) => matched.id == _selectedDoughType!.id) ?? false;
+      return type.matchedDoughTypeIds?.any((matched) => matched == _selectedDoughType!.id) ?? false;
     }).toList();
   }
 

@@ -6,6 +6,7 @@ import '../../../db/recipe.dart';
 import '../../../db/type.dart';
 import '../../../db/db_helper.dart';
 import '../../../ui/utils/helper.dart';
+import '../task/list.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
   final Recipe recipe;
@@ -21,12 +22,14 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   final MCService _mcService = MCService();
   List<Type> _types = [];
   bool _changed = false;
+  int _taskUsageCount = 0;
 
   @override
   void initState() {
     super.initState();
     _recipe = widget.recipe;
     _loadTypes();
+    _loadTaskUsageCount();
   }
 
   Future<void> _loadTypes() async {
@@ -35,6 +38,23 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     setState(() {
       _types = types;
     });
+  }
+
+  Future<void> _loadTaskUsageCount() async {
+    final count = await _mcService.countTasksUsingRecipe(_recipe.id);
+    if (!mounted) return;
+    setState(() {
+      _taskUsageCount = count;
+    });
+  }
+
+  void _openRelatedTasks() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskListPage(recipeId: _recipe.id),
+      ),
+    );
   }
 
   void _toggleFavorite() async {
@@ -104,6 +124,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
     final ratioString = Helper.ratioToString(_recipe.ratio ?? 0.0);
+    final matchedDoughTypes = Type.matchedDoughTypesById(
+      _recipe.typeId,
+      types: _types,
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text(AppStrings.get('viewDetails', lang)),
@@ -171,6 +195,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                       recipeType.category == Category.filling
                                       ? 'filling_type'
                                       : 'dough_type';
+
                                   final typeName = Type.nameById(
                                     _recipe.typeId,
                                     types: _types,
@@ -194,6 +219,44 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.black54,
+                                  ),
+                                ),
+                              const SizedBox(height: 6),
+                              if (matchedDoughTypes.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    '${AppStrings.get('matched_dough_types', lang)}: ${matchedDoughTypes.map((type) => type.name).join(', ')}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.teal,
+                                    ),
+                                  ),
+                                ),
+                              if (_taskUsageCount > 0)
+                                GestureDetector(
+                                  onTap: _openRelatedTasks,
+                                  child: Text(
+                                    AppStrings.get('used_in_tasks', lang).replaceAll(
+                                      '{count}',
+                                      _taskUsageCount.toString(),
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                )
+                              else
+                                Text(
+                                  AppStrings.get('used_in_tasks', lang).replaceAll(
+                                    '{count}',
+                                    _taskUsageCount.toString(),
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.blueGrey,
                                   ),
                                 ),
                             ],
