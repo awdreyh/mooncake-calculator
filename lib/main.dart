@@ -172,8 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 icon: const Icon(Icons.add_task),
                 label: Text(AppStrings.get('addTask', lang)),
               ),
-              const SizedBox(height: 8),
-             
+              const SizedBox(height: 8),            
        
              ],
           ),

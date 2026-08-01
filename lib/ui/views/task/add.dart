@@ -3,7 +3,6 @@ import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
 
 import '../../../db/db_helper.dart';
-import '../../../db/ingredient.dart';
 import '../../../db/recipe.dart';
 import '../../../db/task.dart';
 import '../../../db/type.dart';
@@ -269,7 +268,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               const SizedBox(height: 8),
               _buildOptionButtons(values: [50, 75, 100], controller: _sizeController, onSelected: _setSize),
               const SizedBox(height: 20),
-              Text('Ratio', style: Theme.of(context).textTheme.titleMedium),
+              Text(AppStrings.get('ratio',lang), style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _ratioController,

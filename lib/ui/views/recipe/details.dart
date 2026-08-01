@@ -221,7 +221,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                     color: Colors.black54,
                                   ),
                                 ),
-                              const SizedBox(height: 6),
+                             
                               if (matchedDoughTypes.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
@@ -274,37 +274,40 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${AppStrings.get('size', lang)}: ${_recipe.size}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
+            SizedBox(
+              width: double.infinity,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${AppStrings.get('size', lang)}: ${_recipe.size}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${AppStrings.get('quantity', lang)}: ${_recipe.quantity}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
+                      const SizedBox(height: 4),
+                      Text(
+                        '${AppStrings.get('quantity', lang)}: ${_recipe.quantity}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
+                      const SizedBox(height: 4),
 
-                    Text(
-                      '${AppStrings.get('ratio', lang)}: $ratioString',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
+                      Text(
+                        '${AppStrings.get('ratio', lang)}: $ratioString',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -342,19 +345,20 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 ),
               )
             else
-              Card(
-                child: ListView.separated(
-                  shrinkWrap: true,
+             ListView.separated(
+                  shrinkWrap: true,                  
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _recipe.ingredients.length,
                   separatorBuilder: (context, index) =>
                       const Divider(height: 1),
+                   
                   itemBuilder: (context, index) {
                     final ingredient = _recipe.ingredients[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 12,
+                        
                       ),
                       child: Row(
                         children: [
@@ -371,7 +375,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                     );
                   },
                 ),
-              ),
+           
             const SizedBox(height: 16),
 
             // Comment

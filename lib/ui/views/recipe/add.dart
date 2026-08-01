@@ -11,7 +11,7 @@ import '../../../db/type.dart';
 
 class AddRecipePage extends StatefulWidget {
   const AddRecipePage({super.key});
-
+ 
   @override
   State<AddRecipePage> createState() => _AddRecipePageState();
 }
@@ -19,15 +19,13 @@ class AddRecipePage extends StatefulWidget {
 class _IngredientInput {
   final TextEditingController nameController;
   final TextEditingController amountController;
-  UnitType unit;
+  UnitType unit=UnitType.g;
 
   _IngredientInput({
     String name = '',
     String amount = '',
-    UnitType unit = UnitType.g,
-  }) : nameController = TextEditingController(text: name),
-       amountController = TextEditingController(text: amount),
-       unit = unit;
+     }) : nameController = TextEditingController(text: name),
+       amountController = TextEditingController(text: amount);
 
   void dispose() {
     nameController.dispose();
@@ -38,27 +36,28 @@ class _IngredientInput {
 class _CategoryOption {
   final Category category;
   final String label;
-
   const _CategoryOption({required this.category, required this.label});
 }
 
 class _AddRecipePageState extends State<AddRecipePage> {
   final _formKey = GlobalKey<FormState>();
   final MCService _mcService = MCService();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController();
-  final TextEditingController _sizeController = TextEditingController();
-  final TextEditingController _ratioController = TextEditingController();
-  final List<_IngredientInput> _ingredients = List.generate(
-    3,
-    (_) => _IngredientInput(),
-  );
+
   Category _recipeCategory = Category.dough;
   Type? _selectedType;
   List<Type> _selectedMatchedDoughTypes = [];
   bool _isFavorite = false;
   double _rating = 0.0;
   bool _isSaving = false;
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController(text: '8');
+  final TextEditingController _sizeController = TextEditingController(text: '100');
+  final TextEditingController _ratioController = TextEditingController(text: '4:6');
+  final List<_IngredientInput> _ingredients = List.generate(
+    3,
+    (_) => _IngredientInput(),
+  );
 
   Recipe? get recipe => null;
 
@@ -123,6 +122,17 @@ class _AddRecipePageState extends State<AddRecipePage> {
       }
     });
   }
+   void _setQuantity(int value) {
+    _quantityController.text = value.toString();
+  }
+
+  void _setSize(int value) {
+    _sizeController.text = value.toString();
+  }
+
+  void _setRatio(String value) {
+    _ratioController.text = value;
+  }
 
   Widget _buildStyleImageButton(String title, Type type) {
     final selected = _selectedType?.id == type.id;
@@ -184,6 +194,34 @@ class _AddRecipePageState extends State<AddRecipePage> {
       ),
     );
   }
+  Widget _buildOptionButtons({
+    required List<int> values,
+    required TextEditingController controller,
+    required ValueChanged<int> onSelected,
+  }) {
+    return Wrap(
+      spacing: 8,
+      children: values.map((value) {
+        return OutlinedButton(
+          onPressed: () => onSelected(value),
+          child: Text(value.toString()),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildRatioButtons() {
+    final ratios = ['2:8', '3:7', '4:6', '5:5'];
+    return Wrap(
+      spacing: 8,
+      children: ratios.map((value) {
+        return OutlinedButton(
+          onPressed: () => _setRatio(value),
+          child: Text(value),
+        );
+      }).toList(),
+    );
+  }
 
   void _addIngredient() {
     setState(() {
@@ -231,6 +269,26 @@ class _AddRecipePageState extends State<AddRecipePage> {
     });
 
     try {
+      final name = _nameController.text.trim();
+      final quantity = int.tryParse(_quantityController.text.trim()) ?? 1;
+      final size = int.tryParse(_sizeController.text.trim()) ?? 1;
+      final ratio = double.tryParse(_ratioController.text.trim()) ?? 0.4;
+
+      final recipe = Recipe(
+        id: const Uuid().v4(),
+        name: name,
+        typeId: _selectedType?.id,
+        quantity: quantity,
+        size: size,
+        ratio: ratio,
+        ingredients: ingredients,
+        description: '',
+        isFavorite: _isFavorite,
+        rating: _rating > 0 ? _rating : null,
+      );
+
+      await _mcService.saveRecipe(recipe);
+
       if (!mounted) {
         return;
       }
@@ -346,7 +404,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<Type>(
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   decoration: InputDecoration(
                     labelText: AppStrings.get('fillingType', lang),
                     border: const OutlineInputBorder(),
@@ -396,7 +454,38 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 ],
               ],
               const SizedBox(height: 16),
-
+Text('Qty', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _quantityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter qty',
+              ),
+              const SizedBox(height: 8),
+              _buildOptionButtons(values: [4, 8, 10, 16], controller: _quantityController, onSelected: _setQuantity),
+              const SizedBox(height: 20),
+              Text('Size', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _sizeController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter size',
+              ),
+              const SizedBox(height: 8),
+              _buildOptionButtons(values: [50, 75, 100], controller: _sizeController, onSelected: _setSize),
+              const SizedBox(height: 20),
+              Text(AppStrings.get('ratio',lang), style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _ratioController,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter ratio',
+              ),
+              const SizedBox(height: 8),
+              _buildRatioButtons(),
+              const SizedBox(height: 24),
               Text(
                 AppStrings.get('ingredients', lang),
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -405,18 +494,26 @@ class _AddRecipePageState extends State<AddRecipePage> {
               ..._ingredients.asMap().entries.map((entry) {
                 final index = entry.key;
                 final ingredient = entry.value;
+                UnitType? selectedUnitType=UnitType.g;
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: 0),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         flex: 3,
                         child: TextFormField(
                           controller: ingredient.nameController,
+                          style: const TextStyle(fontSize: 12),
                           decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 10,
+                            ),
                             labelText:
                                 '${AppStrings.get('ingredient', lang)} ${index + 1}',
+                            labelStyle: const TextStyle(fontSize: 11),
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
@@ -430,13 +527,20 @@ class _AddRecipePageState extends State<AddRecipePage> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 4),
                       Expanded(
                         flex: 2,
                         child: TextFormField(
                           controller: ingredient.amountController,
+                          style: const TextStyle(fontSize: 12),
                           decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 10,
+                            ),
                             labelText: AppStrings.get('amount', lang),
+                            labelStyle: const TextStyle(fontSize: 11),
                             border: const OutlineInputBorder(),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
@@ -456,35 +560,45 @@ class _AddRecipePageState extends State<AddRecipePage> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        width: 90,
+                      const SizedBox(width: 4),
+                      Expanded(
+                        flex: 1,                        
                         child: DropdownButtonFormField<UnitType>(
-                          initialValue: ingredient.unit,
+                          initialValue: selectedUnitType,
+                          icon:  const SizedBox.shrink(),
+                          iconSize: 0,
+                          isExpanded: true,
+                          style: const TextStyle(fontSize: 12, color: Color.fromARGB(221, 180, 18, 18)),
                           decoration: const InputDecoration(
+                            isDense: true,
                             border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 7),
                           ),
                           items: UnitType.values
                               .map(
                                 (unit) => DropdownMenuItem<UnitType>(
                                   value: unit,
-                                  child: Text(unit.name),
+                                  child: Text(
+                                    unit.name,
+                                    style: const TextStyle(color: Colors.black87),
+                                  ),
                                 ),
                               )
                               .toList(),
                           onChanged: (value) {
                             setState(() {
                               ingredient.unit = value ?? UnitType.g;
+                              selectedUnitType = value;
                             });
                           },
                         ),
                       ),
-                      const SizedBox(width: 8),
+               
                       if (_ingredients.length > 1)
                         IconButton(
                           icon: const Icon(Icons.remove_circle_outline),
                           onPressed: () => _removeIngredient(index),
+                          iconSize: 20,
                         ),
                     ],
                   ),
@@ -494,11 +608,11 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: _addIngredient,
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(Icons.add_circle_outline),
                   label: Text(AppStrings.get('addIngredient', lang)),
                 ),
               ),
-              const SizedBox(height: 32),
+       
               Row(
                 children: [
                   Expanded(
@@ -519,7 +633,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Save'),
+                          :  Text(AppStrings.get('save', lang)),
                     ),
                   ),
                 ],

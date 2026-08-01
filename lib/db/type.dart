@@ -28,11 +28,10 @@ class Type {
     required this.name,
     this.imageName,
     this.matchedDoughTypeIds,
-  });
-  //  : assert(
-  //        category != Category.filling || matchedDoughTypeIds != null,
-  //        'matchedDoughTypeIds cannot be null when Category type is filling',
-  //      );
+  })   : assert(
+         category != Category.filling || matchedDoughTypeIds != null,
+         'matchedDoughTypeIds cannot be null when Category type is filling',
+       );
 
   Map<String, dynamic> toMap() => {
     'id': id,
