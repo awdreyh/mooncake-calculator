@@ -3,6 +3,8 @@ import 'package:moon_cake_app2/ui/utils/app_strings.dart';
 import 'package:uuid/uuid.dart';
 import 'package:moon_cake_app2/db/ingredient.dart';
 import '../../core/nav_bottom.dart';
+import '../../widgets/image_button.dart';
+import '../../widgets/selection_buttons.dart';
 import '../../utils/language_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../db/recipe.dart';
@@ -11,7 +13,7 @@ import '../../../db/type.dart';
 
 class AddRecipePage extends StatefulWidget {
   const AddRecipePage({super.key});
- 
+
   @override
   State<AddRecipePage> createState() => _AddRecipePageState();
 }
@@ -19,13 +21,11 @@ class AddRecipePage extends StatefulWidget {
 class _IngredientInput {
   final TextEditingController nameController;
   final TextEditingController amountController;
-  UnitType unit=UnitType.g;
+  UnitType unit = UnitType.g;
 
-  _IngredientInput({
-    String name = '',
-    String amount = '',
-     }) : nameController = TextEditingController(text: name),
-       amountController = TextEditingController(text: amount);
+  _IngredientInput({String name = '', String amount = ''})
+    : nameController = TextEditingController(text: name),
+      amountController = TextEditingController(text: amount);
 
   void dispose() {
     nameController.dispose();
@@ -46,14 +46,20 @@ class _AddRecipePageState extends State<AddRecipePage> {
   Category _recipeCategory = Category.dough;
   Type? _selectedType;
   List<Type> _selectedMatchedDoughTypes = [];
-  bool _isFavorite = false;
-  double _rating = 0.0;
+  final bool _isFavorite = false;
+  final double _rating = 0.0;
   bool _isSaving = false;
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController(text: '8');
-  final TextEditingController _sizeController = TextEditingController(text: '100');
-  final TextEditingController _ratioController = TextEditingController(text: '4:6');
+  final TextEditingController _quantityController = TextEditingController(
+    text: '8',
+  );
+  final TextEditingController _sizeController = TextEditingController(
+    text: '100',
+  );
+  final TextEditingController _ratioController = TextEditingController(
+    text: '4:6',
+  );
   final List<_IngredientInput> _ingredients = List.generate(
     3,
     (_) => _IngredientInput(),
@@ -122,7 +128,8 @@ class _AddRecipePageState extends State<AddRecipePage> {
       }
     });
   }
-   void _setQuantity(int value) {
+
+  void _setQuantity(int value) {
     _quantityController.text = value.toString();
   }
 
@@ -132,95 +139,6 @@ class _AddRecipePageState extends State<AddRecipePage> {
 
   void _setRatio(String value) {
     _ratioController.text = value;
-  }
-
-  Widget _buildStyleImageButton(String title, Type type) {
-    final selected = _selectedType?.id == type.id;
-    final assetName = (type.imageName ?? 'cantoneseStyle').trim();
-    final imageAsset = 'assets/${assetName}${selected ? '2' : ''}.jpg';
-
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () {
-          setState(() {
-            _selectedType = type;
-          });
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: selected
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.grey.shade300,
-              width: selected ? 2 : 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(14),
-                ),
-                child: Image.asset(imageAsset, height: 100, fit: BoxFit.cover),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.white,
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(14),
-                  ),
-                ),
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: selected ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  Widget _buildOptionButtons({
-    required List<int> values,
-    required TextEditingController controller,
-    required ValueChanged<int> onSelected,
-  }) {
-    return Wrap(
-      spacing: 8,
-      children: values.map((value) {
-        return OutlinedButton(
-          onPressed: () => onSelected(value),
-          child: Text(value.toString()),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildRatioButtons() {
-    final ratios = ['2:8', '3:7', '4:6', '5:5'];
-    return Wrap(
-      spacing: 8,
-      children: ratios.map((value) {
-        return OutlinedButton(
-          onPressed: () => _setRatio(value),
-          child: Text(value),
-        );
-      }).toList(),
-    );
   }
 
   void _addIngredient() {
@@ -327,6 +245,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
+    bool isDoughtTypeSelected = _recipeCategory == Category.dough;
     return Scaffold(
       appBar: AppBar(title: Text(AppStrings.get('addRecipe', lang))),
       body: SingleChildScrollView(
@@ -380,90 +299,46 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 }).toList(),
               ),
               const SizedBox(height: 16),
-              if (_recipeCategory == Category.dough) ...[
-                Text(
-                  AppStrings.get('type', lang),
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: _doughTypes.map((type) {
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: _buildStyleImageButton(type.name, type),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-              if (_recipeCategory == Category.filling) ...[
-                Text(
-                  AppStrings.get('fillingType', lang),
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<Type>(
-                  initialValue: _selectedType,
-                  decoration: InputDecoration(
-                    labelText: AppStrings.get('fillingType', lang),
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: _fillingTypes
-                      .map(
-                        (type) => DropdownMenuItem<Type>(
-                          value: type,
-                          child: Text(type.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
+
+              // if (_recipeCategory == Category.dough)
+              ...[
+                StyleTypeSelectionSection(
+                  title: isDoughtTypeSelected
+                      ? AppStrings.get('type', lang)
+                      : AppStrings.get('fillingType', lang),
+                  types: isDoughtTypeSelected ? _doughTypes : _fillingTypes,
+                  selectedType: _selectedType,
+                  onTypeSelected: (type) {
                     setState(() {
-                      _selectedType = value;
-                      _selectedMatchedDoughTypes = [];
+                      _selectedType = type;
                     });
                   },
-                  validator: (value) {
-                    if (_recipeCategory == Category.filling && value == null) {
-                      return AppStrings.get('validFillingTypeMsg', lang);
-                    }
-                    return null;
-                  },
+                  showMatchedDoughTypes: isDoughtTypeSelected ? false : true,
+                  matchedDoughLabel: isDoughtTypeSelected
+                      ? ''
+                      : AppStrings.get('matched_dough_types', lang),
+                  doughTypes: _doughTypes,
+                  selectedMatchedDoughTypes: _selectedMatchedDoughTypes,
+                  onMatchedDoughTypeToggled: _toggleMatchedDoughType,
                 ),
-                const SizedBox(height: 16),
-                if (_selectedType != null) ...[
-                  Text(
-                    AppStrings.get('matched_dough_types', lang),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _doughTypes.map((type) {
-                      final selected = _selectedMatchedDoughTypes.any(
-                        (item) => item.id == type.id,
-                      );
-                      return FilterChip(
-                        label: Text(type.name),
-                        selected: selected,
-                        onSelected: (_) => _toggleMatchedDoughType(type),
-                      );
-                    }).toList(),
-                  ),
-                ],
               ],
-              const SizedBox(height: 16),
-Text('Qty', style: Theme.of(context).textTheme.titleMedium),
+              SizedBox(height: 16),
+
+              Text('Qty', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter qty',
+                validator: (value) => value != null && value.isNotEmpty
+                    ? null
+                    : AppStrings.get('validQuantityMsg', lang),
               ),
               const SizedBox(height: 8),
-              _buildOptionButtons(values: [4, 8, 10, 16], controller: _quantityController, onSelected: _setQuantity),
+              OptionButtons(
+                values: [4, 8, 10, 16],
+                onSelected: _setQuantity,
+              ),
               const SizedBox(height: 20),
               Text('Size', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
@@ -471,20 +346,32 @@ Text('Qty', style: Theme.of(context).textTheme.titleMedium),
                 controller: _sizeController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter size',
+                validator: (value) => value != null && value.isNotEmpty
+                    ? null
+                    : AppStrings.get('validSizeMsg', lang),
               ),
               const SizedBox(height: 8),
-              _buildOptionButtons(values: [50, 75, 100], controller: _sizeController, onSelected: _setSize),
+              OptionButtons(
+                values: [50, 75, 100],
+                onSelected: _setSize,
+              ),
               const SizedBox(height: 20),
-              Text(AppStrings.get('ratio',lang), style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                AppStrings.get('ratio', lang),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _ratioController,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter ratio',
+                validator: (value) => value != null && value.isNotEmpty
+                    ? null
+                    : AppStrings.get('validRatioMsg', lang),
               ),
               const SizedBox(height: 8),
-              _buildRatioButtons(),
+              RatioButtons(
+                onSelected: _setRatio,
+              ),
               const SizedBox(height: 24),
               Text(
                 AppStrings.get('ingredients', lang),
@@ -494,7 +381,7 @@ Text('Qty', style: Theme.of(context).textTheme.titleMedium),
               ..._ingredients.asMap().entries.map((entry) {
                 final index = entry.key;
                 final ingredient = entry.value;
-                UnitType? selectedUnitType=UnitType.g;
+                UnitType? selectedUnitType = UnitType.g;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 0),
                   child: Row(
@@ -562,17 +449,23 @@ Text('Qty', style: Theme.of(context).textTheme.titleMedium),
                       ),
                       const SizedBox(width: 4),
                       Expanded(
-                        flex: 1,                        
+                        flex: 1,
                         child: DropdownButtonFormField<UnitType>(
                           initialValue: selectedUnitType,
-                          icon:  const SizedBox.shrink(),
+                          icon: const SizedBox.shrink(),
                           iconSize: 0,
                           isExpanded: true,
-                          style: const TextStyle(fontSize: 12, color: Color.fromARGB(221, 180, 18, 18)),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color.fromARGB(221, 180, 18, 18),
+                          ),
                           decoration: const InputDecoration(
                             isDense: true,
                             border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 7),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 2,
+                              vertical: 7,
+                            ),
                           ),
                           items: UnitType.values
                               .map(
@@ -580,7 +473,9 @@ Text('Qty', style: Theme.of(context).textTheme.titleMedium),
                                   value: unit,
                                   child: Text(
                                     unit.name,
-                                    style: const TextStyle(color: Colors.black87),
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                    ),
                                   ),
                                 ),
                               )
@@ -593,7 +488,7 @@ Text('Qty', style: Theme.of(context).textTheme.titleMedium),
                           },
                         ),
                       ),
-               
+
                       if (_ingredients.length > 1)
                         IconButton(
                           icon: const Icon(Icons.remove_circle_outline),
@@ -612,7 +507,7 @@ Text('Qty', style: Theme.of(context).textTheme.titleMedium),
                   label: Text(AppStrings.get('addIngredient', lang)),
                 ),
               ),
-       
+
               Row(
                 children: [
                   Expanded(
@@ -633,7 +528,7 @@ Text('Qty', style: Theme.of(context).textTheme.titleMedium),
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          :  Text(AppStrings.get('save', lang)),
+                          : Text(AppStrings.get('save', lang)),
                     ),
                   ),
                 ],

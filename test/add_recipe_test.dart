@@ -25,7 +25,7 @@ void main() {
             create: (_) => LanguageProvider(),
           ),
         ],
-        child: MaterialApp(home: AddRecipePage(mcService: service)),
+        child: MaterialApp(home: AddRecipePage()),
       ),
     );
 

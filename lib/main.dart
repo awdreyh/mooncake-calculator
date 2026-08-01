@@ -153,6 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               const SizedBox(height: 20),
+
               Text(
                 AppStrings.get('addNewTask', lang),
                 style: const TextStyle(
@@ -161,17 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AddTaskPage(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add_task),
-                label: Text(AppStrings.get('addTask', lang)),
-              ),
+              const AddTaskPage(),
               const SizedBox(height: 8),            
        
              ],

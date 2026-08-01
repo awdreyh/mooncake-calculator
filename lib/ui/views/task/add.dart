@@ -189,10 +189,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.get('saveTask', lang))),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+    return Center(
+
+      child: SingleChildScrollView(
+       // padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
