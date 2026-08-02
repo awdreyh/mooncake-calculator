@@ -23,13 +23,25 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   List<Type> _types = [];
   bool _changed = false;
   int _taskUsageCount = 0;
+  final TextEditingController _commentController = TextEditingController();
+  List<Type> _selectedMatchedDoughTypes = [];
+  bool _isSaving = false;
+  double _selectedRating = 0;
 
   @override
   void initState() {
     super.initState();
     _recipe = widget.recipe;
+    _commentController.text = _recipe.comment ?? '';
+    _selectedRating = _recipe.rating ?? 0;
     _loadTypes();
     _loadTaskUsageCount();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTypes() async {
@@ -37,6 +49,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     if (!mounted) return;
     setState(() {
       _types = types;
+      _selectedMatchedDoughTypes = Type.matchedDoughTypesById(
+        _recipe.typeId,
+        types: _types,
+      );
     });
   }
 
@@ -79,6 +95,82 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     });
   }
 
+  void _toggleMatchedDoughType(Type type) {
+    setState(() {
+      if (_selectedMatchedDoughTypes.any((item) => item.id == type.id)) {
+        _selectedMatchedDoughTypes.removeWhere((item) => item.id == type.id);
+      } else {
+        _selectedMatchedDoughTypes.add(type);
+      }
+    });
+  }
+
+  Future<void> _saveChanges() async {
+    if (_isSaving) return;
+
+    final updatedRating = _selectedRating;
+    final updatedComment = _commentController.text.trim();
+    final updatedRecipe = Recipe(
+      id: _recipe.id,
+      name: _recipe.name,
+      typeId: _recipe.typeId,
+      quantity: _recipe.quantity,
+      size: _recipe.size,
+      ratio: _recipe.ratio,
+      description: _recipe.description,
+      ingredients: _recipe.ingredients,
+      isFavorite: _recipe.isFavorite,
+      rating: updatedRating != null && updatedRating > 0 ? updatedRating : null,
+      url: _recipe.url,
+      comment: updatedComment.isEmpty ? null : updatedComment,
+      directions: _recipe.directions,
+      createdAt: _recipe.createdAt,
+      updatedAt: _recipe.updatedAt,
+    );
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await _mcService.updateRecipeDetails(updatedRecipe);
+
+      final currentRecipeType = _types.firstWhere(
+        (type) => type.id == _recipe.typeId,
+        orElse: () => Type(
+          id: _recipe.typeId ?? '',
+          category: Category.dough,
+          name: '',
+        ),
+      );
+
+      if (currentRecipeType.category == Category.filling) {
+        await _mcService.updateTypeMatchedDoughTypes(
+          _recipe.typeId ?? '',
+          _selectedMatchedDoughTypes.map((type) => type.id).toList(),
+        );
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _recipe = updatedRecipe;
+        _changed = true;
+        _isSaving = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Changes saved')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save changes: $e')),
+      );
+    }
+  }
+
   void _deleteRecipe() async {
     final languageProvider = Provider.of<LanguageProvider>(
       context,
@@ -103,7 +195,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
-              AppStrings.get('delete', lang),
+              AppStrings.get('delete_recipe', lang),
               style: TextStyle(color: Colors.red),
             ),
           ),
@@ -124,10 +216,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
     final ratioString = Helper.ratioToString(_recipe.ratio ?? 0.0);
-    final matchedDoughTypes = Type.matchedDoughTypesById(
-      _recipe.typeId,
-      types: _types,
-    );
+    final matchedDoughTypes = _selectedMatchedDoughTypes;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppStrings.get('viewDetails', lang)),
@@ -145,6 +235,20 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: _deleteRecipe,
           ),
+          if (!_isSaving)
+            IconButton(
+              icon: const Icon(Icons.save, color: Colors.green),
+              onPressed: _saveChanges,
+            )
+          else
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -233,6 +337,25 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                     ),
                                   ),
                                 ),
+                              const SizedBox(height: 8),
+                              if (matchedDoughTypes.isNotEmpty)
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: _types
+                                      .where((type) => type.category == Category.dough)
+                                      .map((type) {
+                                        final selected = _selectedMatchedDoughTypes.any(
+                                          (item) => item.id == type.id,
+                                        );
+                                        return FilterChip(
+                                          label: Text(type.name),
+                                          selected: selected,
+                                          onSelected: (_) => _toggleMatchedDoughType(type),
+                                        );
+                                      })
+                                      .toList(),
+                                ),
                               if (_taskUsageCount > 0)
                                 GestureDetector(
                                   onTap: _openRelatedTasks,
@@ -312,26 +435,9 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               ),
             ),
 
-            // Rating
-            if (_recipe.rating != null && _recipe.rating! > 0)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Rating: ${_recipe.rating} / 5.0',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            const SizedBox(height: 16),
-
+           
             // Ingredients
+              const SizedBox(height: 16),
             Text(
               AppStrings.get('ingredients', lang),
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -376,27 +482,77 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                   },
                 ),
            
+         // Rating
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.get('rating', lang),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: List.generate(5, (index) {
+                        final starValue = index + 1;
+                        final isSelected = _selectedRating >= starValue;
+                        return IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            isSelected ? Icons.star : Icons.star_border,
+                            color: Colors.amber,
+                            size: 32,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedRating = starValue.toDouble();
+                            });
+                          },
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _selectedRating > 0
+                          ? '$_selectedRating / 5.0'
+                          : AppStrings.get('no_rating', lang),
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
 
+
             // Comment
-            if (_recipe.comment != null && _recipe.comment!.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppStrings.get('comment', lang),
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(_recipe.comment!),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.get('comment', lang),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: TextField(
+                      controller: _commentController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: AppStrings.get('no_comment', lang),
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
 
             // URL
             if (_recipe.url != null && _recipe.url!.isNotEmpty)

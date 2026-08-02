@@ -8,16 +8,16 @@ class StyleImageButton extends StatelessWidget {
   final VoidCallback onTap;
 
   const StyleImageButton({
-    Key? key,
+    super.key,
     required this.title,
     required this.type,
     required this.selected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final assetName = (type.imageName ?? 'cantoneseStyle').trim();
+    final assetName = (type.imageName ?? 'placeholder').trim();
     final imageAsset = 'assets/${assetName}${selected ? '2' : ''}.jpg';
 
     return InkWell(

@@ -29,6 +29,7 @@ class MCService {
           'id': type.id,
           'category': type.category.toMap(),
           'name': type.name,
+          'imageName': type.imageName,
           'matched_dough_type': type.matchedDoughTypeIds == null
               ? null
               : jsonEncode(
@@ -117,7 +118,9 @@ class MCService {
             id TEXT PRIMARY KEY,
             category TEXT NOT NULL,
             name TEXT NOT NULL,
+            imageName TEXT,
             matched_dough_type TEXT
+            
           )
         ''');
         await _seedDefault(db);
@@ -201,6 +204,7 @@ class MCService {
         'id': row['id']?.toString(),
         'category': row['category']?.toString(),
         'name': row['name']?.toString(),
+        'imageName': row['imageName']?.toString(),
         'matchedDoughTypeIds': matchedDoughTypeIds,
       });
     }).toList();
@@ -225,6 +229,47 @@ class MCService {
       },
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<int> updateRecipeDetails(
+    Recipe recipe, {
+    Database? database,
+  }) async {
+    final db = database ?? await _databaseInstance;
+    return await db.update(
+      'recipes',
+      {
+        'name': recipe.name,
+        'typeId': recipe.typeId,
+        'quantity': recipe.quantity,
+        'size': recipe.size,
+        'ratio': recipe.ratio,
+        'description': recipe.description,
+        'is_favorite': (recipe.isFavorite ?? false) ? 1 : 0,
+        'rating': recipe.rating,
+        'url': recipe.url,
+        'comment': recipe.comment,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [recipe.id],
+    );
+  }
+
+  Future<int> updateTypeMatchedDoughTypes(
+    String typeId,
+    List<String> matchedDoughTypeIds, {
+    Database? database,
+  }) async {
+    final db = database ?? await _databaseInstance;
+    return await db.update(
+      'types',
+      {
+        'matched_dough_type': jsonEncode(matchedDoughTypeIds),
+      },
+      where: 'id = ?',
+      whereArgs: [typeId],
     );
   }
 

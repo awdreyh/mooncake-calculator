@@ -46,6 +46,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
   Category _recipeCategory = Category.dough;
   Type? _selectedType;
   List<Type> _selectedMatchedDoughTypes = [];
+  List<Type> _allTypes = [];
   final bool _isFavorite = false;
   final double _rating = 0.0;
   bool _isSaving = false;
@@ -70,7 +71,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
   @override
   void initState() {
     super.initState();
-    _selectedType = _getDefaultType(Category.dough);
+    _loadTypes();
   }
 
   @override
@@ -85,18 +86,30 @@ class _AddRecipePageState extends State<AddRecipePage> {
     super.dispose();
   }
 
+  Future<void> _loadTypes() async {
+    final types = await _mcService.loadTypes();
+    if (!mounted) return;
+    setState(() {
+      _allTypes = types;
+      if (_selectedType == null ||
+          !_allTypes.any((type) => type.id == _selectedType!.id)) {
+        _selectedType = _getDefaultType(_recipeCategory);
+      }
+    });
+  }
+
   Type _getDefaultType(Category category) {
-    return defaultTypes.firstWhere(
+    final matchingTypes = _allTypes.where(
       (type) => type.category == category,
-      orElse: () => defaultTypes.first,
     );
+    return matchingTypes.isNotEmpty ? matchingTypes.first : Type(id: '', category: category, name: '');
   }
 
   List<Type> get _doughTypes =>
-      defaultTypes.where((type) => type.category == Category.dough).toList();
+      _allTypes.where((type) => type.category == Category.dough).toList();
 
   List<Type> get _fillingTypes =>
-      defaultTypes.where((type) => type.category == Category.filling).toList();
+      _allTypes.where((type) => type.category == Category.filling).toList();
 
   List<_CategoryOption> _categoryOptions(String lang) => Category.values
       .map(
@@ -300,7 +313,6 @@ class _AddRecipePageState extends State<AddRecipePage> {
               ),
               const SizedBox(height: 16),
 
-              // if (_recipeCategory == Category.dough)
               ...[
                 StyleTypeSelectionSection(
                   title: isDoughtTypeSelected
@@ -324,7 +336,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
               ],
               SizedBox(height: 16),
 
-              Text('Qty', style: Theme.of(context).textTheme.titleMedium),
+              Text(AppStrings.get('qty',lang), style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _quantityController,
@@ -340,7 +352,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
                 onSelected: _setQuantity,
               ),
               const SizedBox(height: 20),
-              Text('Size', style: Theme.of(context).textTheme.titleMedium),
+              Text(AppStrings.get('size',lang), style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _sizeController,

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
-
 import '../../../db/db_helper.dart';
 import '../../../db/recipe.dart';
 import '../../../db/task.dart';
 import '../../../db/type.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
+import '../../utils/helper.dart';
 import 'details.dart';
+import '../../widgets/image_button.dart';
+import '../../widgets/selection_buttons.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
@@ -33,11 +35,45 @@ class _AddTaskPageState extends State<AddTaskPage> {
   bool _isCalculating = false;
   List<Recipe> _allRecipes = [];
   List<Type> _allTypes = [];
+  String? _doughTypeError;
+  String? _doughRecipeError;
+  String? _fillingTypeError;
+  String? _fillingRecipeError;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  void _applyDefaultSelections(List<Type> types, List<Recipe> recipes) {
+    if (_selectedDoughType == null && types.isNotEmpty) {
+      final doughType = types.where((type) => type.category == Category.dough).firstOrNull;
+      if (doughType != null) {
+        _selectedDoughType = doughType;
+      }
+    }
+
+    if (_selectedDoughType != null) {
+      final doughRecipes = recipes.where((recipe) => recipe.typeId == _selectedDoughType!.id).toList();
+      if (_selectedDoughRecipe == null && doughRecipes.isNotEmpty) {
+        _selectedDoughRecipe = doughRecipes.first;
+      }
+    }
+
+    if (_selectedFillingType == null && types.isNotEmpty) {
+      final fillingType = types.where((type) => type.category == Category.filling).firstOrNull;
+      if (fillingType != null) {
+        _selectedFillingType = fillingType;
+      }
+    }
+
+    if (_selectedFillingType != null) {
+      final fillingRecipes = recipes.where((recipe) => recipe.typeId == _selectedFillingType!.id).toList();
+      if (_selectedFillingRecipe == null && fillingRecipes.isNotEmpty) {
+        _selectedFillingRecipe = fillingRecipes.first;
+      }
+    }
   }
 
   @override
@@ -55,6 +91,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     setState(() {
       _allRecipes = recipes;
       _allTypes = types;
+      _applyDefaultSelections(types, recipes);
     });
   }
 
@@ -90,24 +127,43 @@ class _AddTaskPageState extends State<AddTaskPage> {
     _ratioController.text = value;
   }
 
-  double _parseRatio(String value) {
-    final parts = value.split(':');
-    if (parts.length != 2) return 0.4;
-    final first = int.tryParse(parts[0].trim()) ?? 0;
-    final second = int.tryParse(parts[1].trim()) ?? 0;
-    final total = first + second;
-    if (total <= 0) return 0.4;
-    return (first / total).clamp(0.0, 1.0);
+  Map<String, String?> _validateSelections(String lang) {
+    return {
+      'doughType': _selectedDoughType == null
+          ? AppStrings.get('validRecipeTypeMsg', lang)
+          : null,
+      'doughRecipe': _selectedDoughRecipe == null
+          ? AppStrings.get('validDoughRecipeMsg', lang)
+          : null,
+      'fillingType': _selectedFillingType == null
+          ? AppStrings.get('validFillingTypeMsg', lang)
+          : null,
+      'fillingRecipe': _selectedFillingRecipe == null
+          ? AppStrings.get('validFillingRecipeMsg', lang)
+          : null,
+    };
   }
 
   Future<void> _calculateTask() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedDoughRecipe == null || _selectedFillingRecipe == null) return;
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final lang = languageProvider.languageCode;
+    final validationErrors = _validateSelections(lang);
+
+    setState(() {
+      _doughTypeError = validationErrors['doughType'];
+      _doughRecipeError = validationErrors['doughRecipe'];
+      _fillingTypeError = validationErrors['fillingType'];
+      _fillingRecipeError = validationErrors['fillingRecipe'];
+    });
+
+    if (validationErrors.values.any((message) => message != null && message.isNotEmpty)) {
+      return;
+    }
 
     setState(() => _isCalculating = true);
 
     try {
-      final ratio = _parseRatio(_ratioController.text.trim());
+      final ratio = Helper.stringToRatio(_ratioController.text.trim());
       final task = Task.createFromRecipes(
         id: const Uuid().v4(),
         doughRecipe: _selectedDoughRecipe!,
@@ -131,57 +187,113 @@ class _AddTaskPageState extends State<AddTaskPage> {
     }
   }
 
-  Widget _buildSelectField<T>({
+  Widget _buildTypeSelection({
     required String label,
-    required List<T> options,
-    required T? value,
-    required String Function(T) labelBuilder,
-    required ValueChanged<T?> onChanged,
+    required List<Type> types,
+    required Type? selectedType,
+    required ValueChanged<Type> onSelected,
+    String? errorText,
   }) {
-    return DropdownButtonFormField<T>(
-      initialValue: value,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      items: options
-          .map((option) => DropdownMenuItem<T>(
-                value: option,
-                child: Text(labelBuilder(option)),
-              ))
-          .toList(),
-      onChanged: onChanged,
-      validator: (value) => value == null ? 'Please select an option' : null,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        if (errorText != null && errorText.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              errorText,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        Row(
+          spacing: 8,      
+          children: types.map((type) {            
+            final selected = selectedType?.id == type.id;
+            return Expanded(              
+              child: StyleImageButton(
+                title: type.name,
+                type: type,
+                selected: selected,
+                onTap: () => onSelected(type),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecipeSelection({
+    required String label,
+    required List<Recipe> recipes,
+    required Recipe? selectedRecipe,
+    required ValueChanged<Recipe?> onSelected,
+    String? errorText,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        if (errorText != null && errorText.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              errorText,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        if (recipes.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text('No recipes available'),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: recipes.map((recipe) {
+              final selected = selectedRecipe?.id == recipe.id;
+              return SizedBox(
+                width: (MediaQuery.of(context).size.width - 48) / 2,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: selected ? Theme.of(context).colorScheme.primaryContainer : null,
+                    side: BorderSide(
+                      color: selected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+                    ),
+                  ),
+                  onPressed: () => onSelected(recipe),
+                  child: Text(recipe.name),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
     );
   }
 
   Widget _buildOptionButtons({
     required List<int> values,
-    required TextEditingController controller,
     required ValueChanged<int> onSelected,
   }) {
-    return Wrap(
-      spacing: 8,
-      children: values.map((value) {
-        return OutlinedButton(
-          onPressed: () => onSelected(value),
-          child: Text(value.toString()),
-        );
-      }).toList(),
-    );
+    return OptionButtons(values: values, onSelected: onSelected);
   }
 
   Widget _buildRatioButtons() {
-    final ratios = ['2:8', '3:7', '4:6', '5:5'];
-    return Wrap(
-      spacing: 8,
-      children: ratios.map((value) {
-        return OutlinedButton(
-          onPressed: () => _setRatio(value),
-          child: Text(value),
-        );
-      }).toList(),
-    );
+    return RatioButtons(onSelected: _setRatio);
   }
 
   @override
@@ -190,22 +302,22 @@ class _AddTaskPageState extends State<AddTaskPage> {
     final lang = languageProvider.languageCode;
 
     return Center(
-
       child: SingleChildScrollView(
        // padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildSelectField<Type>(
+              _buildTypeSelection(
                 label: 'What type of mooncake?',
-                options: _doughTypes,
-                value: _selectedDoughType,
-                labelBuilder: (type) => type.name,
-                onChanged: (value) {
+                types: _doughTypes,
+                selectedType: _selectedDoughType,
+                errorText: _doughTypeError,
+                onSelected: (type) {
                   setState(() {
-                    _selectedDoughType = value;
+                    _doughTypeError = null;
+                    _selectedDoughType = type;
                     _selectedDoughRecipe = null;
                     _selectedFillingType = null;
                     _selectedFillingRecipe = null;
@@ -213,68 +325,55 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 },
               ),
               const SizedBox(height: 16),
-              _buildSelectField<Recipe>(
+              _buildRecipeSelection(
                 label: 'Which recipe do you want to use?',
-                options: _doughRecipes,
-                value: _selectedDoughRecipe,
-                labelBuilder: (recipe) => recipe.name,
-                onChanged: (value) {
-                  setState(() => _selectedDoughRecipe = value);
+                recipes: _doughRecipes,
+                selectedRecipe: _selectedDoughRecipe,
+                errorText: _doughRecipeError,
+                onSelected: (recipe) {
+                  setState(() {
+                    _doughRecipeError = null;
+                    _selectedDoughRecipe = recipe;
+                  });
                 },
               ),
               const SizedBox(height: 16),
-              _buildSelectField<Type>(
+              _buildTypeSelection(
                 label: 'Which type filling?',
-                options: _fillingTypes,
-                value: _selectedFillingType,
-                labelBuilder: (type) => type.name,
-                onChanged: (value) {
+                types: _fillingTypes,
+                selectedType: _selectedFillingType,
+                errorText: _fillingTypeError,
+                onSelected: (type) {
                   setState(() {
-                    _selectedFillingType = value;
+                    _fillingTypeError = null;
+                    _selectedFillingType = type;
                     _selectedFillingRecipe = null;
                   });
                 },
               ),
               const SizedBox(height: 16),
-              _buildSelectField<Recipe>(
+              _buildRecipeSelection(
                 label: 'Which recipe do you want to use?',
-                options: _fillingRecipes,
-                value: _selectedFillingRecipe,
-                labelBuilder: (recipe) => recipe.name,
-                onChanged: (value) {
-                  setState(() => _selectedFillingRecipe = value);
+                recipes: _fillingRecipes,
+                selectedRecipe: _selectedFillingRecipe,
+                errorText: _fillingRecipeError,
+                onSelected: (recipe) {
+                  setState(() {
+                    _fillingRecipeError = null;
+                    _selectedFillingRecipe = recipe;
+                  });
                 },
               ),
               const SizedBox(height: 24),
               Text('Qty', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter qty',
-              ),
-              const SizedBox(height: 8),
-              _buildOptionButtons(values: [4, 8, 10, 16], controller: _quantityController, onSelected: _setQuantity),
+              _buildOptionButtons(values: [4, 8, 10, 16], onSelected: _setQuantity),
               const SizedBox(height: 20),
               Text('Size', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _sizeController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter size',
-              ),
-              const SizedBox(height: 8),
-              _buildOptionButtons(values: [50, 75, 100], controller: _sizeController, onSelected: _setSize),
+              _buildOptionButtons(values: [50, 75, 100], onSelected: _setSize),
               const SizedBox(height: 20),
               Text(AppStrings.get('ratio',lang), style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _ratioController,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty ? null : 'Please enter ratio',
-              ),
               const SizedBox(height: 8),
               _buildRatioButtons(),
               const SizedBox(height: 24),
