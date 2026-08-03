@@ -2,7 +2,10 @@ class AppStrings {
   static const Map<String, Map<String, String>> translations = {
     'en': {
       'moonCakeCalculator': 'Moon Cake Calculator',
-      'addNewTask': 'Which type of moon cake would you like to make?',
+      'lblWhichType': 'Which type of moon cake would you like to make?',
+      'lblWhichFillingType':  'Which type of filling would you like to use?',
+      'lblwhichDoughRecipe':'Which dough recipe do you want to use?',
+      'lblwhichFillingRecipe':'Which filling recipe do you want to use?',
       'type': 'Type',
       'recipe_list_title': 'Recipes',
       'cantonese': 'Cantonese-style',
@@ -58,6 +61,7 @@ class AppStrings {
       'delete_recipe': 'Delete Recipe',
       'confirm_delete_recipe': 'Are you sure you want to delete {recipe_name}?',
       'comment': 'Comment',
+      'rating': 'Rating',
       'no_comment': 'No comment',
       'no_rating': 'Not rated yet',
       'reference_url': 'Reference URL',
@@ -80,11 +84,17 @@ class AppStrings {
       'validIngredientNameMsg': 'Please enter a valid ingredient name.',
       'validIngredientAmountMsg': 'Please enter a valid ingredient amount.',
       'invalidNumber': 'Invalid number.',
+      'calculating': 'Calculating...',
+      'calculateSave': 'Calculating and saving',
+      'msgNoRecipe':'No recipes available',
 
     },
     'zh': {
       'moonCakeCalculator': '月饼计算器',
-      'addNewTask': '今天您想做哪种类型的月饼？',
+      'lblWhichType': '您想制作哪种类型的月饼？',
+      'lblWhichFillingType': '您想使用哪种馅料类型？',
+      'lblwhichDoughRecipe':'您想使用哪种饼皮食谱？',
+      'lblwhichFillingRecipe':'您想使用哪种馅料食谱？',
       'type': '类型',
       'recipe_list_title': '食谱',
       'cantonese': '广式月饼',
@@ -140,8 +150,9 @@ class AppStrings {
       'noIngredients': '没有配方。',
       'description': '描述',
       'delete_recipe': '删除食谱',
-      'confirm_delete_recipe': '你确定要删除 {recipe_name} 吗？',
+      'confirm_delete_recipe': '您确定要删除 {recipe_name} 吗？',
       'comment': '评论',
+      'rating': '评分',
       'no_comment': '暂无评论',
       'no_rating': '尚未评分',
       'reference_url': '参考网址',
@@ -164,8 +175,9 @@ class AppStrings {
       'validIngredientNameMsg': '请输入配料名称。',
       'validIngredientAmountMsg': '请输入配料数量。',
       'invalidNumber': '无效的数字。',
-
-
+      'calculating': '计算中...',
+      'calculateSave': '计算并保存',
+      'msgNoRecipe':'无可用食谱',
     },
   };
 

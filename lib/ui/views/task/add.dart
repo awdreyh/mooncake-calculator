@@ -11,6 +11,7 @@ import '../../utils/helper.dart';
 import 'details.dart';
 import '../../widgets/image_button.dart';
 import '../../widgets/selection_buttons.dart';
+import '../../widgets/text.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
@@ -130,10 +131,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
   Map<String, String?> _validateSelections(String lang) {
     return {
       'doughType': _selectedDoughType == null
-          ? AppStrings.get('validRecipeTypeMsg', lang)
+          ? AppStrings.get('validRecipeTypeMsg', lang) 
           : null,
       'doughRecipe': _selectedDoughRecipe == null
-          ? AppStrings.get('validDoughRecipeMsg', lang)
+          ? AppStrings.get('validDoughRecipeMsg', lang) 
           : null,
       'fillingType': _selectedFillingType == null
           ? AppStrings.get('validFillingTypeMsg', lang)
@@ -196,7 +197,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: [ 
         Text(label, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (errorText != null && errorText.isNotEmpty)
@@ -228,18 +229,21 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
   }
 
-  Widget _buildRecipeSelection({
+  Widget _buildRecipeSelection({    
+
     required String label,
     required List<Recipe> recipes,
     required Recipe? selectedRecipe,
     required ValueChanged<Recipe?> onSelected,
     String? errorText,
-  }) {
-    return Column(
+
+  }) {    
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final lang = languageProvider.languageCode;
+    return Column(      
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
+        LabelWithSpacing(label: label),
         if (errorText != null && errorText.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -258,16 +262,14 @@ class _AddTaskPageState extends State<AddTaskPage> {
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text('No recipes available'),
+            child:  Text(AppStrings.get('msgNoRecipe', lang), style: const TextStyle(color: Colors.grey)),
           )
         else
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
+            spacing: 8,          
             children: recipes.map((recipe) {
               final selected = selectedRecipe?.id == recipe.id;
-              return SizedBox(
-                width: (MediaQuery.of(context).size.width - 48) / 2,
+              return Expanded(              
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     backgroundColor: selected ? Theme.of(context).colorScheme.primaryContainer : null,
@@ -288,7 +290,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   Widget _buildOptionButtons({
     required List<int> values,
     required ValueChanged<int> onSelected,
-  }) {
+  }) { 
     return OptionButtons(values: values, onSelected: onSelected);
   }
 
@@ -306,11 +308,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
        // padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: Column(            
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTypeSelection(
-                label: 'What type of mooncake?',
+            children: [          
+              _buildTypeSelection(               
+                label: AppStrings.get('lblWhichType', lang),
                 types: _doughTypes,
                 selectedType: _selectedDoughType,
                 errorText: _doughTypeError,
@@ -325,8 +327,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 },
               ),
               const SizedBox(height: 16),
+                         
               _buildRecipeSelection(
-                label: 'Which recipe do you want to use?',
+                label: AppStrings.get('lblwhichDoughRecipe', lang),
                 recipes: _doughRecipes,
                 selectedRecipe: _selectedDoughRecipe,
                 errorText: _doughRecipeError,
@@ -339,7 +342,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               const SizedBox(height: 16),
               _buildTypeSelection(
-                label: 'Which type filling?',
+                label: AppStrings.get('lblWhichFillingType', lang),
                 types: _fillingTypes,
                 selectedType: _selectedFillingType,
                 errorText: _fillingTypeError,
@@ -353,7 +356,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               const SizedBox(height: 16),
               _buildRecipeSelection(
-                label: 'Which recipe do you want to use?',
+                label: AppStrings.get('lblwhichFillingRecipe',lang),
                 recipes: _fillingRecipes,
                 selectedRecipe: _selectedFillingRecipe,
                 errorText: _fillingRecipeError,
@@ -365,16 +368,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 },
               ),
               const SizedBox(height: 24),
-              Text('Qty', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
+              LabelWithSpacing(label: AppStrings.get('quantity', lang)),
               _buildOptionButtons(values: [4, 8, 10, 16], onSelected: _setQuantity),
               const SizedBox(height: 20),
-              Text('Size', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
+              LabelWithSpacing(label: AppStrings.get('size', lang)),
               _buildOptionButtons(values: [50, 75, 100], onSelected: _setSize),
               const SizedBox(height: 20),
-              Text(AppStrings.get('ratio',lang), style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
+             LabelWithSpacing(label: AppStrings.get('ratio', lang)),
               _buildRatioButtons(),
               const SizedBox(height: 24),
               SizedBox(
@@ -384,7 +384,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   icon: _isCalculating
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.calculate),
-                  label: Text(_isCalculating ? 'Calculating...' : 'Calculate'),
+                  label: Text(_isCalculating ? AppStrings.get('calculating',lang) : AppStrings.get('calculateSave',lang)),
                 ),
               ),
             ],

@@ -150,16 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Theme.of(context).textTheme.headlineLarge?.color,
                 ),
               ),
-              const SizedBox(height: 20),
-
-              Text(
-                AppStrings.get('addNewTask', lang),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),         
               const AddTaskPage(),
               const SizedBox(height: 8),            
        
