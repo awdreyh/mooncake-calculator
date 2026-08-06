@@ -74,17 +74,17 @@ class _TaskListViewState extends State<_TaskListView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.get('delete_task', lang) ?? 'Delete Task'),
+        title: Text(AppStrings.get('delete_task', lang)),
         content: Text(AppStrings.get('confirm_delete_task', lang)?.replaceFirst('{task_id}', task.id) ?? 'Delete this task?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppStrings.get('cancel', lang) ?? 'Cancel'),
+            child: Text(AppStrings.get('cancel', lang) ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
-              AppStrings.get('delete', lang) ?? 'Delete',
+              AppStrings.get('delete', lang) ,
               style: const TextStyle(color: Colors.red),
             ),
           ),
