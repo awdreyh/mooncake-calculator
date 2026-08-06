@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:moon_cake_app2/ui/utils/app_strings.dart';
 import 'package:uuid/uuid.dart';
-import 'package:moon_cake_app2/db/ingredient.dart';
-import '../../core/nav_bottom.dart';
+import 'package:provider/provider.dart';
+
+import '../../../db/db_helper.dart';
+import '../../../db/model/recipe.dart';
+import '../../../db/model/type.dart';
+import '../../../db/model/ingredient.dart';
+
+import '../../../db/repository/type.dart';
+import '../../../db/repository/recipe.dart';
+import '../../../provider/recipe.dart';
+import '../../../provider/type.dart';
+
+import '../../utils/app_strings.dart';
+import '../../utils/language_provider.dart';
 import '../../widgets/image_button.dart';
 import '../../widgets/selection_buttons.dart';
-import '../../utils/language_provider.dart';
-import 'package:provider/provider.dart';
-import '../../../db/recipe.dart';
-import '../../../db/db_helper.dart';
-import '../../../db/type.dart';
+import '../../core/nav_bottom.dart';
 
 class AddRecipePage extends StatefulWidget {
   const AddRecipePage({super.key});
@@ -41,7 +48,7 @@ class _CategoryOption {
 
 class _AddRecipePageState extends State<AddRecipePage> {
   final _formKey = GlobalKey<FormState>();
-  final MCService _mcService = MCService();
+  final provider = RecipeProvider(RecipeRepository(MCDatabase.instance));
 
   Category _recipeCategory = Category.dough;
   Type? _selectedType;
@@ -87,7 +94,8 @@ class _AddRecipePageState extends State<AddRecipePage> {
   }
 
   Future<void> _loadTypes() async {
-    final types = await _mcService.loadTypes();
+    final typeProvider = TypeProvider(TypeRepository(MCDatabase.instance));
+    final types = await typeProvider.loadAllTypes();
     if (!mounted) return;
     setState(() {
       _allTypes = types;
@@ -205,7 +213,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
       final size = int.tryParse(_sizeController.text.trim()) ?? 1;
       final ratio = double.tryParse(_ratioController.text.trim()) ?? 0.4;
 
-      final recipe = Recipe(
+      final newRecipe = Recipe(
         id: const Uuid().v4(),
         name: name,
         typeId: _selectedType?.id,
@@ -218,7 +226,8 @@ class _AddRecipePageState extends State<AddRecipePage> {
         rating: _rating > 0 ? _rating : null,
       );
 
-      await _mcService.saveRecipe(recipe);
+    final provider = RecipeProvider(RecipeRepository(MCDatabase.instance));
+    await provider.insertRecipe(newRecipe);
 
       if (!mounted) {
         return;

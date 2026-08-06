@@ -14,7 +14,7 @@ void main() {
   });
 
   testWidgets('saving a recipe persists it to the database', (tester) async {
-    final service = MCService(databaseName: 'add_recipe_test.db');
+    final service = MCDatabase(databaseName: 'add_recipe_test.db');
     final dbPath = await getDatabasesPath();
     await deleteDatabase('$dbPath/add_recipe_test.db');
 

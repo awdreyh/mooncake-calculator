@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../db/db_helper.dart';
-import '../../../db/recipe.dart';
-import '../../../db/task.dart';
+import '../../../db/model/recipe.dart';
+import '../../../db/model/task.dart';
+
+import '../../../db/repository/task.dart';
+import '../../../provider/recipe.dart';
+import '../../../db/repository/recipe.dart';
+import '../../../provider/task.dart';
+
+import '../../utils/app_strings.dart';
+import '../../utils/language_provider.dart';
+import '../../utils/helper.dart';
+import 'details.dart';
+import '../../widgets/image_button.dart';
+import '../../widgets/selection_buttons.dart';
+import '../../widgets/text.dart';
 
 class TaskDetailsPage extends StatefulWidget {
   final String taskId;
@@ -13,7 +26,9 @@ class TaskDetailsPage extends StatefulWidget {
 }
 
 class _TaskDetailsPageState extends State<TaskDetailsPage> {
-  final MCService _mcService = MCService();
+  final taskProvider = TaskProvider(TaskRepository(MCDatabase.instance));
+  final recipeProvider = RecipeProvider(RecipeRepository(MCDatabase.instance));
+  
   Task? _task;
   Recipe? _doughRecipe;
   Recipe? _fillingRecipe;
@@ -26,15 +41,15 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
   }
 
   Future<void> _loadTask() async {
-    final task = await _mcService.loadTask(widget.taskId);
+    final task = await taskProvider.loadTask(widget.taskId);
     if (!mounted) return;
 
     Recipe? doughRecipe;
     Recipe? fillingRecipe;
 
     if (task != null) {
-      doughRecipe = await _mcService.loadRecipe(task.doughRecipeId);
-      fillingRecipe = await _mcService.loadRecipe(task.fillingRecipeId);
+      doughRecipe = await recipeProvider.loadRecipe(task.doughRecipeId);
+      fillingRecipe = await recipeProvider.loadRecipe(task.fillingRecipeId);
     }
 
     setState(() {
@@ -62,15 +77,24 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Dough recipe: ${_doughRecipe?.name ?? _task!.doughRecipeId}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Dough recipe: ${_doughRecipe?.name ?? _task!.doughRecipeId}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text('Filling recipe: ${_fillingRecipe?.name ?? _task!.fillingRecipeId}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Filling recipe: ${_fillingRecipe?.name ?? _task!.fillingRecipeId}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             Text('Qty: ${_task!.quantity}'),
             Text('Size: ${_task!.size}'),
             Text('Ratio: ${_task!.ratio.toStringAsFixed(2)}'),
             const SizedBox(height: 24),
-            const Text('Ingredients', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Ingredients',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             if (_task!.ingredients.isEmpty)
               const Text('No ingredients were calculated.')
@@ -82,7 +106,9 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(child: Text(ingredient.name)),
-                      Text('${ingredient.amount.toStringAsFixed(2)} ${ingredient.unit.toMap()}'),
+                      Text(
+                        '${ingredient.amount.toStringAsFixed(2)} ${ingredient.unit.toMap()}',
+                      ),
                     ],
                   ),
                 );

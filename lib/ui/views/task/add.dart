@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
+
 import '../../../db/db_helper.dart';
-import '../../../db/recipe.dart';
-import '../../../db/task.dart';
-import '../../../db/type.dart';
+import '../../../db/model/recipe.dart';
+import '../../../db/model/type.dart';
+
+import '../../../db/repository/task.dart';
+import '../../../db/repository/type.dart';
+import '../../../db/repository/recipe.dart';
+import '../../../provider/recipe.dart';
+import '../../../provider/type.dart';
+import '../../../provider/task.dart';
+
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../utils/helper.dart';
@@ -13,6 +21,7 @@ import '../../widgets/image_button.dart';
 import '../../widgets/selection_buttons.dart';
 import '../../widgets/text.dart';
 
+
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
 
@@ -20,9 +29,10 @@ class AddTaskPage extends StatefulWidget {
   State<AddTaskPage> createState() => _AddTaskPageState();
 }
 
+
 class _AddTaskPageState extends State<AddTaskPage> {
-  final MCService _mcService = MCService();
-  final _formKey = GlobalKey<FormState>();
+  
+  bool _isSaving = false;
 
   Type? _selectedDoughType;
   Recipe? _selectedDoughRecipe;
@@ -86,8 +96,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _loadData() async {
-    final recipes = await _mcService.loadRecipes();
-    final types = await _mcService.loadTypes();
+     final typeProvider = TypeProvider(TypeRepository(MCDatabase.instance));
+     final recipeProvider = RecipeProvider(RecipeRepository(MCDatabase.instance));
+
+    final types = await typeProvider.loadAllTypes();
+    final recipes = await recipeProvider.loadAllRecipes();
+   
     if (!mounted) return;
     setState(() {
       _allRecipes = recipes;
@@ -165,7 +179,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
     try {
       final ratio = Helper.stringToRatio(_ratioController.text.trim());
-      final task = Task.createFromRecipes(
+      final newTask = TaskRepository.createFromRecipes(
         id: const Uuid().v4(),
         doughRecipe: _selectedDoughRecipe!,
         fillingRecipe: _selectedFillingRecipe!,
@@ -173,12 +187,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
         size: int.parse(_sizeController.text.trim()),
         ratio: ratio,
       );
+    final provider = TaskProvider(TaskRepository(MCDatabase.instance));
+    await provider.insertTask(newTask);
 
-      final savedTaskId = await _mcService.saveTask(task);
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => TaskDetailsPage(taskId: savedTaskId),
+          builder: (_) => TaskDetailsPage(taskId: newTask.id),
         ),
       );
     } finally {
@@ -307,7 +322,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       child: SingleChildScrollView(
        // padding: const EdgeInsets.all(16),
         child: Form(
-          key: _formKey,
+        
           child: Column(            
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [          
@@ -395,34 +410,34 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 }
 
-Future<String> addTask({
-  required Recipe doughRecipe,
-  required Recipe fillingRecipe,
-  required int quantity,
-  required int size,
-  required double ratio,
-  String? id,
-  String? comment,
-  double? rating,
-  bool? isCompleted,
-  DateTime? createdAt,
-  DateTime? updatedAt,
-}) async {
-  final taskId = id ?? const Uuid().v4();
-  final task = Task.createFromRecipes(
-    id: taskId,
-    doughRecipe: doughRecipe,
-    fillingRecipe: fillingRecipe,
-    quantity: quantity,
-    size: size,
-    ratio: ratio,
-    comment: comment,
-    rating: rating,
-    isCompleted: isCompleted,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+// Future<String> addTask({
+//   required Recipe doughRecipe,
+//   required Recipe fillingRecipe,
+//   required int quantity,
+//   required int size,
+//   required double ratio,
+//   String? id,
+//   String? comment,
+//   double? rating,
+//   bool? isCompleted,
+//   DateTime? createdAt,
+//   DateTime? updatedAt,
+// }) async {
+//   final taskId = id ?? const Uuid().v4();
+//   final task = TaskRepository.createFromRecipes(
+//     id: taskId,
+//     doughRecipe: doughRecipe,
+//     fillingRecipe: fillingRecipe,
+//     quantity: quantity,
+//     size: size,
+//     ratio: ratio,
+//     comment: comment,
+//     rating: rating,
+//     isCompleted: isCompleted,
+//     createdAt: createdAt,
+//     updatedAt: updatedAt,
+//   );
 
-  final mcService = MCService();
-  return mcService.saveTask(task);
-}
+//   final mcService = MCService();
+//   return mcService.saveTask(task);
+// }

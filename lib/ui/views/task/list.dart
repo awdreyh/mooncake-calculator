@@ -1,258 +1,178 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:provider/provider.dart';
+import '../../../db/db_helper.dart';
+import '../../../db/model/task.dart';
+import '../../../db/repository/task.dart';
+import '../../../provider/task.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
-import 'package:provider/provider.dart';
-import '../../../db/task.dart';
-import '../../../db/recipe.dart';
-import '../../../db/db_helper.dart';
+import 'add.dart';
 import 'details.dart';
 
-
-class TaskListPage extends StatefulWidget {
-  final String? recipeId;
-
+class TaskListPage extends StatelessWidget {
+  final String? recipeId;   
   const TaskListPage({super.key, this.recipeId});
 
   @override
-  State<TaskListPage> createState() => _TaskListPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<TaskProvider>(
+      create: (_) => TaskProvider(TaskRepository(MCDatabase.instance)),
+      child: const _TaskListView(),
+    );
+  }
 }
 
-class _TaskListPageState extends State<TaskListPage> {
-  final MCService _mcService = MCService();
-  late Future<List<Task>> _tasksFuture;
+class _TaskListView extends StatefulWidget {
+  const _TaskListView({super.key});
+
+  @override
+  State<_TaskListView> createState() => _TaskListViewState();
+}
+
+class _TaskListViewState extends State<_TaskListView> {
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Task> _tasks = [];
 
   @override
   void initState() {
     super.initState();
-    _tasksFuture = _loadTasks();
+    _loadTasks();
   }
 
-  Future<List<Task>> _loadTasks() async {
-    await initializeDateFormatting();
-    if (widget.recipeId != null && widget.recipeId!.isNotEmpty) {
-      return _mcService.loadTasksUsingRecipe(widget.recipeId!);
+  Future<void> _loadTasks() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      final tasks = await taskProvider.loadAllTasks();
+      if (!mounted) return;
+      setState(() {
+        _tasks = tasks;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
     }
-    return _mcService.loadTasks();
   }
 
-  void _showTaskDetailsModal(Task task, String lang) {
-    final dateFormat = DateFormat('MMM dd, yyyy HH:mm', lang == 'zh' ? 'zh_CN' : 'en_US');
+  Future<void> _deleteTask(Task task) async {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final lang = languageProvider.languageCode;
 
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          '${task.doughRecipeId} ',
-          style: const TextStyle(fontSize: 16),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                dateFormat.format(task.createdAt),
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-              const SizedBox(height: 16),
-              _buildTaskInfo('Size', '${task.size}g'),
-              _buildTaskInfo('Quantity', '${task.quantity} cakes'),
-              _buildTaskInfo('Ratio', task.ratio.toStringAsFixed(2)),
-              const SizedBox(height: 16),
-              _buildRecipeLink(task.doughRecipeId, 'Dough', lang),
-              const SizedBox(height: 8),
-              _buildRecipeLink(task.fillingRecipeId, 'Filling', lang),
-              const SizedBox(height: 16),
-              const Text(
-                'Calculated Ingredients',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-    
-            ],
-          ),
-        ),
+        title: Text(AppStrings.get('delete_task', lang) ?? 'Delete Task'),
+        content: Text(AppStrings.get('confirm_delete_task', lang)?.replaceFirst('{task_id}', task.id) ?? 'Delete this task?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppStrings.get('close', lang)),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppStrings.get('cancel', lang) ?? 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              AppStrings.get('delete', lang) ?? 'Delete',
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
     );
-  }
 
-  Widget _buildRecipeLink(String recipeId, String sectionTitle, String lang) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          sectionTitle,
-          style: const TextStyle(color: Colors.black54, fontSize: 12),
-        ),
-        GestureDetector(
-          onTap: () => _showRecipeDetailModal(recipeId, lang),
-          child: FutureBuilder<Recipe?>(
-            future: _mcService.loadRecipe(recipeId),
-            builder: (context, snapshot) {
-              final recipeName = snapshot.data?.name ?? recipeId;
-              return Text(
-                recipeName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue,
-                  fontSize: 12,
-                  decoration: TextDecoration.underline,
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showRecipeDetailModal(String recipeId, String lang) async {
-    final recipe = await _mcService.loadRecipe(recipeId);
-
-    if (recipe == null) {
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Recipe not found'),
-          content: Text('Could not find recipe with id: $recipeId'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppStrings.get('close', lang)),
-            ),
-          ],
-        ),
-      );
+    if (confirmed != true) {
       return;
     }
 
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(recipe.name),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (recipe.typeId != null && recipe.typeId!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text('Type: ${recipe.typeId}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                  ),
-                if (recipe.description != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text('Description: ${recipe.description}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                  ),
-                const Text('Ingredients:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                const SizedBox(height: 8),
-                ...recipe.ingredients.map((ingredient) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Text(
-                      '${ingredient.name}: ${ingredient.amount} ${ingredient.unit}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppStrings.get('close', lang)),
-            ),
-          ],
-        ),
-      );
-    }
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    await taskProvider.deleteTask(task.id);
+    await _loadTasks();
   }
 
-  Widget _buildTaskInfo(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.black54)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ],
+  Widget _buildTaskTile(Task task, String lang) {
+    final subtitle = <String>[];
+    subtitle.add('${AppStrings.get('quantity', lang)}: ${task.quantity}');
+    subtitle.add('${AppStrings.get('size', lang)}: ${task.size}');
+    subtitle.add('${AppStrings.get('ratio', lang)}: ${task.ratio.toStringAsFixed(2)}');
+    if (task.comment != null && task.comment!.isNotEmpty) {
+      subtitle.add(task.comment!);
+    }
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      title: Text('Task ${task.id.substring(0, task.id.length.clamp(0, 8))}'),
+      subtitle: Text(subtitle.join(' · ')),
+      trailing: IconButton(
+        icon: const Icon(Icons.delete, color: Colors.redAccent),
+        onPressed: () => _deleteTask(task),
       ),
+      leading: Icon(
+        task.isCompleted == true ? Icons.check_circle : Icons.pending,
+        color: task.isCompleted == true ? Colors.green : Colors.grey,
+      ),
+      onTap: () async {
+        await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => TaskDetailsPage(taskId: task.id),
+          ),
+        );
+        await _loadTasks();
+      },
     );
   }
 
- 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
-    final dateFormat = DateFormat('MMM dd, yyyy HH:mm', lang == 'zh' ? 'zh_CN' : 'en_US');
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tasks'),   
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(AppStrings.get('tasks', lang)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: FutureBuilder<List<Task>>(
-        future: _tasksFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          }
-
-          final tasks = snapshot.data ?? [];
-
-          if (tasks.isEmpty) {
-            return Center(
-              child: Text(
-                AppStrings.get('noTasks', lang),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: tasks.length,
-            itemBuilder: (context, index) {
-              final task = tasks[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  title: Text(
-                    '${task.doughRecipeId} + ${task.fillingRecipeId}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    dateFormat.format(task.createdAt),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showTaskDetailsModal(task, lang),
-                ),
-              );
-            },
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!))
+              : _tasks.isEmpty
+                  ? Center(child: Text(AppStrings.get('noTasks', lang)))
+                  : RefreshIndicator(
+                      onRefresh: _loadTasks,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _tasks.length,
+                        separatorBuilder: (context, index) => const Divider(height: 0),
+                        itemBuilder: (context, index) => _buildTaskTile(_tasks[index], lang),
+                      ),
+                    ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.of(context).push<bool>(
+            MaterialPageRoute(builder: (_) => const AddTaskPage()),
           );
+          await _loadTasks();
         },
+        tooltip: AppStrings.get('saveTask', lang),
+        child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: AppBottomNavigationBar(currentIndex: 1),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 1),
     );
   }
 }
+

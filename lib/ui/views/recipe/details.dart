@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
-import '../../utils/app_strings.dart';
-import '../../utils/language_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../db/recipe.dart';
-import '../../../db/type.dart';
 import '../../../db/db_helper.dart';
-import '../../../ui/utils/helper.dart';
+import '../../../db/model/recipe.dart';
+import '../../../db/model/task.dart';
+import '../../../db/model/type.dart';
+
+import '../../../db/repository/task.dart';
+import '../../../db/repository/type.dart';
+import '../../../provider/recipe.dart';
+import '../../../db/repository/recipe.dart';
+import '../../../provider/recipe.dart';
+import '../../../provider/type.dart';
+import '../../utils/app_strings.dart';
+import '../../utils/helper.dart';
+import '../../utils/language_provider.dart';
+
 import '../task/list.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
@@ -19,14 +28,19 @@ class RecipeDetailsPage extends StatefulWidget {
 
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   late Recipe _recipe;
-  final MCService _mcService = MCService();
-  List<Type> _types = [];
+  final receipeProvider = RecipeProvider(RecipeRepository(MCDatabase.instance));
+  final typeProvider = TypeProvider(TypeRepository(MCDatabase.instance));
+
+  List<Type> _allTypes = [];
   bool _changed = false;
-  int _taskUsageCount = 0;
-  final TextEditingController _commentController = TextEditingController();
+  int _taskUsageCount = 0;  
   List<Type> _selectedMatchedDoughTypes = [];
   bool _isSaving = false;
   double _selectedRating = 0;
+  bool _isFavorite = false;
+
+  final TextEditingController _commentController = TextEditingController();
+ 
 
   @override
   void initState() {
@@ -45,22 +59,19 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   Future<void> _loadTypes() async {
-    final types = await _mcService.loadTypes();
+    final types = await typeProvider.loadAllTypes();
+    final matchedDoughTypes = await typeProvider.loadMatchedDoughTypes(_recipe.typeId);
     if (!mounted) return;
     setState(() {
-      _types = types;
-      _selectedMatchedDoughTypes = Type.matchedDoughTypesById(
-        _recipe.typeId,
-        types: _types,
-      );
+      _allTypes = types;
+      _selectedMatchedDoughTypes = matchedDoughTypes;
     });
   }
 
   Future<void> _loadTaskUsageCount() async {
-    final count = await _mcService.countTasksUsingRecipe(_recipe.id);
     if (!mounted) return;
     setState(() {
-      _taskUsageCount = count;
+      _taskUsageCount = receipeProvider.countTasksUsingRecipe(_recipe.id) as int;
     });
   }
 
@@ -74,25 +85,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   void _toggleFavorite() async {
-    final newStatus = !(_recipe.isFavorite ?? false);
-    await _mcService.updateRecipeFavorite(_recipe.id, newStatus);
+    final newStatus = !(_recipe.isFavorite ?? false);   
     _changed = true;
     setState(() {
-      _recipe = Recipe(
-        id: _recipe.id,
-        name: _recipe.name,
-        typeId: _recipe.typeId,
-        quantity: _recipe.quantity,
-        size: _recipe.size,
-        ratio: _recipe.ratio,
-        description: _recipe.description,
-        ingredients: _recipe.ingredients,
-        isFavorite: newStatus,
-        rating: _recipe.rating,
-        url: _recipe.url,
-        comment: _recipe.comment,
-      );
+      _isFavorite = newStatus;
     });
+    _saveChanges();
   }
 
   void _toggleMatchedDoughType(Type type) {
@@ -106,8 +104,13 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   Future<void> _saveChanges() async {
-    if (_isSaving) return;
 
+        final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final lang = languageProvider.languageCode;
+    if (_isSaving) return;
     final updatedRating = _selectedRating;
     final updatedComment = _commentController.text.trim();
     final updatedRecipe = Recipe(
@@ -120,7 +123,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       description: _recipe.description,
       ingredients: _recipe.ingredients,
       isFavorite: _recipe.isFavorite,
-      rating: updatedRating != null && updatedRating > 0 ? updatedRating : null,
+      rating:  updatedRating > 0 ? updatedRating : null,
       url: _recipe.url,
       comment: updatedComment.isEmpty ? null : updatedComment,
       directions: _recipe.directions,
@@ -133,23 +136,15 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     });
 
     try {
-      await _mcService.updateRecipeDetails(updatedRecipe);
-
-      final currentRecipeType = _types.firstWhere(
-        (type) => type.id == _recipe.typeId,
-        orElse: () => Type(
-          id: _recipe.typeId ?? '',
-          category: Category.dough,
-          name: '',
-        ),
-      );
-
-      if (currentRecipeType.category == Category.filling) {
-        await _mcService.updateTypeMatchedDoughTypes(
-          _recipe.typeId ?? '',
-          _selectedMatchedDoughTypes.map((type) => type.id).toList(),
-        );
-      }
+      await receipeProvider.updateRecipe(updatedRecipe);
+      // final currentRecipeType = _types.firstWhere(
+      //   (type) => type.id == _recipe.typeId,
+      //   orElse: () => Type(
+      //     id: _recipe.typeId ?? '',
+      //     category: Category.dough,
+      //     name: '',
+      //   ),
+      // );  
 
       if (!mounted) return;
       setState(() {
@@ -158,7 +153,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         _isSaving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Changes saved')),
+         SnackBar(content: Text(AppStrings.get('changes_saved', lang))),
       );
     } catch (e) {
       if (!mounted) return;
@@ -204,7 +199,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     );
 
     if (confirmed ?? false) {
-      await _mcService.deleteRecipe(_recipe.id);
+      await receipeProvider.deleteRecipe(_recipe.id);
       if (mounted) {
         Navigator.pop(context, true);
       }
@@ -287,7 +282,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                               const SizedBox(height: 4),
                               Builder(
                                 builder: (context) {
-                                  final recipeType = _types.firstWhere(
+                                  final recipeType = _allTypes.firstWhere(
                                     (type) => type.id == _recipe.typeId,
                                     orElse: () => Type(
                                       id: _recipe.typeId ?? '',
@@ -300,16 +295,15 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                       ? 'filling_type'
                                       : 'dough_type';
 
-                                  final typeName = Type.nameById(
-                                    _recipe.typeId,
-                                    types: _types,
-                                  );
+                                  final typeName = typeProvider.loadTypeName(_recipe.typeId!);
+                                  
                                   return Text(
-                                    '${AppStrings.get(labelKey, lang)}: ${typeName.isEmpty ? AppStrings.get('unknown', lang) : typeName}',
+                                    '${AppStrings.get(labelKey, lang)}:typeName',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black54,
-                                    ),
+                                    ), 
+                                
                                   );
                                 },
                               ),
@@ -342,7 +336,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                 Wrap(
                                   spacing: 8,
                                   runSpacing: 8,
-                                  children: _types
+                                  children: _allTypes
                                       .where((type) => type.category == Category.dough)
                                       .map((type) {
                                         final selected = _selectedMatchedDoughTypes.any(

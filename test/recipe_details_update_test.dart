@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moon_cake_app2/db/db_helper.dart';
-import 'package:moon_cake_app2/db/ingredient.dart';
+import '../../db/model/ingredient.dart';
 import 'package:moon_cake_app2/db/recipe.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 

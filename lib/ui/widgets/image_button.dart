@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../db/type.dart';
+import '../../db/model/type.dart';
 
 class StyleImageButton extends StatelessWidget {
   final String title;
@@ -18,7 +18,7 @@ class StyleImageButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final assetName = (type.imageName ?? 'placeholder').trim();
-    final imageAsset = 'assets/${assetName}${selected ? '2' : ''}.jpg';
+    final imageAsset = 'assets/type_images/${assetName}${selected ? '2' : ''}.jpg';
 
     return InkWell(
       borderRadius: BorderRadius.circular(12),

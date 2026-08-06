@@ -1,6 +1,3 @@
-
-import 'package:sqflite/sqflite.dart';
-
 enum UnitType {
   g,
   ml,
@@ -69,42 +66,7 @@ class Ingredient {
       unit: UnitType.fromMap(map['unit'] as String),
       category: IngredientCategory.fromMap(categoryValue as String),
     );
-  }
+  } 
 
-  Future<int> save(
-    Database db, {
-    String? category,
-    String? recipeId,
-    String? taskId,
-  }) async {
-    return await db.insert(
-      'ingredients',
-      {
-        'id': id,
-        'recipe_id': recipeId,
-        'task_id': taskId,
-        'type': category ?? this.category.toMap(),
-        'name': name,
-        'amount': amount,
-        'unit': unit.toMap(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
 
-  Future<int> delete(Database db) async {
-    return await db.delete(
-      'ingredients',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  static Future<int> deleteById(Database db, String id) async {
-    return await db.delete(
-      'ingredients',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
 }
