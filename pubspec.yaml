@@ -1,5 +1,5 @@
 name: moon_cake_app2
-description: "A new Flutter project."
+description: "Mooncake Calculator App"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -41,6 +41,7 @@ dependencies:
   google_fonts: ^8.2.0
   provider: ^6.1.0
   uuid: 4.6.0
+  image_picker: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -58,9 +59,9 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/logo-foreground.png"
-  adaptive_icon_background: "assets/logo-background.png" # Or path to a background image: "assets/icons/background.png"
-  adaptive_icon_foreground: "assets/logo-foreground.png"
+  image_path: "assets/images/logo-foreground.png"
+  adaptive_icon_background: "assets/images/logo-background.png" # Or path to a background image: "assets/images/background.png"
+  adaptive_icon_foreground: "assets/images/logo-foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -104,6 +105,9 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
   assets:
-    - assets/
-    - assets/db/init_db.db
+    - assets/images/
+    - assets/db/feed.db
+    - assets/images/types/
+
+    # db assets are included under assets/ — explicit db files removed
 

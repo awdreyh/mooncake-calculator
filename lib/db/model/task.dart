@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'ingredient.dart';
 
 class Task {
@@ -8,6 +10,7 @@ class Task {
   final int quantity;
   final double ratio; //ratio is the percentage of dough weight / total weight
   final List<Ingredient> ingredients;
+  final List<String> imagePaths;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? comment;
@@ -22,6 +25,7 @@ class Task {
     required this.quantity,
     required this.ratio,
     required this.ingredients,
+    this.imagePaths = const [],
     DateTime? createdAt,
     DateTime? updatedAt,
     this.comment,
@@ -38,11 +42,27 @@ class Task {
         'quantity': quantity,
         'ratio': ratio,
         'ingredients': ingredients.map((ingredient) => ingredient.toMap()).toList(),
+        'image_paths': jsonEncode(imagePaths),
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
         'comment': comment,
         'rating': rating,
         'is_completed': isCompleted,
+      };
+
+  Map<String, dynamic> toDbMap() => {
+        'id': id,
+        'dough_recipe_id': doughRecipeId,
+        'filling_recipe_id': fillingRecipeId,
+        'size': size,
+        'quantity': quantity,
+        'ratio': ratio,
+        'image_paths': jsonEncode(imagePaths),
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+        'comment': comment,
+        'rating': rating,
+        'is_completed': isCompleted == true ? 1 : 0,
       };
 
   factory Task.fromMap(Map<String, dynamic> map) => Task(
@@ -57,6 +77,15 @@ class Task {
             : (map['ingredients'] as List<dynamic>)
                 .map((i) => Ingredient.fromMap(i as Map<String, dynamic>))
                 .toList(),
+        imagePaths: map['image_paths'] == null
+            ? <String>[]
+            : (map['image_paths'] is String
+                ? (jsonDecode(map['image_paths'] as String) as List<dynamic>)
+                    .map((item) => item.toString())
+                    .toList()
+                : (map['image_paths'] as List<dynamic>)
+                    .map((item) => item.toString())
+                    .toList()),
         createdAt: map['created_at'] == null
             ? DateTime.now()
             : DateTime.parse(map['created_at'] as String),
@@ -71,6 +100,38 @@ class Task {
         rating: map['rating'] == null ? null : (map['rating'] as num).toDouble(),
         comment: map['comment'] as String?,
       );
+
+  Task copyWith({
+    String? id,
+    String? doughRecipeId,
+    String? fillingRecipeId,
+    int? size,
+    int? quantity,
+    double? ratio,
+    List<Ingredient>? ingredients,
+    List<String>? imagePaths,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? comment,
+    double? rating,
+    bool? isCompleted,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      doughRecipeId: doughRecipeId ?? this.doughRecipeId,
+      fillingRecipeId: fillingRecipeId ?? this.fillingRecipeId,
+      size: size ?? this.size,
+      quantity: quantity ?? this.quantity,
+      ratio: ratio ?? this.ratio,
+      ingredients: ingredients ?? this.ingredients,
+      imagePaths: imagePaths ?? this.imagePaths,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      comment: comment ?? this.comment,
+      rating: rating ?? this.rating,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
 
   
 }

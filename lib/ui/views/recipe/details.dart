@@ -48,6 +48,18 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     _selectedRating = _recipe.rating ?? 0;
     _loadTypes();
     _loadTaskUsageCount();
+    _loadRecipeDetails();
+  }
+
+  Future<void> _loadRecipeDetails() async {
+    final loadedRecipe = await receipeProvider.loadRecipe(_recipe.id);
+    if (!mounted || loadedRecipe == null) return;
+
+    setState(() {
+      _recipe = loadedRecipe;
+      _commentController.text = _recipe.comment ?? '';
+      _selectedRating = _recipe.rating ?? 0;
+    });
   }
 
   @override
@@ -67,9 +79,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   Future<void> _loadTaskUsageCount() async {
+    final count = await receipeProvider.countTasksUsingRecipe(_recipe.id);
     if (!mounted) return;
     setState(() {
-      _taskUsageCount = receipeProvider.countTasksUsingRecipe(_recipe.id) as int;
+      _taskUsageCount = count;
     });
   }
 

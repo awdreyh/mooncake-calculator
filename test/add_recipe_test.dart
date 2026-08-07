@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moon_cake_app2/db/db_helper.dart';
+import 'package:moon_cake_app2/db/repository/recipe.dart';
 import 'package:moon_cake_app2/ui/utils/language_provider.dart';
 import 'package:moon_cake_app2/ui/views/recipe/add.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -14,9 +16,10 @@ void main() {
   });
 
   testWidgets('saving a recipe persists it to the database', (tester) async {
-    final service = MCDatabase(databaseName: 'add_recipe_test.db');
     final dbPath = await getDatabasesPath();
-    await deleteDatabase('$dbPath/add_recipe_test.db');
+    await deleteDatabase(join(dbPath, 'mc.db'));
+    final repository = RecipeRepository(MCDatabase.instance);
+    await MCDatabase.instance.database;
 
     await tester.pumpWidget(
       MultiProvider(
@@ -36,7 +39,7 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    final recipes = await service.loadRecipes();
+    final recipes = await repository.loadAll();
     expect(recipes.any((recipe) => recipe.name == 'Test Recipe'), isTrue);
   });
 }

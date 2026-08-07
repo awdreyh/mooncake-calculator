@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 import '../db_helper.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
@@ -6,6 +7,7 @@ import '../model/task.dart';
 
 
 class TaskRepository {
+  final _uuid = const Uuid();
   final MCDatabase db;  
   TaskRepository(this.db);
 
@@ -174,17 +176,47 @@ class TaskRepository {
 
   Future<int> insert(Task task) async {
     final database = await db.database;
-    return await database.insert('tasks', task.toMap());
+    return await database.transaction((txn) async {
+      final taskId = await txn.insert('tasks', task.toDbMap());
+      await txn.delete('ingredients', where: 'task_id = ?', whereArgs: [task.id]);
+      for (final ingredient in task.ingredients) {
+        await txn.insert('ingredients', {
+          'id': _uuid.v4(),
+          'recipe_id': null,
+          'task_id': task.id,
+          'type': ingredient.category.toMap(),
+          'name': ingredient.name,
+          'amount': ingredient.amount,
+          'unit': ingredient.unit.toMap(),
+        });
+      }
+      return taskId;
+    });
   }
 
   Future<int> update(Task task) async {
     final database = await db.database;
-    return await database.update(
-      'tasks',
-      task.toMap(),
-      where: 'id = ?',
-      whereArgs: [task.id],
-    );
+    return await database.transaction((txn) async {
+      final updated = await txn.update(
+        'tasks',
+        task.toDbMap(),
+        where: 'id = ?',
+        whereArgs: [task.id],
+      );
+      await txn.delete('ingredients', where: 'task_id = ?', whereArgs: [task.id]);
+      for (final ingredient in task.ingredients) {
+        await txn.insert('ingredients', {
+          'id': _uuid.v4(),
+          'recipe_id': null,
+          'task_id': task.id,
+          'type': ingredient.category.toMap(),
+          'name': ingredient.name,
+          'amount': ingredient.amount,
+          'unit': ingredient.unit.toMap(),
+        });
+      }
+      return updated;
+    });
   }
 
   Future<int> delete(String id) async {

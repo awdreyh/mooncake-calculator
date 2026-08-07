@@ -213,10 +213,17 @@ class _AddRecipePageState extends State<AddRecipePage> {
       final size = int.tryParse(_sizeController.text.trim()) ?? 1;
       final ratio = double.tryParse(_ratioController.text.trim()) ?? 0.4;
 
+      if (_selectedType == null || _selectedType!.id.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a recipe type.')),
+        );
+        return;
+      }
+
       final newRecipe = Recipe(
         id: const Uuid().v4(),
         name: name,
-        typeId: _selectedType?.id,
+        typeId: _selectedType!.id,
         quantity: quantity,
         size: size,
         ratio: ratio,
@@ -226,8 +233,8 @@ class _AddRecipePageState extends State<AddRecipePage> {
         rating: _rating > 0 ? _rating : null,
       );
 
-    final provider = RecipeProvider(RecipeRepository(MCDatabase.instance));
-    await provider.insertRecipe(newRecipe);
+      final provider = RecipeProvider(RecipeRepository(MCDatabase.instance));
+      await provider.insertRecipe(newRecipe);
 
       if (!mounted) {
         return;

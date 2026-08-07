@@ -4,6 +4,7 @@ import '../utils/app_strings.dart';
 import '../utils/language_provider.dart';
 import '../views/recipe/list.dart';
 import '../views/task/list.dart';
+import '../views/type/list.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -11,6 +12,7 @@ class AppBottomNavigationBar extends StatelessWidget {
   const AppBottomNavigationBar({super.key, required this.currentIndex});
 
   void _onTap(BuildContext context, int index) {
+    
     if (index == currentIndex) return;
 
     if (index == 0) {
@@ -48,12 +50,35 @@ class AppBottomNavigationBar extends StatelessWidget {
         }
         return route.isFirst;
       });
+      
 
       if (!foundRecipeList) {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => const RecipeListPage(),
             settings: const RouteSettings(name: 'recipe/list'),
+          ),
+        );
+      }
+      return;
+    }
+
+      if (index == 3) {
+      var foundTypeList = false;
+      Navigator.of(context).popUntil((route) {
+        if (route.settings.name == 'type/list') {
+          foundTypeList = true;
+          return true;
+        }
+        return route.isFirst;
+      });
+      
+
+      if (!foundTypeList) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const TypeListPage(),
+            settings: const RouteSettings(name: 'type/list'),
           ),
         );
       }
@@ -89,8 +114,8 @@ class AppBottomNavigationBar extends StatelessWidget {
           label: AppStrings.get('recipes', lang),
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.person),
-          label: AppStrings.get('profile', lang),
+          icon: const Icon(Icons.category),
+          label: AppStrings.get('type', lang),
         ),
       ],
     );

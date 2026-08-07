@@ -3,7 +3,6 @@ import '../db_helper.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
 import '../model/direction.dart';
-import '../model/type.dart';
 
 class RecipeRepository {  
   final MCDatabase db;
@@ -12,7 +11,22 @@ class RecipeRepository {
   Future<List<Recipe>> loadAll() async {
     final database = await db.database;
     final result = await database.query('recipes');
-    return result.map((map) => Recipe.fromMap(map)).toList();
+
+    final recipes = <Recipe>[];
+    for (final row in result) {
+      final recipeId = row['id']?.toString();
+      if (recipeId == null || recipeId.isEmpty) {
+        continue;
+      }
+
+      final recipeMap = Map<String, dynamic>.from(row)
+        ..['ingredients'] = await _loadIngredients(database, recipeId)
+        ..['directions'] = await _loadDirections(database, recipeId);
+
+      recipes.add(Recipe.fromMap(recipeMap));
+    }
+
+    return recipes;
   }
 
   Future<Recipe?> load(String id) async {
@@ -46,7 +60,7 @@ class RecipeRepository {
     return rows.map((row) => Ingredient.fromMap(row)).toList();
   }
 
-Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
+  Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
     final rows = await db.query(
       'directions',
       where: 'recipe_id = ?',
@@ -58,17 +72,76 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
   
   Future<int> insert(Recipe recipe) async {
     final database = await db.database;
-    return await database.insert('recipes', recipe.toMap());
+    return await database.transaction<int>((txn) async {
+      final recipeId = await txn.insert('recipes', recipe.toDbMap());
+
+      for (final ingredient in recipe.ingredients) {
+        await txn.insert('ingredients', {
+          'id': ingredient.id,
+          'recipe_id': recipe.id,
+          'task_id': null,
+          'type': ingredient.category.toMap(),
+          'name': ingredient.name,
+          'amount': ingredient.amount,
+          'unit': ingredient.unit.toMap(),
+        });
+      }
+
+      if (recipe.directions != null) {
+        for (final direction in recipe.directions!) {
+          await txn.insert('directions', {
+            'recipe_id': recipe.id,
+            'step_index': direction.stepIndex,
+            'step_title': direction.stepTitle,
+            'step_description': direction.stepDescription,
+            'step_image': direction.stepImage,
+          });
+        }
+      }
+
+      return recipeId;
+    });
   }
 
   Future<int> update(Recipe recipe) async {
     final database = await db.database;
-    return await database.update(
-      'recipes',
-      recipe.toMap(),
-      where: 'id = ?',
-      whereArgs: [recipe.id],
-    );
+    return await database.transaction<int>((txn) async {
+      final count = await txn.update(
+        'recipes',
+        recipe.toDbMap(),
+        where: 'id = ?',
+        whereArgs: [recipe.id],
+      );
+
+      await txn.delete('ingredients', where: 'recipe_id = ?', whereArgs: [recipe.id]);
+      await txn.delete('directions', where: 'recipe_id = ?', whereArgs: [recipe.id]);
+
+      for (final ingredient in recipe.ingredients) {
+        await txn.insert('ingredients', {
+          'id': ingredient.id,
+          'recipe_id': recipe.id,
+          'task_id': null,
+          'type': ingredient.category.toMap(),
+          'name': ingredient.name,
+          'amount': ingredient.amount,
+          'unit': ingredient.unit.toMap(),
+        });
+      }
+
+      if (recipe.directions != null) {
+        for (final direction in recipe.directions!) {
+          await txn.insert('directions', {
+            'recipe_id': recipe.id,
+            'step_index': direction.stepIndex,
+            'step_title': direction.stepTitle,
+            'step_description': direction.stepDescription,
+            'step_image': direction.stepImage,
+          });
+        }
+      }
+
+      return count;
+    });
   }
 
   Future<int> delete(String id) async {

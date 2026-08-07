@@ -96,7 +96,7 @@ class TypeRepository {
       'id': row['id']?.toString(),
       'category': row['category']?.toString(),
       'name': row['name']?.toString(),
-      'imageName': row['imageName']?.toString(),
+      'imagePath': row['imagePath']?.toString(),
       'matchedDoughTypeIds': matchedDoughTypeIds,
     });
   }
@@ -106,10 +106,12 @@ class TypeRepository {
       'id': type.id,
       'category': type.category.toMap(),
       'name': type.name,
-      'imageName': type.imageName,
+      'imagePath': type.imagePath,
       'matched_dough_type': type.matchedDoughTypeIds == null
           ? null
           : jsonEncode(type.matchedDoughTypeIds),
     };
   }
 }
+
+

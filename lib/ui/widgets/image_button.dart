@@ -17,8 +17,8 @@ class StyleImageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetName = (type.imageName ?? 'placeholder').trim();
-    final imageAsset = 'assets/type_images/${assetName}${selected ? '2' : ''}.jpg';
+    final imageAsset = (type.imagePath ?? 'placeholder').trim();
+
 
     return InkWell(
       borderRadius: BorderRadius.circular(12),

@@ -31,9 +31,6 @@ class AddTaskPage extends StatefulWidget {
 
 
 class _AddTaskPageState extends State<AddTaskPage> {
-  
-  bool _isSaving = false;
-
   Type? _selectedDoughType;
   Recipe? _selectedDoughRecipe;
   Type? _selectedFillingType;

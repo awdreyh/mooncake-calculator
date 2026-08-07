@@ -153,7 +153,7 @@ class _TypeListViewState extends State<_TypeListView> {
         child: const Icon(Icons.add),
         tooltip: AppStrings.get('addType', lang) ?? 'Add Type',
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );
   }
 }

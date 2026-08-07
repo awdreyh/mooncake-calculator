@@ -57,6 +57,22 @@ class Recipe {
     'updatedAt': updatedAt.toIso8601String(),
   };
 
+  Map<String, dynamic> toDbMap() => {
+    'id': id,
+    'name': name,
+    'typeId': typeId,
+    'quantity': quantity,
+    'size': size,
+    'ratio': ratio,
+    'description': description,
+    'is_favorite': (isFavorite ?? false) ? 1 : 0,
+    'rating': rating,
+    'url': url,
+    'comment': comment,
+    'created_at': createdAt.toIso8601String(),
+    'updated_at': updatedAt.toIso8601String(),
+  };
+
   factory Recipe.fromMap(Map<String, dynamic> map) {
     final isFavoriteValue = map['isFavorite'] ?? map['is_favorite'];
     final createdAtValue = map['createdAt'] ?? map['created_at'];
@@ -87,13 +103,17 @@ class Recipe {
       ingredients: ingredientsData == null
           ? <Ingredient>[]
           : ingredientsData
-              .map((i) => Ingredient.fromMap(i as Map<String, dynamic>))
+              .map((i) => i is Ingredient
+                  ? i
+                  : Ingredient.fromMap(i as Map<String, dynamic>))
               .toList(),
       isFavorite: parsedFavorite,
       rating: (map['rating'] as num?)?.toDouble(),
       url: map['url'] as String?,
       comment: map['comment'] as String?,
-      directions: directionsData?.map((d) => Direction.fromMap(d as Map<String, dynamic>))
+      directions: directionsData?.map((d) => d is Direction
+                  ? d
+                  : Direction.fromMap(d as Map<String, dynamic>))
               .toList(),
       createdAt: createdAtValue == null
           ? DateTime.now()
