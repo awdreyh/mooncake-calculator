@@ -60,6 +60,27 @@ class AppBottomNavigationBar extends StatelessWidget {
       return;
     }
 
+      if (index == 3) {
+      var foundtTypeList = false;
+      Navigator.of(context).popUntil((route) {
+        if (route.settings.name == 'type/list') {
+          foundtTypeList = true;
+          return true;
+        }
+        return route.isFirst;
+      });
+
+      if (!foundtTypeList) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const RecipeListPage(),
+            settings: const RouteSettings(name: 'type/list'),
+          ),
+        );
+      }
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Page not implemented yet.')),
     );

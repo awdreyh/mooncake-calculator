@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../db/db_helper.dart';
-import '../../../db/model/recipe.dart';
-import '../../../db/model/task.dart';
+import '../../../data/database/db_helper.dart';
+import '../../../data/model/recipe.dart';
+import '../../../data/model/task.dart';
 
-import '../../../db/repository/task.dart';
+import '../../../data/repository/task.dart';
 import '../../../provider/recipe.dart';
-import '../../../db/repository/recipe.dart';
+import '../../../data/repository/recipe.dart';
 import '../../../provider/task.dart';
 
 import '../../utils/app_strings.dart';

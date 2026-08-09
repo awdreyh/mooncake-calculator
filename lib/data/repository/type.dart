@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
-import '../db_helper.dart';
+import '../database/db_helper.dart';
 import '../model/type.dart';
 
 class TypeRepository {
@@ -85,7 +85,7 @@ class TypeRepository {
   }
 
   Type _fromRow(Map<String, dynamic> row) {
-    final matchedDoughTypeValue = row['matched_dough_type'];
+    final matchedDoughTypeValue = row['matchedDoughTypeIds'];
     final matchedDoughTypeIds = matchedDoughTypeValue == null
         ? null
         : (jsonDecode(matchedDoughTypeValue as String) as List<dynamic>)
@@ -96,7 +96,7 @@ class TypeRepository {
       'id': row['id']?.toString(),
       'category': row['category']?.toString(),
       'name': row['name']?.toString(),
-      'imageName': row['imageName']?.toString(),
+      'imagePath': row['imagePath']?.toString(),
       'matchedDoughTypeIds': matchedDoughTypeIds,
     });
   }
@@ -106,8 +106,8 @@ class TypeRepository {
       'id': type.id,
       'category': type.category.toMap(),
       'name': type.name,
-      'imageName': type.imageName,
-      'matched_dough_type': type.matchedDoughTypeIds == null
+      'imagePath': type.imagePath,
+      'matchedDoughTypeIds': type.matchedDoughTypeIds == null
           ? null
           : jsonEncode(type.matchedDoughTypeIds),
     };

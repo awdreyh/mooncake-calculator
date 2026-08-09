@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../db/db_helper.dart';
-import '../../../db/model/type.dart';
-import '../../../db/repository/type.dart';
+import '../../../data/database/db_helper.dart';
+import '../../../data/model/type.dart';
+import '../../../data/repository/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
@@ -153,7 +153,7 @@ class _TypeListViewState extends State<_TypeListView> {
         child: const Icon(Icons.add),
         tooltip: AppStrings.get('addType', lang) ?? 'Add Type',
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );
   }
 }

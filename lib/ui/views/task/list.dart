@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../db/db_helper.dart';
-import '../../../db/model/task.dart';
-import '../../../db/repository/task.dart';
+import '../../../data/database/db_helper.dart';
+import '../../../data/model/task.dart';
+import '../../../data/repository/task.dart';
 import '../../../provider/task.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';

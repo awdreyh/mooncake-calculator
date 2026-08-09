@@ -58,9 +58,9 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/logo-foreground.png"
-  adaptive_icon_background: "assets/logo-background.png" # Or path to a background image: "assets/icons/background.png"
-  adaptive_icon_foreground: "assets/logo-foreground.png"
+  image_path: "assets/images/logo-foreground.png"
+  adaptive_icon_background: "assets/images/logo-background.png" # Or path to a background image: "assets/icons/background.png"
+  adaptive_icon_foreground: "assets/images/logo-foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -105,5 +105,7 @@ flutter:
   # see https://flutter.dev/to/font-from-package
   assets:
     - assets/
-    - assets/db/init_db.db
+    - assets/images/
+    - assets/images/types/
+
 

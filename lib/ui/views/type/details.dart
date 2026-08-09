@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import '../../../db/db_helper.dart';
-import '../../../db/model/type.dart';
-import '../../../db/repository/type.dart';
+import '../../../data/database/db_helper.dart';
+import '../../../data/model/type.dart';
+import '../../../data/repository/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
@@ -51,7 +51,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
       id: widget.type.id,
       category: _category ?? Category.dough,
       name: name,
-      imageName: widget.type.imageName,
+      imagePath: widget.type.imagePath,
       matchedDoughTypeIds: widget.type.matchedDoughTypeIds,
     );
 
@@ -108,7 +108,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
           ],
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:sqflite/sqflite.dart';
-import '../db_helper.dart';
+import '../database/db_helper.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
 import '../model/task.dart';
@@ -157,7 +157,6 @@ class TaskRepository {
         name: ingredient.name,
         amount: ingredient.amount * scale,
         unit: ingredient.unit,
-        category: ingredient.category,
       );
     }).toList();
   }

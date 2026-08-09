@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db/model/task.dart';
-import '../db/repository/task.dart';
+import '../data/model/task.dart';
+import '../data/repository/task.dart';
 
 
 class TaskProvider extends ChangeNotifier {

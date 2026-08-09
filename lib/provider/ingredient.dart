@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db/model/ingredient.dart';
-import '../db/repository/ingredient.dart';
+import '../data/model/ingredient.dart';
+import '../data/repository/ingredient.dart';
 
 
 class IngredientProvider extends ChangeNotifier {

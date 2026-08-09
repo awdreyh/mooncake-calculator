@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db/model/type.dart';
-import '../db/repository/type.dart';
+import '../data/model/type.dart';
+import '../data/repository/type.dart';
 
 class TypeProvider extends ChangeNotifier {
   final TypeRepository repository;

@@ -18,7 +18,7 @@ class Type {
   final String id;
   final Category category;
   final String name;
-  final String? imageName;
+  final String? imagePath;
   final List<String>?
   matchedDoughTypeIds; // Matched dough type IDs for this filling category
 
@@ -26,7 +26,7 @@ class Type {
     required this.id,
     required this.category,
     required this.name,
-    this.imageName,
+    this.imagePath,
     this.matchedDoughTypeIds,
   })   : assert(
          category != Category.filling || matchedDoughTypeIds != null,
@@ -37,7 +37,7 @@ class Type {
     'id': id,
     'category': category.toMap(),
     'name': name,
-    'imageName': imageName,
+    'imagePath': imagePath,
     'matchedDoughTypeIds': matchedDoughTypeIds,
   };
 
@@ -45,7 +45,7 @@ class Type {
     final idValue = map['id'];
     final categoryValue = map['category'];
     final nameValue = map['name'];
-    final imageNameValue = map['imageName'];
+    final imagePathValue = map['imagePath'];
 
     return Type(
       id: idValue is String ? idValue : idValue?.toString() ?? '',
@@ -53,7 +53,7 @@ class Type {
       category: categoryValue is String
           ? Category.fromMap(categoryValue)
           : Category.dough,
-      imageName: imageNameValue is String ? imageNameValue : null,
+      imagePath: imagePathValue is String ? imagePathValue : null,
       matchedDoughTypeIds: map['matchedDoughTypeIds'] == null
           ? null
           : (map['matchedDoughTypeIds'] as List<dynamic>)
