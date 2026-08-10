@@ -20,6 +20,8 @@ class AddTypePage extends StatefulWidget {
 }
 
 class _AddTypePageState extends State<AddTypePage> {
+      LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context, listen: false);
+    String get lang => languageProvider.languageCode;
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   Category _category = Category.dough;
@@ -96,6 +98,7 @@ class _AddTypePageState extends State<AddTypePage> {
       }
     });
   }
+  
    Widget _buildImagePreview() {
     if (_imagePath == null) {
       return const SizedBox.shrink();
@@ -118,8 +121,7 @@ class _AddTypePageState extends State<AddTypePage> {
   Future<void> _saveType() async {
     if (!_formKey.currentState!.validate()) return;
     
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final lang = languageProvider.languageCode;
+
     final name = _nameController.text.trim();
 
     setState(() => _isSaving = true);
@@ -167,8 +169,7 @@ class _AddTypePageState extends State<AddTypePage> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
+
 
     return Scaffold(
       appBar: AppBar(
