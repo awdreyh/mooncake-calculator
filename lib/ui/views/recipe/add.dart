@@ -7,7 +7,7 @@ import '../../../data/model/recipe.dart';
 import '../../../data/model/type.dart';
 import '../../../data/model/ingredient.dart';
 
-import '../../../data/repository/type.dart';
+
 import '../../../data/repository/recipe.dart';
 import '../../../provider/recipe.dart';
 import '../../../provider/type.dart';
@@ -94,7 +94,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
   }
 
   Future<void> _loadTypes() async {
-    final typeProvider = TypeProvider(TypeRepository(MCDatabase.instance));
+    final typeProvider = context.read<TypeProvider>();
     final types = await typeProvider.loadAllTypes();
     if (!mounted) return;
     setState(() {

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../data/database/db_helper.dart';
+
 import '../../../data/model/recipe.dart';
 import '../../../data/model/type.dart';
-
-import '../../../data/repository/type.dart';
+import '../../../data/model/ingredient.dart';
 import '../../../provider/recipe.dart';
-import '../../../data/repository/recipe.dart';
-
 import '../../../provider/type.dart';
+import '../../../provider/ingredient.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
+
+import "../../core/nav_bottom.dart";
 
 import '../task/list.dart';
 
@@ -25,25 +25,38 @@ class RecipeDetailsPage extends StatefulWidget {
 }
 
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
+    LanguageProvider get languageProvider => Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    String get lang => languageProvider.languageCode;
+    
   late Recipe _recipe;
-  final receipeProvider = RecipeProvider(RecipeRepository(MCDatabase.instance));
-  final typeProvider = TypeProvider(TypeRepository(MCDatabase.instance));
+  List<Ingredient> _ingredients = [];
+
+  RecipeProvider get receipeProvider => context.read<RecipeProvider>();
+  TypeProvider get typeProvider => context.read<TypeProvider>();
+  IngredientProvider get ingredientProvider =>context.read<IngredientProvider>();
+
 
   List<Type> _allTypes = [];
   bool _changed = false;
+  String _typeName='';
+
   int _taskUsageCount = 0;  
   List<Type> _selectedMatchedDoughTypes = [];
   bool _isSaving = false;
   double _selectedRating = 0;
   bool _isFavorite = false;
 
-  final TextEditingController _commentController = TextEditingController();
- 
+  final TextEditingController _commentController = TextEditingController(); 
 
   @override
   void initState() {
     super.initState();
-    _recipe = widget.recipe;
+    _recipe = widget.recipe;    
+    _ingredients=_recipe.ingredients;
+    _typeName='';
     _commentController.text = _recipe.comment ?? '';
     _selectedRating = _recipe.rating ?? 0;
     _loadTypes();
@@ -59,9 +72,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   Future<void> _loadTypes() async {
     final types = await typeProvider.loadAllTypes();
     final matchedDoughTypes = await typeProvider.loadMatchedDoughTypes(_recipe.typeId);
+    final  type = await typeProvider.loadType(_recipe.typeId!);
+    
     if (!mounted) return;
     setState(() {
       _allTypes = types;
+      _typeName = type.name;
       _selectedMatchedDoughTypes = matchedDoughTypes;
     });
   }
@@ -103,11 +119,6 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   Future<void> _saveChanges() async {
 
-        final languageProvider = Provider.of<LanguageProvider>(
-      context,
-      listen: false,
-    );
-    final lang = languageProvider.languageCode;
     if (_isSaving) return;
     final updatedRating = _selectedRating;
     final updatedComment = _commentController.text.trim();
@@ -134,15 +145,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     });
 
     try {
-      await receipeProvider.updateRecipe(updatedRecipe);
-      // final currentRecipeType = _types.firstWhere(
-      //   (type) => type.id == _recipe.typeId,
-      //   orElse: () => Type(
-      //     id: _recipe.typeId ?? '',
-      //     category: Category.dough,
-      //     name: '',
-      //   ),
-      // );  
+      await receipeProvider.updateRecipe(updatedRecipe);  
 
       if (!mounted) return;
       setState(() {
@@ -165,11 +168,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   void _deleteRecipe() async {
-    final languageProvider = Provider.of<LanguageProvider>(
-      context,
-      listen: false,
-    );
-    final lang = languageProvider.languageCode;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -206,8 +205,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
+
     final ratioString = Helper.ratioToString(_recipe.ratio ?? 0.0);
     final matchedDoughTypes = _selectedMatchedDoughTypes;
 
@@ -291,12 +289,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                   final labelKey =
                                       recipeType.category == Category.filling
                                       ? 'filling_type'
-                                      : 'dough_type';
-
-                                  final typeName = typeProvider.loadTypeName(_recipe.typeId!);
+                                      : 'dough_type';                            
                                   
                                   return Text(
-                                    '${AppStrings.get(labelKey, lang)}:typeName',
+                                    '${AppStrings.get(labelKey, lang)}:$_typeName',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black54,
@@ -435,7 +431,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            if (_recipe.ingredients.isEmpty)
+            if (_ingredients.isEmpty)
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
@@ -446,12 +442,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
              ListView.separated(
                   shrinkWrap: true,                  
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _recipe.ingredients.length,
+                  itemCount: _ingredients.length,
                   separatorBuilder: (context, index) =>
                       const Divider(height: 1),
                    
                   itemBuilder: (context, index) {
-                    final ingredient = _recipe.ingredients[index];
+                    final ingredient = _ingredients[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -573,6 +569,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           ],
         ),
       ),
+        bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
     );
   }
 }

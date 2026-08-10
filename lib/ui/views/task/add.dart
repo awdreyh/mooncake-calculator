@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
 
-import '../../../data/database/db_helper.dart';
+//import '../../../data/database/db_helper.dart';
 import '../../../data/model/recipe.dart';
 import '../../../data/model/type.dart';
 
@@ -96,8 +96,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _loadData() async {
-     final typeProvider = TypeProvider(TypeRepository(MCDatabase.instance));
-     final recipeProvider = RecipeProvider(RecipeRepository(MCDatabase.instance));
+     final typeProvider = context.read<TypeProvider>();
+     final recipeProvider = context.read<RecipeProvider>();
 
     final types = await typeProvider.loadAllTypes();
     final recipes = await recipeProvider.loadAllRecipes();
@@ -187,7 +187,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         size: int.parse(_sizeController.text.trim()),
         ratio: ratio,
       );
-    final provider = TaskProvider(TaskRepository(MCDatabase.instance));
+    final provider = context.read<TaskProvider>();
     await provider.insertTask(newTask);
 
       if (!mounted) return;

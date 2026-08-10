@@ -6,10 +6,22 @@ class TypeProvider extends ChangeNotifier {
   final TypeRepository repository;
   TypeProvider(this.repository);
 
+  List<Type> _types = [];
+  bool _isLoading = false;
+
+  List<Type> get types => _types;
+  bool get isLoading => _isLoading;
+
+
   Future<List<Type>> loadAllTypes() async {
-    final result = await repository.loadAll();
+    _isLoading=true;
+    //notifyListeners();
+
+    _types  = await repository.loadAll();
+    _isLoading = false;
     notifyListeners();
-    return result;
+
+    return _types;
   }
 
   Future<Type> loadType(String id) async {
@@ -20,6 +32,13 @@ class TypeProvider extends ChangeNotifier {
     notifyListeners();
     return result;
   }
+
+  Future<List<Type>> loadTypesByCategory(Category category) async {
+    final result = await repository.loadByCategory(category);
+    notifyListeners();
+    return result;
+  }
+ 
 
   Future<String?> loadTypeName(String id) async {
     final type = await repository.load(id);

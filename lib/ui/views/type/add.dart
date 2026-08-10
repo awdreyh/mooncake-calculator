@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import '../../../data/database/db_helper.dart';
+//import '../../../data/database/db_helper.dart';
 import '../../../data/model/type.dart';
-import '../../../data/repository/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
@@ -17,6 +16,7 @@ class AddTypePage extends StatefulWidget {
 }
 
 class _AddTypePageState extends State<AddTypePage> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   Category _category = Category.dough;
   bool _isSaving = false;
@@ -28,6 +28,7 @@ class _AddTypePageState extends State<AddTypePage> {
   }
 
   Future<void> _saveType() async {
+     if (!_formKey.currentState!.validate()) return;
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final lang = languageProvider.languageCode;
     final name = _nameController.text.trim();
@@ -48,10 +49,21 @@ class _AddTypePageState extends State<AddTypePage> {
       matchedDoughTypeIds: _category == Category.filling ? <String>[] : null,
     );
 
-    final provider = TypeProvider(TypeRepository(MCDatabase.instance));
-    await provider.insertType(newType);
-    if (!mounted) return;
-    Navigator.of(context).pop(true);
+    try {
+      await context.read<TypeProvider>().insertType(newType);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      } }catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.get('errorSavingType', lang)}: $error')),
+        );
+
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  
   }
 
   @override
@@ -76,7 +88,7 @@ class _AddTypePageState extends State<AddTypePage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Category>(
-              value: _category,
+              initialValue: _category,
               items: Category.values.map((category) {
                 return DropdownMenuItem(
                   value: category,

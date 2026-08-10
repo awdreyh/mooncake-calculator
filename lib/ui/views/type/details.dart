@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
-import '../../../data/database/db_helper.dart';
+//import '../../../data/database/db_helper.dart';
 import '../../../data/model/type.dart';
-import '../../../data/repository/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
@@ -21,7 +19,9 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   late final TextEditingController _nameController;
   Category? _category;
   bool _isSaving = false;
-
+    LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context, listen: false);
+    String get lang => languageProvider.languageCode;
+       
   @override
   void initState() {
     super.initState();
@@ -36,8 +36,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   }
 
   Future<void> _saveType() async {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final lang = languageProvider.languageCode;
+
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,20 +54,19 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
       matchedDoughTypeIds: widget.type.matchedDoughTypeIds,
     );
 
-    final provider = TypeProvider(TypeRepository(MCDatabase.instance));
-    await provider.updateType(updatedType);
+    
+    await context.read<TypeProvider>().updateType(updatedType);
     if (!mounted) return;
     Navigator.of(context).pop(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
+ 
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppStrings.get('typeDetails', lang) ?? 'Type Details'),
+        title: Text(AppStrings.get('type_details_title', lang) ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -83,7 +81,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Category>(
-              value: _category,
+              initialValue: _category,
               items: Category.values.map((category) {
                 return DropdownMenuItem(
                   value: category,
@@ -101,7 +99,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveType,
                 child: Text(_isSaving
-                    ? AppStrings.get('saving', lang) ?? 'Saving...'
+                    ? AppStrings.get('saving', lang) 
                     : AppStrings.get('save', lang)),
               ),
             ),

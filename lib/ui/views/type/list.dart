@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../data/database/db_helper.dart';
 import '../../../data/model/type.dart';
-import '../../../data/repository/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
@@ -10,26 +8,16 @@ import '../../utils/language_provider.dart';
 import 'add.dart';
 import 'details.dart';
 
-class TypeListPage extends StatelessWidget {
+class TypeListPage extends StatefulWidget {
   const TypeListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<TypeProvider>(
-      create: (_) => TypeProvider(TypeRepository(MCDatabase.instance)),
-      child: const _TypeListView(),
-    );
-  }
+  State<TypeListPage> createState() => _TypeListPageState();
 }
 
-class _TypeListView extends StatefulWidget {
-  const _TypeListView({super.key});
-
-  @override
-  State<_TypeListView> createState() => _TypeListViewState();
-}
-
-class _TypeListViewState extends State<_TypeListView> {
+class _TypeListPageState extends State<TypeListPage> {
+      LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context, listen: false);
+    String get lang => languageProvider.languageCode;
   bool _isLoading = true;
   String? _errorMessage;
   List<Type> _types = [];
@@ -46,8 +34,8 @@ class _TypeListViewState extends State<_TypeListView> {
       _errorMessage = null;
     });
 
-    try {
-      final typeProvider = Provider.of<TypeProvider>(context, listen: false);
+    try {     
+      final typeProvider = context.read<TypeProvider>();
       final types = await typeProvider.loadAllTypes();
       if (!mounted) return;
       setState(() {
@@ -67,22 +55,21 @@ class _TypeListViewState extends State<_TypeListView> {
   }
 
   Future<void> _deleteType(Type type) async {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final lang = languageProvider.languageCode;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.get('delete', lang) ?? 'Delete'),
-        content: Text(AppStrings.get('confirm_delete', lang)?.replaceFirst('{name}', type.name) ?? 'Delete this type?'),
+        title: Text(AppStrings.get('delete', lang)),
+        content: Text(AppStrings.get('confirm_delete', lang).replaceFirst('{name}', type.name) ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppStrings.get('cancel', lang) ?? 'Cancel'),
+            child: Text(AppStrings.get('cancel', lang)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
-              AppStrings.get('delete', lang) ?? 'Delete',
+              AppStrings.get('delete', lang),
               style: const TextStyle(color: Colors.red),
             ),
           ),
@@ -99,12 +86,11 @@ class _TypeListViewState extends State<_TypeListView> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
+
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppStrings.get('types', lang) ?? 'Types'),
+        title: Text(AppStrings.get('type_list_title', lang)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -115,7 +101,7 @@ class _TypeListViewState extends State<_TypeListView> {
           : _errorMessage != null
               ? Center(child: Text(_errorMessage!))
               : _types.isEmpty
-                  ? Center(child: Text(AppStrings.get('noTypes', lang) ?? 'No types yet.'))
+                  ? Center(child: Text(AppStrings.get('noTypes', lang) ))
                   : RefreshIndicator(
                       onRefresh: _loadTypes,
                       child: ListView.separated(
@@ -151,7 +137,7 @@ class _TypeListViewState extends State<_TypeListView> {
           await _loadTypes();
         },
         child: const Icon(Icons.add),
-        tooltip: AppStrings.get('addType', lang) ?? 'Add Type',
+        tooltip: AppStrings.get('addType', lang),
       ),
       bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );

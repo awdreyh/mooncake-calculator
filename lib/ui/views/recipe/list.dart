@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:moon_cake_app2/provider/type.dart';
-import '../../../data/model/type.dart';
+
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../data/model/recipe.dart';
-import '../../../data/database/db_helper.dart';
-import '../../../data/repository/recipe.dart';
-import '../../../data/repository/type.dart';
+
+
+import '../../../data/model/type.dart';
 import '../../../provider/recipe.dart';
+import '../../../provider/type.dart';
 import 'add.dart';
 import 'details.dart';
 
@@ -21,13 +21,12 @@ class RecipeListPage extends StatefulWidget {
 }
 
 class _RecipeListPageState extends State<RecipeListPage> {
+   final _formKey = GlobalKey<FormState>();
   List<Recipe> _recipes = [];
   String? _errorMessage;
   List<Type> _types = [];
-  bool _isLoading = true;
-  
-  final recipeProvider = RecipeProvider(RecipeRepository(MCDatabase.instance));
-  final typeProvider = TypeProvider(TypeRepository(MCDatabase.instance));
+  bool _isLoading = true; 
+
 
   @override
   void initState() {
@@ -42,8 +41,9 @@ class _RecipeListPageState extends State<RecipeListPage> {
       _errorMessage = null;
     });
     try {
-      final recipes = await recipeProvider.loadAllRecipes();
-      final types = await typeProvider.loadAllTypes();
+
+      final recipes = await context.read<RecipeProvider>().loadAllRecipes();
+      final types = await context.read<TypeProvider>().loadAllTypes();
       if (!mounted) return;
       setState(() {
         _recipes = recipes;
@@ -95,7 +95,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
     });
 
     try {
-      await recipeProvider.updateRecipe(recipe);
+      await context.read<RecipeProvider>().updateRecipe(recipe);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -141,7 +141,8 @@ class _RecipeListPageState extends State<RecipeListPage> {
     );
 
     if (confirmed == true) {
-      await recipeProvider.deleteRecipe(recipe.id);
+      // ignore: use_build_context_synchronously
+      await context.read<RecipeProvider>().deleteRecipe(recipe.id);
       _refreshRecipes();
     }
   }

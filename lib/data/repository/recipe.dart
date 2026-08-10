@@ -3,7 +3,6 @@ import '../database/db_helper.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
 import '../model/direction.dart';
-import '../model/type.dart';
 
 class RecipeRepository {  
   final MCDatabase db;
@@ -56,10 +55,38 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
     return rows.map((row) => Direction.fromMap(row)).toList();
   }
   
-  Future<int> insert(Recipe recipe) async {
+ Future<int> insert(Recipe recipe) async {
     final database = await db.database;
-    return await database.insert('recipes', recipe.toMap());
+    return await database.transaction<int>((txn) async {
+      final recipeId = await txn.insert('recipes', recipe.toMap());
+
+      for (final ingredient in recipe.ingredients) {
+        await txn.insert('ingredients', {
+          'id': ingredient.id,
+          'recipe_id': recipe.id,
+          'task_id': null,
+          'name': ingredient.name,
+          'amount': ingredient.amount,
+          'unit': ingredient.unit.toMap(),
+        });
+      }
+
+      if (recipe.directions != null) {
+        for (final direction in recipe.directions!) {
+          await txn.insert('directions', {
+            'recipe_id': recipe.id,
+            'step_index': direction.stepIndex,
+            'step_title': direction.stepTitle,
+            'step_description': direction.stepDescription,
+            'step_image': direction.stepImage,
+          });
+        }
+      }
+
+      return recipeId;
+    });
   }
+
 
   Future<int> update(Recipe recipe) async {
     final database = await db.database;

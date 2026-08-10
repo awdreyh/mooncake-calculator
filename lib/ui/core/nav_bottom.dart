@@ -4,6 +4,7 @@ import '../utils/app_strings.dart';
 import '../utils/language_provider.dart';
 import '../views/recipe/list.dart';
 import '../views/task/list.dart';
+import '../views/type/list.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -60,20 +61,20 @@ class AppBottomNavigationBar extends StatelessWidget {
       return;
     }
 
-      if (index == 3) {
-      var foundtTypeList = false;
+    if (index == 3) {
+      var foundTypeList = false;
       Navigator.of(context).popUntil((route) {
         if (route.settings.name == 'type/list') {
-          foundtTypeList = true;
+          foundTypeList = true;
           return true;
         }
         return route.isFirst;
       });
 
-      if (!foundtTypeList) {
+      if (!foundTypeList) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => const RecipeListPage(),
+            builder: (_) => const TypeListPage(),
             settings: const RouteSettings(name: 'type/list'),
           ),
         );
@@ -81,9 +82,9 @@ class AppBottomNavigationBar extends StatelessWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Page not implemented yet.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Page not implemented yet.')));
   }
 
   @override
@@ -110,8 +111,8 @@ class AppBottomNavigationBar extends StatelessWidget {
           label: AppStrings.get('recipes', lang),
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.person),
-          label: AppStrings.get('profile', lang),
+          icon: const Icon(Icons.category),
+          label: AppStrings.get('type', lang),
         ),
       ],
     );

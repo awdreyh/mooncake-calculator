@@ -13,6 +13,16 @@ class TypeRepository {
     return rows.map(_fromRow).toList();
   }
 
+  Future<List<Type>> loadByCategory(Category category) async {
+    final database = await db.database;
+    final rows = await database.query(
+      'types',
+      where: 'category = ?',
+      whereArgs: [category.toMap()],
+    );
+    return rows.map(_fromRow).toList();
+  }
+
   Future<Type?> load(String id) async {
     final database = await db.database;
     final rows = await database.query(
@@ -86,15 +96,23 @@ class TypeRepository {
 
   Type _fromRow(Map<String, dynamic> row) {
     final matchedDoughTypeValue = row['matchedDoughTypeIds'];
-    final matchedDoughTypeIds = matchedDoughTypeValue == null
-        ? null
-        : (jsonDecode(matchedDoughTypeValue as String) as List<dynamic>)
-            .map((item) => item.toString())
-            .toList();
+    final categoryString = row['category']?.toString();
+    final category = categoryString != null
+        ? Category.fromMap(categoryString)
+        : Category.dough;
+
+    List<String>? matchedDoughTypeIds;
+    if (matchedDoughTypeValue == null) {
+      matchedDoughTypeIds = category == Category.filling ? <String>[] : null;
+    } else {
+      matchedDoughTypeIds = (jsonDecode(matchedDoughTypeValue as String) as List<dynamic>)
+          .map((item) => item.toString())
+          .toList();
+    }
 
     return Type.fromMap({
       'id': row['id']?.toString(),
-      'category': row['category']?.toString(),
+      'category': category.toMap(),
       'name': row['name']?.toString(),
       'imagePath': row['imagePath']?.toString(),
       'matchedDoughTypeIds': matchedDoughTypeIds,

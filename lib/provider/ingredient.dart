@@ -5,7 +5,6 @@ import '../data/repository/ingredient.dart';
 
 class IngredientProvider extends ChangeNotifier {
   final IngredientRepository repository;
- // List<Ingredient> ingredients = [];
   IngredientProvider(this.repository);
 
   Future<Ingredient?> loadIngredient(String id) async {   
@@ -16,5 +15,6 @@ class IngredientProvider extends ChangeNotifier {
     notifyListeners();
     return ingredient.id;
   }
+  
 
 }

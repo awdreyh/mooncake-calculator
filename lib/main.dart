@@ -4,10 +4,18 @@ import 'package:provider/provider.dart';
 import 'ui/core/nav_bottom.dart';
 import 'ui/utils/app_strings.dart';
 import 'ui/utils/language_provider.dart';
+import 'provider/type.dart';
+import 'provider/task.dart';
+import 'provider/recipe.dart';
+
+import 'data/repository/type.dart';
+import 'data/repository/recipe.dart';
+import 'data/repository/task.dart';
+import 'data/repository/ingredient.dart';
+import 'data/database/db_helper.dart';
 
 import 'ui/utils/helper.dart';
 import 'package:flutter/services.dart';
-import 'ui/utils/app_theme.dart';
 import 'ui/views/task/add.dart';
 
 void main() async {
@@ -17,9 +25,15 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  runApp(
+ runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => LanguageProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => TypeProvider(TypeRepository(MCDatabase.instance))),
+        ChangeNotifierProvider(create: (_) => TaskProvider(TaskRepository(MCDatabase.instance))),
+        ChangeNotifierProvider(create: (_) => RecipeProvider(RecipeRepository(MCDatabase.instance))),    
+      ],
+      
       child: const MyApp(),
     ),
   );
