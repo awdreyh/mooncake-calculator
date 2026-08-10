@@ -86,7 +86,8 @@ class _TypeListPageState extends State<TypeListPage> {
 
   @override
   Widget build(BuildContext context) {
-
+    final doughTypes = _types.where((type) => type.category == Category.dough).toList();
+    final fillingTypes = _types.where((type) => type.category == Category.filling).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -101,32 +102,91 @@ class _TypeListPageState extends State<TypeListPage> {
           : _errorMessage != null
               ? Center(child: Text(_errorMessage!))
               : _types.isEmpty
-                  ? Center(child: Text(AppStrings.get('noTypes', lang) ))
+                  ? Center(child: Text(AppStrings.get('noTypes', lang)))
                   : RefreshIndicator(
                       onRefresh: _loadTypes,
-                      child: ListView.separated(
+                      child: ListView(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: _types.length,
-                        separatorBuilder: (context, index) => const Divider(height: 0),
-                        itemBuilder: (context, index) {
-                          final type = _types[index];
-                          return ListTile(
-                            title: Text(type.name),
-                            subtitle: Text(type.category.toMap()),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.redAccent),
-                              onPressed: () => _deleteType(type),
-                            ),
-                            onTap: () async {
-                              await Navigator.of(context).push<bool>(
-                                MaterialPageRoute(
-                                  builder: (_) => TypeDetailsPage(type: type),
+                        children: [
+                          // Dough Types Section
+                          if (doughTypes.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              child: Text(
+                                AppStrings.get('dough_type', lang),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.brown,
                                 ),
-                              );
-                              await _loadTypes();
-                            },
-                          );
-                        },
+                              ),
+                            ),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: doughTypes.length,
+                              separatorBuilder: (context, index) => const Divider(height: 0),
+                              itemBuilder: (context, index) {
+                                final type = doughTypes[index];
+                                return ListTile(
+                                  title: Text(type.name),
+                                  subtitle: Text(type.category.toMap()),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    onPressed: () => _deleteType(type),
+                                  ),
+                                  onTap: () async {
+                                    await Navigator.of(context).push<bool>(
+                                      MaterialPageRoute(
+                                        builder: (_) => TypeDetailsPage(type: type),
+                                      ),
+                                    );
+                                    await _loadTypes();
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                          // Filling Types Section
+                          if (fillingTypes.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              child: Text(
+                                AppStrings.get('filling_type', lang),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: fillingTypes.length,
+                              separatorBuilder: (context, index) => const Divider(height: 0),
+                              itemBuilder: (context, index) {
+                                final type = fillingTypes[index];
+                                return ListTile(
+                                  title: Text(type.name),
+                                  subtitle: Text(type.category.toMap()),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    onPressed: () => _deleteType(type),
+                                  ),
+                                  onTap: () async {
+                                    await Navigator.of(context).push<bool>(
+                                      MaterialPageRoute(
+                                        builder: (_) => TypeDetailsPage(type: type),
+                                      ),
+                                    );
+                                    await _loadTypes();
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ],
                       ),
                     ),
       floatingActionButton: FloatingActionButton(
