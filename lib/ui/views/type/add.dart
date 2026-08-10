@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-//import '../../../data/database/db_helper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
 import '../../../data/model/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
@@ -20,6 +24,36 @@ class _AddTypePageState extends State<AddTypePage> {
   final _nameController = TextEditingController();
   Category _category = Category.dough;
   bool _isSaving = false;
+  String? _imagePath;
+  List<Type> _doughTypes = [];
+  List<Type> _selectedMatchedDoughTypes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDoughTypes();
+  }
+
+  Future<void> _loadDoughTypes() async {
+    try {
+      final typeProvider = context.read<TypeProvider>();
+      final types = await typeProvider.loadAllTypes();
+      final doughTypes = types.where((type) => type.category == Category.dough).toList();
+      
+      if (mounted) {
+        setState(() {
+          _doughTypes = doughTypes;
+        });
+      }
+    } catch (e) {
+      print('Error loading dough types: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load dough types: $e')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -27,43 +61,108 @@ class _AddTypePageState extends State<AddTypePage> {
     super.dispose();
   }
 
+    Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    final savedPath = await _copySelectedImage(pickedFile.path);
+    if (savedPath != null) {
+      setState(() => _imagePath = savedPath);
+    }
+  }
+
+  Future<String?> _copySelectedImage(String sourcePath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final imageDir = Directory(p.join(appDir.path, 'type_images'));
+      await imageDir.create(recursive: true);
+      final extension = p.extension(sourcePath);
+      final fileName = '${const Uuid().v4()}$extension';
+      final destPath = p.join(imageDir.path, fileName);
+      await File(sourcePath).copy(destPath);
+      return destPath;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _toggleMatchedDoughType(Type type) {
+    setState(() {
+      if (_selectedMatchedDoughTypes.any((item) => item.id == type.id)) {
+        _selectedMatchedDoughTypes.removeWhere((item) => item.id == type.id);
+      } else {
+        _selectedMatchedDoughTypes.add(type);
+      }
+    });
+  }
+   Widget _buildImagePreview() {
+    if (_imagePath == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.file(
+          File(_imagePath!),
+          width: double.infinity,
+          height: 180,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
   Future<void> _saveType() async {
-     if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) return;
+    
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final lang = languageProvider.languageCode;
     final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.get('validRecipeNameMsg', lang))),
-      );
-      return;
-    }
 
     setState(() => _isSaving = true);
+
+    final matchedIds = _category == Category.filling 
+        ? _selectedMatchedDoughTypes.map((type) => type.id).toList() 
+        : null;
 
     final newType = Type(
       id: const Uuid().v4(),
       category: _category,
       name: name,
       imagePath: null,
-      matchedDoughTypeIds: _category == Category.filling ? <String>[] : null,
+      matchedDoughTypeIds: matchedIds,
     );
 
     try {
+      print('Saving type: $newType');
+      print('Category: ${_category.toMap()}');
+      print('Matched IDs: $matchedIds');
+      
       await context.read<TypeProvider>().insertType(newType);
+      
       if (mounted) {
         Navigator.of(context).pop(true);
-      } }catch (error) {
+      }
+    } catch (error, stackTrace) {
+      print('Error saving type: $error');
+      print('Stack trace: $stackTrace');
+      
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppStrings.get('errorSavingType', lang)}: $error')),
+          SnackBar(
+            content: Text('Error: $error'),
+            duration: const Duration(seconds: 5),
+          ),
         );
-
+      }
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
       }
     }
-  
   }
 
   @override
@@ -75,46 +174,98 @@ class _AddTypePageState extends State<AddTypePage> {
       appBar: AppBar(
         title: Text(AppStrings.get('addType', lang)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: AppStrings.get('name', lang),
-              ),
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: AppStrings.get('name', lang),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return AppStrings.get('validRecipeNameMsg', lang);
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<Category>(
+                  initialValue: _category,
+                  items: Category.values.map((category) {
+                    return DropdownMenuItem(
+                      value: category,
+                      child: Text(category.toMap()),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _category = value);
+                    }
+                  },
+                  decoration: InputDecoration(
+                    labelText: AppStrings.get('type', lang),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select a category';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                // Matched Dough Types for Filling
+                if (_category == Category.filling) ...[
+                  Text(
+                    AppStrings.get('matched_dough_types', lang),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_doughTypes.isEmpty)
+                    const Text('No dough types available')
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _doughTypes.map((type) {
+                        final selected = _selectedMatchedDoughTypes.any(
+                          (item) => item.id == type.id,
+                        );
+                        return FilterChip(
+                          label: Text(type.name),
+                          selected: selected,
+                          onSelected: (_) => _toggleMatchedDoughType(type),
+                        );
+                      }).toList(),
+                    ),
+                  const SizedBox(height: 24),
+                ],
+                 _buildImagePreview(),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.photo),
+                  label: Text(AppStrings.get('selectImage', lang)),
+                  onPressed: _pickImage,
+                ),
+                 const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _saveType,
+                    child: Text(_isSaving
+                        ? AppStrings.get('saving', lang) 
+                        : AppStrings.get('save', lang)),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<Category>(
-              initialValue: _category,
-              items: Category.values.map((category) {
-                return DropdownMenuItem(
-                  value: category,
-                  child: Text(category.toMap()),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _category = value);
-                }
-              },
-              decoration: InputDecoration(
-                labelText: AppStrings.get('type', lang),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _saveType,
-                child: Text(_isSaving
-                    ? AppStrings.get('saving', lang) 
-                    : AppStrings.get('save', lang)),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
