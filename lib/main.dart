@@ -11,7 +11,6 @@ import 'provider/recipe.dart';
 import 'data/repository/type.dart';
 import 'data/repository/recipe.dart';
 import 'data/repository/task.dart';
-import 'data/repository/ingredient.dart';
 import 'data/database/db_helper.dart';
 
 import 'ui/utils/helper.dart';

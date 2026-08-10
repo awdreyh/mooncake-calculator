@@ -11,7 +11,21 @@ class RecipeRepository {
   Future<List<Recipe>> loadAll() async {
     final database = await db.database;
     final result = await database.query('recipes');
-    return result.map((map) => Recipe.fromMap(map)).toList();
+    
+    final recipes = <Recipe>[];
+    for (final recipeRow in result) {
+      final recipeId = recipeRow['id'] as String;
+      final ingredients = await _loadIngredients(database, recipeId);
+      final directions = await _loadDirections(database, recipeId);
+      
+      final recipeMap = Map<String, dynamic>.from(recipeRow)
+        ..['ingredients'] = ingredients.map((i) => i.toMap()).toList()
+        ..['directions'] = directions.map((d) => d.toMap()).toList();
+      
+      recipes.add(Recipe.fromMap(recipeMap));
+    }
+    
+    return recipes;
   }
 
   Future<Recipe?> load(String id) async {

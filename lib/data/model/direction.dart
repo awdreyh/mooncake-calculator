@@ -19,9 +19,9 @@ class Direction {
       };
 
   factory Direction.fromMap(Map<String, dynamic> map) => Direction(
-        stepIndex: map['stepIndex'] as String,
-        stepTitle: map['stepTitle'] as String,
-        stepDescription: map['stepDescription'] as String,
-        stepImage: map['stepImage'] as String?,
+        stepIndex: map['step_index'] as String? ?? map['stepIndex'] as String,
+        stepTitle: map['step_title'] as String? ?? map['stepTitle'] as String,
+        stepDescription: map['step_description'] as String? ?? map['stepDescription'] as String,
+        stepImage: map['step_image'] as String? ?? map['stepImage'] as String?,
       );
 }

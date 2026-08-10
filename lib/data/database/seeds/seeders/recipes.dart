@@ -9,6 +9,7 @@ class RecipesSeeder {
     final batch = db.batch();
 
     for (final recipe in recipesSeed) {
+      
       final recipeData = {
         'id': recipe['id'],
         'name': recipe['name'],
