@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
 
-//import '../../../data/database/db_helper.dart';
 import '../../../data/model/recipe.dart';
 import '../../../data/model/type.dart';
 
 import '../../../data/repository/task.dart';
-import '../../../data/repository/type.dart';
-import '../../../data/repository/recipe.dart';
+
 import '../../../provider/recipe.dart';
 import '../../../provider/type.dart';
 import '../../../provider/task.dart';
@@ -29,11 +27,12 @@ class AddTaskPage extends StatefulWidget {
   State<AddTaskPage> createState() => _AddTaskPageState();
 }
 
-
 class _AddTaskPageState extends State<AddTaskPage> {
+
+  LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context);
+  String get lang => languageProvider.languageCode;
   
   bool _isSaving = false;
-
   Type? _selectedDoughType;
   Recipe? _selectedDoughRecipe;
   Type? _selectedFillingType;
@@ -160,8 +159,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _calculateTask() async {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final lang = languageProvider.languageCode;
+
     final validationErrors = _validateSelections(lang);
 
     setState(() {
@@ -226,19 +224,31 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
             ),
           ),
-        Row(
-          spacing: 8,      
-          children: types.map((type) {            
-            final selected = selectedType?.id == type.id;
-            return Expanded(              
-              child: StyleImageButton(
-                title: type.name,
-                type: type,
-                selected: selected,
-                onTap: () => onSelected(type),
-              ),
-            );
-          }).toList(),
+        SizedBox(
+          height: 150,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: types.length,
+            itemBuilder: (context, index) {
+              final type = types[index];
+              final selected = selectedType?.id == type.id;
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: index == 0 ? 0 : 8,
+                  right: 0,
+                ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width / 3 - 8,
+                  child: StyleImageButton(
+                    title: type.name,
+                    type: type,
+                    selected: selected,
+                    onTap: () => onSelected(type),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -253,8 +263,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     String? errorText,
 
   }) {    
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
+
     return Column(      
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -315,8 +324,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
+
 
     return Center(
       child: SingleChildScrollView(
@@ -410,34 +418,3 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 }
 
-// Future<String> addTask({
-//   required Recipe doughRecipe,
-//   required Recipe fillingRecipe,
-//   required int quantity,
-//   required int size,
-//   required double ratio,
-//   String? id,
-//   String? comment,
-//   double? rating,
-//   bool? isCompleted,
-//   DateTime? createdAt,
-//   DateTime? updatedAt,
-// }) async {
-//   final taskId = id ?? const Uuid().v4();
-//   final task = TaskRepository.createFromRecipes(
-//     id: taskId,
-//     doughRecipe: doughRecipe,
-//     fillingRecipe: fillingRecipe,
-//     quantity: quantity,
-//     size: size,
-//     ratio: ratio,
-//     comment: comment,
-//     rating: rating,
-//     isCompleted: isCompleted,
-//     createdAt: createdAt,
-//     updatedAt: updatedAt,
-//   );
-
-//   final mcService = MCService();
-//   return mcService.saveTask(task);
-// }

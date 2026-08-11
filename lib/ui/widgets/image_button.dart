@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../data/model/type.dart';
 
@@ -17,59 +19,102 @@ class StyleImageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetName = (type.imagePath ?? 'placeholder').trim();
-    final imageAsset = '${assetName}';
+    const placeholderImage = 'assets/images/types/placeholder.jpg';
+    final imagePath = type.imagePath?.trim();
+    final isLocalFile = imagePath != null &&
+        imagePath.isNotEmpty &&
+        !imagePath.startsWith('assets/');
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey.shade300,
-            width: selected ? 1 : 1,
+    final image = isLocalFile
+        ? Image.file(
+            File(imagePath),
+            height: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _placeholder(),
+          )
+        : Image.asset(
+            imagePath?.isNotEmpty == true ? imagePath! : placeholderImage,
+            height: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _placeholder(),
+          );
+
+    return Material(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey,
+              width: 1,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: Theme.of(context).colorScheme.primary.withAlpha(100),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : [],
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: Image.asset(imageAsset, height: 100, fit: BoxFit.cover),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 8,
-              ),
-              decoration: BoxDecoration(
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(10),
+                  top: Radius.circular(12),
+                ),
+                child: image,
+              ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.white,
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(10),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: selected ? Colors.white : Colors.black87,
+                        fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: selected ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+Widget _placeholder() => Container(
+  height: 100,
+  color: Colors.grey[300],
+  child: const Icon(Icons.image_not_supported),
+);
 
 class StyleTypeSelectionSection extends StatelessWidget {
   final String title;
@@ -102,24 +147,34 @@ class StyleTypeSelectionSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        Row(
-          children: types.map((type) {
-            final selected = selectedType?.id == type.id;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: StyleImageButton(
-                  title: type.name,
-                  type: type,
-                  selected: selected,
-                  onTap: () => onTypeSelected(type),
+        SizedBox(
+          height: 150,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: types.length,
+            itemBuilder: (context, index) {
+              final type = types[index];
+              final selected = selectedType?.id == type.id;
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: index == 0 ? 0 : 8,
+                  right: index == types.length - 1 ? 0 : 0,
                 ),
-              ),
-            );
-          }).toList(),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width / 3 - 12,
+                  child: StyleImageButton(
+                    title: type.name,
+                    type: type,
+                    selected: selected,
+                    onTap: () => onTypeSelected(type),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
         if (showMatchedDoughTypes) ...[
           const SizedBox(height: 16),

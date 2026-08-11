@@ -55,7 +55,6 @@ class MCDatabase {
             id TEXT PRIMARY KEY,
             recipe_id TEXT,
             task_id TEXT,
-            type TEXT NOT NULL,
             name TEXT NOT NULL,
             amount REAL NOT NULL,
             unit TEXT NOT NULL,

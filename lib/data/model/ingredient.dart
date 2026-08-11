@@ -24,6 +24,7 @@ class Ingredient {
   final String name;
   final double amount;
   final UnitType unit;
+  final String? type;
 
 
   Ingredient({
@@ -31,6 +32,7 @@ class Ingredient {
     required this.name,
     required this.amount,
     required this.unit,
+     this.type,
   });
 
   Map<String, dynamic> toMap() => {
@@ -38,6 +40,7 @@ class Ingredient {
     'name': name,
     'amount': amount,
     'unit': unit.toMap(),
+    'type': type,
 
   };
 
@@ -47,7 +50,7 @@ class Ingredient {
       name: map['name'] as String,
       amount: (map['amount'] as num).toDouble(),
       unit: UnitType.fromMap(map['unit'] as String),
-
+      type: map['type']  as String,
     );
   } 
 

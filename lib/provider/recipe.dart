@@ -34,6 +34,11 @@ class RecipeProvider extends ChangeNotifier {
     await loadRecipe(recipe.id); 
   }
 
+  Future<void> updateRecipeFavorite(String recipeId, bool isFavorite) async {
+    await repository.updateFavorite(recipeId, isFavorite);
+    notifyListeners();
+  }
+
   Future<int> countTasksUsingRecipe(String recipeId) async {
     return await repository.countTasksUsingRecipe(recipeId);
   }

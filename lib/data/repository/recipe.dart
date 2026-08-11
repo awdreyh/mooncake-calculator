@@ -82,6 +82,7 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
           'name': ingredient.name,
           'amount': ingredient.amount,
           'unit': ingredient.unit.toMap(),
+        
         });
       }
 
@@ -109,6 +110,19 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
       recipe.toMap(),
       where: 'id = ?',
       whereArgs: [recipe.id],
+    );
+  }
+
+  Future<int> updateFavorite(String recipeId, bool isFavorite) async {
+    final database = await db.database;
+    return await database.update(
+      'recipes',
+      {
+        'is_favorite': isFavorite ? 1 : 0,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [recipeId],
     );
   }
 

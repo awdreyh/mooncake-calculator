@@ -47,12 +47,10 @@ class Recipe {
     'size': size,
     'ratio': ratio,
     'description': description,
-    'ingredients': ingredients.map((i) => i.toMap()).toList(),
     'isFavorite': isFavorite,
     'rating': rating,
     'url': url,
     'comment': comment,
-    'directions': directions?.map((d) => d.toMap()).toList(),
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };

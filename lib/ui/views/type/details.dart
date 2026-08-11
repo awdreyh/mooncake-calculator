@@ -21,6 +21,7 @@ class TypeDetailsPage extends StatefulWidget {
 
 class _TypeDetailsPageState extends State<TypeDetailsPage> {
   late final TextEditingController _nameController;
+  static const _placeholderImage = 'assets/images/types/placeholder.jpg';
   Category? _category;
   String? _imagePath;
   List<Type> _doughTypes = [];
@@ -35,6 +36,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     super.initState();
     _nameController = TextEditingController(text: widget.type.name);
     _category = widget.type.category;
+    _imagePath = widget.type.imagePath;
     _loadDoughTypes();
     _loadSelectedMatchedDoughTypes();
   }
@@ -120,20 +122,35 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   }
 
   Widget _buildImagePreview() {
-    if (_imagePath == null) {
-      return const SizedBox.shrink();
-    }
+    final imagePath = widget.type.imagePath?.trim();
+    final isLocalFile = imagePath != null &&
+        imagePath.isNotEmpty &&
+        !imagePath.startsWith('assets/');
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.file(
-          File(_imagePath!),
-          width: double.infinity,
-          height: 180,
-          fit: BoxFit.cover,
-        ),
+    final image = isLocalFile
+        ? Image.file(
+            File(imagePath),
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => Image.asset(
+              _placeholderImage,
+              fit: BoxFit.cover,
+            ),
+          )
+        : Image.asset(
+            imagePath?.isNotEmpty == true ? imagePath! : _placeholderImage,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => Image.asset(
+              _placeholderImage,
+              fit: BoxFit.cover,
+            ),
+          );
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: double.infinity,
+        height: 180,
+        child: image,
       ),
     );
   }
@@ -157,7 +174,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
       id: widget.type.id,
       category: _category ?? Category.dough,
       name: name,
-      imagePath: widget.type.imagePath,
+      imagePath: _imagePath,
       matchedDoughTypeIds: matchedIds,
     );
 
