@@ -44,8 +44,8 @@ class RecipeRepository {
     final ingredients = await _loadIngredients(database, id);
     final directions = await _loadDirections(database, id);
     final recipeMap = Map<String, dynamic>.from(recipeRow)
-      ..['ingredients'] = ingredients
-      ..['directions'] = directions;
+      ..['ingredients'] = ingredients.map((ingredient) => ingredient.toMap()).toList()
+      ..['directions'] = directions.map((direction) => direction.toMap()).toList();
 
     return Recipe.fromMap(recipeMap);
   }
@@ -82,7 +82,7 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
           'name': ingredient.name,
           'amount': ingredient.amount,
           'unit': ingredient.unit.toMap(),
-        
+          'category': ingredient.category.toMap(),
         });
       }
 
@@ -102,12 +102,11 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
     });
   }
 
-
   Future<int> update(Recipe recipe) async {
     final database = await db.database;
     return await database.update(
       'recipes',
-      recipe.toMap(),
+      recipe.toMap(), 
       where: 'id = ?',
       whereArgs: [recipe.id],
     );

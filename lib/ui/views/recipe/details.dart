@@ -46,6 +46,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   int _taskUsageCount = 0;  
   List<Type> _selectedMatchedDoughTypes = [];
   bool _isSaving = false;
+  bool _isUpdatingMatchedDoughTypes = false;
   double _selectedRating = 0;
   bool _isFavorite = false;
 
@@ -59,6 +60,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     _typeName='';
     _commentController.text = _recipe.comment ?? '';
     _selectedRating = _recipe.rating ?? 0;
+    _isFavorite = _recipe.isFavorite ?? false;
     _loadTypes();
     _loadTaskUsageCount();
   }
@@ -98,23 +100,68 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     );
   }
 
-  void _toggleFavorite() async {
-    final newStatus = !(_recipe.isFavorite ?? false);   
-    _changed = true;
+  void _toggleFavorite() {
+    if (_isSaving) return;
+
+    final newStatus = !_isFavorite;
     setState(() {
       _isFavorite = newStatus;
     });
     _saveChanges();
   }
 
-  void _toggleMatchedDoughType(Type type) {
+  Future<void> _toggleMatchedDoughType(Type type) async {
+    if (_isUpdatingMatchedDoughTypes) return;
+
+    final recipeTypeIndex = _allTypes.indexWhere(
+      (item) => item.id == _recipe.typeId,
+    );
+    if (recipeTypeIndex == -1 ||
+        _allTypes[recipeTypeIndex].category != Category.filling) {
+      return;
+    }
+
+    final previousMatchedTypes = List<Type>.from(_selectedMatchedDoughTypes);
+    final isSelected = previousMatchedTypes.any((item) => item.id == type.id);
+    final updatedMatchedTypes = List<Type>.from(previousMatchedTypes);
+    if (isSelected) {
+      updatedMatchedTypes.removeWhere((item) => item.id == type.id);
+    } else {
+      updatedMatchedTypes.add(type);
+    }
+
+    final recipeType = _allTypes[recipeTypeIndex];
+    final updatedRecipeType = Type(
+      id: recipeType.id,
+      category: recipeType.category,
+      name: recipeType.name,
+      imagePath: recipeType.imagePath,
+      matchedDoughTypeIds: updatedMatchedTypes.map((item) => item.id).toList(),
+    );
+
     setState(() {
-      if (_selectedMatchedDoughTypes.any((item) => item.id == type.id)) {
-        _selectedMatchedDoughTypes.removeWhere((item) => item.id == type.id);
-      } else {
-        _selectedMatchedDoughTypes.add(type);
-      }
+      _isUpdatingMatchedDoughTypes = true;
+      _selectedMatchedDoughTypes = updatedMatchedTypes;
     });
+
+    try {
+      await typeProvider.updateType(updatedRecipeType);
+      if (!mounted) return;
+      setState(() {
+        _allTypes[recipeTypeIndex] = updatedRecipeType;
+        _changed = true;
+        _isUpdatingMatchedDoughTypes = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _selectedMatchedDoughTypes = previousMatchedTypes;
+        _isUpdatingMatchedDoughTypes = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save matched dough types: $error')),
+      );
+    }
   }
 
   Future<void> _saveChanges() async {
@@ -131,7 +178,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       ratio: _recipe.ratio,
       description: _recipe.description,
       ingredients: _recipe.ingredients,
-      isFavorite: _recipe.isFavorite,
+      isFavorite: _isFavorite,
       rating:  updatedRating > 0 ? updatedRating : null,
       url: _recipe.url,
       comment: updatedComment.isEmpty ? null : updatedComment,
@@ -162,7 +209,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         _isSaving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save changes: $e')),
+        SnackBar(content: Text('${AppStrings.get('failed_to_update_changes', lang)}: $e')),
       );
     }
   }
@@ -208,14 +255,28 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
     final ratioString = Helper.ratioToString(_recipe.ratio ?? 0.0);
     final matchedDoughTypes = _selectedMatchedDoughTypes;
+    final isFillingRecipe = _allTypes.any(
+      (type) => type.id == _recipe.typeId && type.category == Category.filling,
+    );
 
-    return Scaffold(
-      appBar: AppBar(
+    return PopScope<bool>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.pop(context, _changed);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
         title: Text(AppStrings.get('viewDetails', lang)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, _changed),
+        ),
         actions: [
           IconButton(
             icon: Icon(
-              _recipe.isFavorite ?? false
+              _isFavorite
                   ? Icons.favorite
                   : Icons.favorite_border,
               color: Colors.red,
@@ -242,7 +303,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
             ),
         ],
       ),
-      body: SingleChildScrollView(
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +387,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                   ),
                                 ),
                               const SizedBox(height: 8),
-                              if (matchedDoughTypes.isNotEmpty)
+                              if (isFillingRecipe)
                                 Wrap(
                                   spacing: 8,
                                   runSpacing: 8,
@@ -570,6 +631,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         ),
       ),
         bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
+      ),
     );
   }
 }

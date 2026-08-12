@@ -89,7 +89,8 @@ class AppStrings {
       'calculating': 'Calculating...',
       'calculateSave': 'Calculating and saving',
       'msgNoRecipe':'No recipes available',
-
+      'changes_saved': 'Changes saved successfully.',
+      'failed_to_update_changes': 'Failed to update changes',
     },
     'zh': {
       'moonCakeCalculator': '月饼计算器',
@@ -182,6 +183,8 @@ class AppStrings {
       'calculating': '计算中...',
       'calculateSave': '计算并保存',
       'msgNoRecipe':'无可用食谱',
+      'changes_saved': '更改成功。',
+      'failed_to_update_changes': '更新失败',
     },
   };
 

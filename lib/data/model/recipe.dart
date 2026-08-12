@@ -39,6 +39,26 @@ class Recipe {
 
 
 
+  Recipe copyWith({bool? isFavorite}) {
+    return Recipe(
+      id: id,
+      name: name,
+      typeId: typeId,
+      quantity: quantity,
+      size: size,
+      ratio: ratio,
+      description: description,
+      ingredients: ingredients,
+      isFavorite: isFavorite ?? this.isFavorite,
+      rating: rating,
+      url: url,
+      comment: comment,
+      directions: directions,
+      createdAt: createdAt,
+      updatedAt: updatedAt, 
+    );
+  }
+
   Map<String, dynamic> toMap() => {
     'id': id,
     'name': name,
@@ -47,12 +67,12 @@ class Recipe {
     'size': size,
     'ratio': ratio,
     'description': description,
-    'isFavorite': isFavorite,
+    'is_favorite': isFavorite,
     'rating': rating,
     'url': url,
     'comment': comment,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(),
+    'created_at': createdAt.toIso8601String(),
+    'updated_at': updatedAt.toIso8601String(),
   };
 
   factory Recipe.fromMap(Map<String, dynamic> map) {

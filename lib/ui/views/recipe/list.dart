@@ -59,23 +59,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
   }
 
   Recipe _recipeWithFavorite(Recipe recipe, bool isFavorite) {
-    return Recipe(
-      id: recipe.id,
-      name: recipe.name,
-      typeId: recipe.typeId,
-      quantity: recipe.quantity,
-      size: recipe.size,
-      ratio: recipe.ratio,
-      description: recipe.description,
-      ingredients: recipe.ingredients,
-      isFavorite: isFavorite,
-      rating: recipe.rating,
-      url: recipe.url,
-      comment: recipe.comment,
-      directions: recipe.directions,
-      createdAt: recipe.createdAt,
-      updatedAt: recipe.updatedAt,
-    );
+    return recipe.copyWith(isFavorite: isFavorite);
   }
 
   Future<void> _toggleFavorite(Recipe recipe) async {
