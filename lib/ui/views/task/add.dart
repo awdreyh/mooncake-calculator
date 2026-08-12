@@ -29,7 +29,7 @@ class AddTaskPage extends StatefulWidget {
 
 class _AddTaskPageState extends State<AddTaskPage> {
 
-  LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context);
+  LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
   
   bool _isSaving = false;

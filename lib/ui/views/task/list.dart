@@ -6,12 +6,13 @@ import '../../../data/repository/task.dart';
 import '../../../provider/task.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
 import 'add.dart';
 import 'details.dart';
 
 class TaskListPage extends StatelessWidget {
-  final String? recipeId;   
+  final String? recipeId;
   const TaskListPage({super.key, this.recipeId});
 
   @override
@@ -68,23 +69,31 @@ class _TaskListViewState extends State<_TaskListView> {
   }
 
   Future<void> _deleteTask(Task task) async {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
     final lang = languageProvider.languageCode;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppStrings.get('delete_task', lang)),
-        content: Text(AppStrings.get('confirm_delete_task', lang)?.replaceFirst('{task_id}', task.id) ?? 'Delete this task?'),
+        content: Text(
+          AppStrings.get(
+                'confirm_delete_task',
+                lang,
+              ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppStrings.get('cancel', lang) ),
+            child: Text(AppStrings.get('cancel', lang)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
-              AppStrings.get('delete', lang) ,
+              AppStrings.get('delete_task', lang),
               style: const TextStyle(color: Colors.red),
             ),
           ),
@@ -103,9 +112,15 @@ class _TaskListViewState extends State<_TaskListView> {
 
   Widget _buildTaskTile(Task task, String lang) {
     final subtitle = <String>[];
+    final createdAt = task.createdAt;
+    final createdDate =
+        '${createdAt.year.toString().padLeft(4, '0')}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')}';
     subtitle.add('${AppStrings.get('quantity', lang)}: ${task.quantity}');
     subtitle.add('${AppStrings.get('size', lang)}: ${task.size}');
-    subtitle.add('${AppStrings.get('ratio', lang)}: ${task.ratio.toStringAsFixed(2)}');
+    subtitle.add(
+      '${AppStrings.get('ratio', lang)}: ${Helper.ratioToString(task.ratio)}',
+    );
+    subtitle.add('${AppStrings.get('created_at', lang)}: $createdDate');
     if (task.comment != null && task.comment!.isNotEmpty) {
       subtitle.add(task.comment!);
     }
@@ -124,9 +139,7 @@ class _TaskListViewState extends State<_TaskListView> {
       ),
       onTap: () async {
         await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            builder: (_) => TaskDetailsPage(taskId: task.id),
-          ),
+          MaterialPageRoute(builder: (_) => TaskDetailsPage(taskId: task.id)),
         );
         await _loadTasks();
       },
@@ -149,23 +162,24 @@ class _TaskListViewState extends State<_TaskListView> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(child: Text(_errorMessage!))
-              : _tasks.isEmpty
-                  ? Center(child: Text(AppStrings.get('noTasks', lang)))
-                  : RefreshIndicator(
-                      onRefresh: _loadTasks,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: _tasks.length,
-                        separatorBuilder: (context, index) => const Divider(height: 0),
-                        itemBuilder: (context, index) => _buildTaskTile(_tasks[index], lang),
-                      ),
-                    ),
+          ? Center(child: Text(_errorMessage!))
+          : _tasks.isEmpty
+          ? Center(child: Text(AppStrings.get('noTasks', lang)))
+          : RefreshIndicator(
+              onRefresh: _loadTasks,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: _tasks.length,
+                separatorBuilder: (context, index) => const Divider(height: 0),
+                itemBuilder: (context, index) =>
+                    _buildTaskTile(_tasks[index], lang),
+              ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.of(context).push<bool>(
-            MaterialPageRoute(builder: (_) => const AddTaskPage()),
-          );
+          await Navigator.of(
+            context,
+          ).push<bool>(MaterialPageRoute(builder: (_) => const AddTaskPage()));
           await _loadTasks();
         },
         tooltip: AppStrings.get('saveTask', lang),
@@ -175,4 +189,3 @@ class _TaskListViewState extends State<_TaskListView> {
     );
   }
 }
-

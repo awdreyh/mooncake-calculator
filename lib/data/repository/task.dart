@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 import '../database/db_helper.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
@@ -30,7 +31,7 @@ class TaskRepository {
     final taskRow = rows.first;
     final ingredients = await _loadIngredients(database, id);
     final taskMap = Map<String, dynamic>.from(taskRow)
-      ..['ingredients'] = ingredients;
+      ..['ingredients'] = ingredients.map((ingredient) => ingredient.toMap()).toList();
 
     return Task.fromMap(taskMap);
   }
@@ -153,7 +154,7 @@ class TaskRepository {
     }
     return ingredients.map((ingredient) {
       return Ingredient(
-        id: ingredient.id,
+        id: const Uuid().v4(),
         name: ingredient.name,
         amount: ingredient.amount * scale,
         unit: ingredient.unit,
@@ -174,7 +175,21 @@ class TaskRepository {
 
   Future<int> insert(Task task) async {
     final database = await db.database;
-    return await database.insert('tasks', task.toMap());
+    return database.transaction<int>((transaction) async {
+      final taskId = await transaction.insert('tasks', task.toMap());
+      for (final ingredient in task.ingredients) {
+        await transaction.insert('ingredients', {
+          'id': ingredient.id,
+          'recipe_id': null,
+          'task_id': task.id,
+          'name': ingredient.name,
+          'amount': ingredient.amount,
+          'unit': ingredient.unit.toMap(),
+          'category': ingredient.category.toMap(),
+        });
+      }
+      return taskId;
+    });
   }
 
   Future<int> update(Task task) async {

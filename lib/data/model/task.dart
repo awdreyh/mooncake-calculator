@@ -26,9 +26,10 @@ class Task {
     DateTime? updatedAt,
     this.comment,
     this.rating,
-    this.isCompleted,
+    bool? isCompleted,
   })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+      updatedAt = updatedAt ?? DateTime.now(),
+      isCompleted = isCompleted ?? false;
 
   Map<String, dynamic> toMap() => {
         'id': id,
@@ -37,11 +38,9 @@ class Task {
         'size': size,
         'quantity': quantity,
         'ratio': ratio,
-        'ingredients': ingredients.map((ingredient) => ingredient.toMap()).toList(),
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
         'comment': comment,
-        'rating': rating,
         'is_completed': isCompleted,
       };
 
