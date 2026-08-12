@@ -95,7 +95,7 @@ class TypeRepository {
   }
 
   Type _fromRow(Map<String, dynamic> row) {
-    final matchedDoughTypeValue = row['matchedDoughTypeIds'];
+    final matchedDoughTypeValue = row['matched_dough_type_ids'];
     final categoryString = row['category']?.toString();
     final category = categoryString != null
         ? Category.fromMap(categoryString)
@@ -114,8 +114,8 @@ class TypeRepository {
       'id': row['id']?.toString(),
       'category': category.toMap(),
       'name': row['name']?.toString(),
-      'imagePath': row['imagePath']?.toString(),
-      'matchedDoughTypeIds': matchedDoughTypeIds,
+      'image_path': row['image_path']?.toString(),
+      'matched_dough_type_ids': matchedDoughTypeIds,
     });
   }
 
@@ -124,8 +124,8 @@ class TypeRepository {
       'id': type.id,
       'category': type.category.toMap(),
       'name': type.name,
-      'imagePath': type.imagePath,
-      'matchedDoughTypeIds': type.matchedDoughTypeIds == null
+      'image_path': type.imagePath,
+      'matched_dough_type_ids': type.matchedDoughTypeIds == null
           ? null
           : jsonEncode(type.matchedDoughTypeIds),
     };

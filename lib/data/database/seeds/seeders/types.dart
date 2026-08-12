@@ -10,10 +10,13 @@ class TypesSeeder {
     final batch = db.batch();
     for (final type in typesSeed) {
       batch.insert('types', {
-        ...type,
-        'matchedDoughTypeIds': type['matchedDoughTypeIds'] == null
+        'id': type['id'],
+        'category': type['category'],
+        'name': type['name'],
+        'image_path': type['image_path'],
+        'matched_dough_type_ids': type['matched_dough_type_ids'] == null
             ? null
-            : jsonEncode(type['matchedDoughTypeIds']),
+            : jsonEncode(type['matched_dough_type_ids']),
       });
     }
     await batch.commit(noResult: true);

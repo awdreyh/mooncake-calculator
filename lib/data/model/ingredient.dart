@@ -17,14 +17,28 @@ enum UnitType {
   }
 }
 
+enum IngredientCategory {
+  recipe,
+  task;
 
+  // Convert enum → string
+  String toMap() => name;
+
+  // Convert string → enum
+  static IngredientCategory fromMap(String value) {
+    return IngredientCategory.values.firstWhere(
+      (t) => t.name == value,
+      orElse: () => IngredientCategory.recipe,
+    );
+  }
+}
 
 class Ingredient {
   final String id;
   final String name;
   final double amount;
   final UnitType unit;
-  final String? type;
+  final IngredientCategory category;
 
 
   Ingredient({
@@ -32,7 +46,7 @@ class Ingredient {
     required this.name,
     required this.amount,
     required this.unit,
-     this.type,
+    required this.category,
   });
 
   Map<String, dynamic> toMap() => {
@@ -40,8 +54,7 @@ class Ingredient {
     'name': name,
     'amount': amount,
     'unit': unit.toMap(),
-    'type': type,
-
+    'category': category.toMap(),
   };
 
   factory Ingredient.fromMap(Map<String, dynamic> map) {
@@ -50,7 +63,7 @@ class Ingredient {
       name: map['name'] as String,
       amount: (map['amount'] as num).toDouble(),
       unit: UnitType.fromMap(map['unit'] as String),
-      type: map['type']  as String,
+      category: IngredientCategory.fromMap(map['category'] as String),
     );
   } 
 

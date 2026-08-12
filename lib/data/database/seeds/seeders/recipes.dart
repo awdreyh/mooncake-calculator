@@ -33,10 +33,10 @@ class RecipesSeeder {
           'id': ingredient['id'],
           'recipe_id': recipe['id'],
           'task_id': null,
-          'type': 'recipe',
           'name': ingredient['name'],
           'amount': ingredient['amount'],
           'unit': ingredient['unit'],
+          'category': ingredient['category'], // Add category field
         });
       }
     }

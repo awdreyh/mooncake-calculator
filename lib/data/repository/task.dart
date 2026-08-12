@@ -157,6 +157,7 @@ class TaskRepository {
         name: ingredient.name,
         amount: ingredient.amount * scale,
         unit: ingredient.unit,
+        category: IngredientCategory.task, // Assuming all ingredients are of recipe category
       );
     }).toList();
   }

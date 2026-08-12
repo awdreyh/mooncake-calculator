@@ -191,6 +191,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
             name: input.nameController.text.trim(),
             amount: double.parse(input.amountController.text.trim()),
             unit: input.unit,
+            category: IngredientCategory.recipe,
           ),
         )
         .toList();

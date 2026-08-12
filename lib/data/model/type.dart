@@ -37,15 +37,16 @@ class Type {
     'id': id,
     'category': category.toMap(),
     'name': name,
-    'imagePath': imagePath,
-    'matchedDoughTypeIds': matchedDoughTypeIds,
+    'image_path': imagePath,
+    'matched_dough_type_ids': matchedDoughTypeIds,
   };
 
   factory Type.fromMap(Map<String, dynamic> map) {
     final idValue = map['id'];
     final categoryValue = map['category'];
     final nameValue = map['name'];
-    final imagePathValue = map['imagePath'];
+    final imagePathValue = map['image_path'];
+    final matchedDoughTypeIdsValue = map['matched_dough_type_ids'];
 
     return Type(
       id: idValue is String ? idValue : idValue?.toString() ?? '',
@@ -54,9 +55,9 @@ class Type {
           ? Category.fromMap(categoryValue)
           : Category.dough,
       imagePath: imagePathValue is String ? imagePathValue : null,
-      matchedDoughTypeIds: map['matchedDoughTypeIds'] == null
+      matchedDoughTypeIds: matchedDoughTypeIdsValue == null
           ? null
-          : (map['matchedDoughTypeIds'] as List<dynamic>)
+          : (matchedDoughTypeIdsValue as List<dynamic>)
                 .map((item) => item?.toString() ?? '')
                 .where((item) => item.isNotEmpty)
                 .toList(),

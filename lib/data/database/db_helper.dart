@@ -58,6 +58,7 @@ class MCDatabase {
             name TEXT NOT NULL,
             amount REAL NOT NULL,
             unit TEXT NOT NULL,
+            category TEXT NOT NULL,
             FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
             FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
           )
@@ -81,8 +82,8 @@ class MCDatabase {
             id TEXT PRIMARY KEY,
             category TEXT NOT NULL,
             name TEXT NOT NULL,
-            imagePath TEXT,
-            matchedDoughTypeIds TEXT
+            image_path TEXT,
+            matched_dough_type_ids TEXT
             
           )
         ''');

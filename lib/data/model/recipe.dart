@@ -56,9 +56,9 @@ class Recipe {
   };
 
   factory Recipe.fromMap(Map<String, dynamic> map) {
-    final isFavoriteValue = map['isFavorite'] ?? map['is_favorite'];
-    final createdAtValue = map['createdAt'] ?? map['created_at'];
-    final updatedAtValue = map['updatedAt'] ?? map['updated_at'];
+    final isFavoriteValue = map['is_favorite'];
+    final createdAtValue =  map['created_at'];
+    final updatedAtValue =  map['updated_at'];
 
     bool? parsedFavorite;
     if (isFavoriteValue != null) {
