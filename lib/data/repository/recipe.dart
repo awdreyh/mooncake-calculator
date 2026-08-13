@@ -3,28 +3,29 @@ import '../database/db_helper.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
 import '../model/direction.dart';
+import '../model/type.dart';
+import 'type.dart' as type_repo;
 
-class RecipeRepository {  
+class RecipeRepository {
   final MCDatabase db;
   RecipeRepository(this.db);
-  
   Future<List<Recipe>> loadAll() async {
     final database = await db.database;
     final result = await database.query('recipes');
-    
+
     final recipes = <Recipe>[];
     for (final recipeRow in result) {
       final recipeId = recipeRow['id'] as String;
       final ingredients = await _loadIngredients(database, recipeId);
       final directions = await _loadDirections(database, recipeId);
-      
+
       final recipeMap = Map<String, dynamic>.from(recipeRow)
         ..['ingredients'] = ingredients.map((i) => i.toMap()).toList()
         ..['directions'] = directions.map((d) => d.toMap()).toList();
-      
+
       recipes.add(Recipe.fromMap(recipeMap));
     }
-    
+
     return recipes;
   }
 
@@ -44,13 +45,27 @@ class RecipeRepository {
     final ingredients = await _loadIngredients(database, id);
     final directions = await _loadDirections(database, id);
     final recipeMap = Map<String, dynamic>.from(recipeRow)
-      ..['ingredients'] = ingredients.map((ingredient) => ingredient.toMap()).toList()
-      ..['directions'] = directions.map((direction) => direction.toMap()).toList();
+      ..['ingredients'] = ingredients
+          .map((ingredient) => ingredient.toMap())
+          .toList()
+      ..['directions'] = directions
+          .map((direction) => direction.toMap())
+          .toList();
 
     return Recipe.fromMap(recipeMap);
   }
 
-  Future<List<Ingredient>> _loadIngredients(Database db, String recipeId) async {
+  Future<String> loadType(String id) async {
+    final recipe = await load(id);
+    if (recipe?.typeId == null) return '';
+    final type = await type_repo.TypeRepository(db).load(recipe!.typeId!);
+    return type?.name ?? '';
+  }
+
+  Future<List<Ingredient>> _loadIngredients(
+    Database db,
+    String recipeId,
+  ) async {
     final rows = await db.query(
       'ingredients',
       where: 'recipe_id = ?',
@@ -59,7 +74,7 @@ class RecipeRepository {
     return rows.map((row) => Ingredient.fromMap(row)).toList();
   }
 
-Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
+  Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
     final rows = await db.query(
       'directions',
       where: 'recipe_id = ?',
@@ -68,8 +83,8 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
     );
     return rows.map((row) => Direction.fromMap(row)).toList();
   }
-  
- Future<int> insert(Recipe recipe) async {
+
+  Future<int> insert(Recipe recipe) async {
     final database = await db.database;
     return await database.transaction<int>((txn) async {
       final recipeId = await txn.insert('recipes', recipe.toMap());
@@ -106,7 +121,7 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
     final database = await db.database;
     return await database.update(
       'recipes',
-      recipe.toMap(), 
+      recipe.toMap(),
       where: 'id = ?',
       whereArgs: [recipe.id],
     );
@@ -127,15 +142,11 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
 
   Future<int> delete(String id) async {
     final database = await db.database;
-    return await database.delete(
-      'recipes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await database.delete('recipes', where: 'id = ?', whereArgs: [id]);
   }
 
-    Future<int> countTasksUsingRecipe(String recipeId) async {
-     final database = await db.database;
+  Future<int> countTasksUsingRecipe(String recipeId) async {
+    final database = await db.database;
     final rows = await database.rawQuery(
       '''
       SELECT COUNT(*) AS count
@@ -147,6 +158,4 @@ Future<List<Direction>> _loadDirections(Database db, String recipeId) async {
     final count = rows.first['count'];
     return count is int ? count : int.tryParse(count.toString()) ?? 0;
   }
-
 }
-   

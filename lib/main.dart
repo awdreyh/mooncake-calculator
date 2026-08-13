@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: true);
     return MaterialApp(
       title: 'Moon Cake Calculator',
       // theme: AppTheme.lightTheme,

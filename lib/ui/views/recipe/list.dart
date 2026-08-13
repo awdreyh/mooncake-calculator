@@ -20,6 +20,9 @@ class RecipeListPage extends StatefulWidget {
 
 class _RecipeListPageState extends State<RecipeListPage> {
   List<Recipe> _recipes = [];
+    LanguageProvider get languageProvider =>
+      Provider.of<LanguageProvider>(context, listen: false);
+  String get lang => languageProvider.languageCode;
   String? _errorMessage;
   List<Type> _types = [];
   bool _isLoading = true;
@@ -92,11 +95,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
   }
 
   Future<void> _deleteRecipe(Recipe recipe) async {
-    final languageProvider = Provider.of<LanguageProvider>(
-      context,
-      listen: false,
-    );
-    final lang = languageProvider.languageCode;
+
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -247,8 +246,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
+
 
     return DefaultTabController(
       length: 2,

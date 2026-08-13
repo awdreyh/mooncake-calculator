@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/model/task.dart';
+import '../data/model/recipe.dart';
 import '../data/repository/task.dart';
 
 class TaskProvider extends ChangeNotifier {
@@ -17,7 +18,18 @@ class TaskProvider extends ChangeNotifier {
     Task? result = await repository.load(id);    
     notifyListeners(); 
     return result;
+  }
 
+  Future<Recipe?> loadRecipe(String recipeId) async {
+    Recipe? result = await repository.loadRecipe(recipeId);
+    notifyListeners();
+    return result;
+  }
+
+  Future<Type?> loadType(String recipeId) async{
+    Type? result = await repository.loadType(recipeId);
+    notifyListeners();
+    return result;
   }
 
   Future<void> insertTask(Task task) async {

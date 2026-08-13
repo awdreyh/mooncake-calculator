@@ -15,14 +15,20 @@ class OptionButtons extends StatelessWidget {
     return Wrap(
       spacing: 8,
       children: values.map((value) {
-        return OutlinedButton(
+        return ElevatedButton(
           onPressed: () => onSelected(value),
           child: Text(value.toString()),
         );
+
+        
+        // return OutlinedButton(
+        //   onPressed: () => onSelected(value),
+        //   child: Text(value.toString()),
+        // );
       }).toList(),
     );
   }
-}
+} 
 
 class RatioButtons extends StatelessWidget {
   final ValueChanged<String> onSelected;

@@ -5,18 +5,17 @@ import '../model/recipe.dart';
 import '../model/ingredient.dart';
 import '../model/task.dart';
 
-
 class TaskRepository {
-  final MCDatabase db;  
+  final MCDatabase db;
   TaskRepository(this.db);
 
- Future<List<Task>> loadAll() async {
+  Future<List<Task>> loadAll() async {
     final database = await db.database;
     final result = await database.query('tasks');
     return result.map((map) => Task.fromMap(map)).toList();
   }
- 
- Future<Task?> load(String id) async {
+
+  Future<Task?> load(String id) async {
     final database = await db.database;
     final rows = await database.query(
       'tasks',
@@ -31,7 +30,9 @@ class TaskRepository {
     final taskRow = rows.first;
     final ingredients = await _loadIngredients(database, id);
     final taskMap = Map<String, dynamic>.from(taskRow)
-      ..['ingredients'] = ingredients.map((ingredient) => ingredient.toMap()).toList();
+      ..['ingredients'] = ingredients
+          .map((ingredient) => ingredient.toMap())
+          .toList();
 
     return Task.fromMap(taskMap);
   }
@@ -54,6 +55,23 @@ class TaskRepository {
       ..['ingredients'] = ingredients;
 
     return Recipe.fromMap(recipeMap);
+  }
+
+  Future<Type?> loadType(String recipeId) async {
+    final recipe = await loadRecipe(recipeId);
+    if (recipe == null) {
+      return null;
+    }
+    final database = await db.database;
+    final rows = await database.query(
+      'types',
+      where: 'id = ?',
+      whereArgs: [recipe.typeId],
+    );
+    if (rows.isEmpty) {
+      return null;
+    }
+    return rows.first as Type?;
   }
 
   static List<Ingredient> calculateIngredientsFromRecipes({
@@ -158,12 +176,16 @@ class TaskRepository {
         name: ingredient.name,
         amount: ingredient.amount * scale,
         unit: ingredient.unit,
-        category: IngredientCategory.task, // Assuming all ingredients are of recipe category
+        category: IngredientCategory
+            .task, // Assuming all ingredients are of recipe category
       );
     }).toList();
   }
 
-  static Future<List<Ingredient>> _loadIngredients(Database db, String taskId) async {
+  static Future<List<Ingredient>> _loadIngredients(
+    Database db,
+    String taskId,
+  ) async {
     final rows = await db.query(
       'ingredients',
       where: 'task_id = ?',
@@ -204,11 +226,6 @@ class TaskRepository {
 
   Future<int> delete(String id) async {
     final database = await db.database;
-    return await database.delete(
-      'tasks',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await database.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
-
 }

@@ -71,10 +71,14 @@ class MCDatabase {
             size INTEGER NOT NULL,
             quantity INTEGER NOT NULL,
             ratio REAL NOT NULL,
+            image_paths TEXT,
+            rating REAL,
             created_at TEXT NOT NULL DEFAULT (datetime('now')),
             updated_at TEXT NOT NULL DEFAULT (datetime('now')),
             comment TEXT,
-            is_completed BOOLEAN NOT NULL DEFAULT 0
+            is_completed BOOLEAN NOT NULL DEFAULT 0,
+            FOREIGN KEY (dough_recipe_id) REFERENCES recipes (id),
+            FOREIGN KEY (filling_recipe_id) REFERENCES recipes (id)
           )
         ''');
     await db.execute('''

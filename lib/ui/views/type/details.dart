@@ -25,7 +25,9 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   Category? _category;
   String? _imagePath;
   List<Type> _doughTypes = [];
+  List<Type> _fillingTypes = [];
   List<Type> _selectedMatchedDoughTypes = [];
+  List<Type> _selectedMatchedFillingTypes = [];
   bool _isSaving = false;
   LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
@@ -39,6 +41,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     _imagePath = widget.type.imagePath;
     _loadDoughTypes();
     _loadSelectedMatchedDoughTypes();
+    _loadFillingTypes();
   }
 
   @override
@@ -85,6 +88,31 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     }
   }
 
+  Future<void> _loadFillingTypes() async {
+    try {
+      final typeProvider = context.read<TypeProvider>();
+      final types = await typeProvider.loadAllTypes();
+      final fillingTypes = types
+          .where((type) => type.category == Category.filling)
+          .toList();
+      final matchedFillingTypes = fillingTypes
+          .where(
+            (type) =>
+                type.matchedDoughTypeIds?.contains(widget.type.id) ?? false,
+          )
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _fillingTypes = fillingTypes;
+          _selectedMatchedFillingTypes = matchedFillingTypes;
+        });
+      }
+    } catch (e) {
+      print('Error loading filling types: $e');
+    }
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -117,6 +145,16 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
         _selectedMatchedDoughTypes.removeWhere((item) => item.id == type.id);
       } else {
         _selectedMatchedDoughTypes.add(type);
+      }
+    });
+  }
+
+  void _toggleMatchedFillingType(Type type) {
+    setState(() {
+      if (_selectedMatchedFillingTypes.any((item) => item.id == type.id)) {
+        _selectedMatchedFillingTypes.removeWhere((item) => item.id == type.id);
+      } else {
+        _selectedMatchedFillingTypes.add(type);
       }
     });
   }
@@ -179,11 +217,38 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     );
 
     try {
-      print('Updating type: $updatedType');
-      print('Matched IDs: $matchedIds');
-      
-      await context.read<TypeProvider>().updateType(updatedType);
-      
+      final typeProvider = context.read<TypeProvider>();
+      await typeProvider.updateType(updatedType);
+
+      // When this is a dough type, sync its ID into selected filling types
+      // and remove it from deselected ones.
+      if (updatedType.category == Category.dough) {
+        for (final filling in _fillingTypes) {
+          final wasSelected =
+              filling.matchedDoughTypeIds?.contains(widget.type.id) ?? false;
+          final isSelected = _selectedMatchedFillingTypes.any(
+            (item) => item.id == filling.id,
+          );
+          if (wasSelected == isSelected) continue;
+
+          final ids = List<String>.from(filling.matchedDoughTypeIds ?? []);
+          if (isSelected) {
+            ids.add(widget.type.id);
+          } else {
+            ids.remove(widget.type.id);
+          }
+          await typeProvider.updateType(
+            Type(
+              id: filling.id,
+              category: filling.category,
+              name: filling.name,
+              imagePath: filling.imagePath,
+              matchedDoughTypeIds: ids,
+            ),
+          );
+        }
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppStrings.get('changes_saved', lang))),
@@ -285,6 +350,34 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         label: Text(type.name),
                         selected: selected,
                         onSelected: (_) => _toggleMatchedDoughType(type),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 24),
+              ],
+              if (_category == Category.dough) ...[
+                Text(
+                  AppStrings.get('matched_filling_types', lang),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (_fillingTypes.isEmpty)
+                  const Text('No filling types available')
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _fillingTypes.map((type) {
+                      final selected = _selectedMatchedFillingTypes.any(
+                        (item) => item.id == type.id,
+                      );
+                      return FilterChip(
+                        label: Text(type.name),
+                        selected: selected,
+                        onSelected: (_) => _toggleMatchedFillingType(type),
                       );
                     }).toList(),
                   ),

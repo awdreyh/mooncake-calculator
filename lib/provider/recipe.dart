@@ -25,8 +25,7 @@ class RecipeProvider extends ChangeNotifier {
 
   Future<void> deleteRecipe(String id) async {
      await repository.delete(id);
-     await loadRecipe(id); 
-   
+     await loadRecipe(id);    
   }
 
   Future<void> updateRecipe(Recipe recipe) async {
@@ -43,7 +42,9 @@ class RecipeProvider extends ChangeNotifier {
     return await repository.countTasksUsingRecipe(recipeId);
   }
 
- 
+ Future<String> loadType(String recipeId) async{
+  return await repository.loadType(recipeId);
+ }
 
 
 }

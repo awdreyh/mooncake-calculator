@@ -19,7 +19,6 @@ import '../../widgets/image_button.dart';
 import '../../widgets/selection_buttons.dart';
 import '../../widgets/text.dart';
 
-
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
 
@@ -27,20 +26,27 @@ class AddTaskPage extends StatefulWidget {
   State<AddTaskPage> createState() => _AddTaskPageState();
 }
 
-class _AddTaskPageState extends State<AddTaskPage> {
-
-  LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context, listen: false);
+class _AddTaskPageState extends State<AddTaskPage>
+    with WidgetsBindingObserver {
+  LanguageProvider get languageProvider =>
+      Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
-  
+
   bool _isSaving = false;
   Type? _selectedDoughType;
   Recipe? _selectedDoughRecipe;
   Type? _selectedFillingType;
   Recipe? _selectedFillingRecipe;
 
-  final TextEditingController _quantityController = TextEditingController(text: '8');
-  final TextEditingController _sizeController = TextEditingController(text: '100');
-  final TextEditingController _ratioController = TextEditingController(text: '4:6');
+  final TextEditingController _quantityController = TextEditingController(
+    text: '8',
+  );
+  final TextEditingController _sizeController = TextEditingController(
+    text: '100',
+  );
+  final TextEditingController _ratioController = TextEditingController(
+    text: '4:6',
+  );
 
   bool _isCalculating = false;
   List<Recipe> _allRecipes = [];
@@ -53,33 +59,57 @@ class _AddTaskPageState extends State<AddTaskPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // no-op; route-resume is handled by didPopNext via RouteAware
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload whenever this route becomes the top route again (e.g. after Navigator.pop from recipe/type pages)
+    final route = ModalRoute.of(context);
+    if (route != null && route.isCurrent && _allTypes.isNotEmpty) {
+      _loadData();
+    }
   }
 
   void _applyDefaultSelections(List<Type> types, List<Recipe> recipes) {
     if (_selectedDoughType == null && types.isNotEmpty) {
-      final doughType = types.where((type) => type.category == Category.dough).firstOrNull;
+      final doughType = types
+          .where((type) => type.category == Category.dough)
+          .firstOrNull;
       if (doughType != null) {
         _selectedDoughType = doughType;
       }
     }
 
     if (_selectedDoughType != null) {
-      final doughRecipes = recipes.where((recipe) => recipe.typeId == _selectedDoughType!.id).toList();
+      final doughRecipes = recipes
+          .where((recipe) => recipe.typeId == _selectedDoughType!.id)
+          .toList();
       if (_selectedDoughRecipe == null && doughRecipes.isNotEmpty) {
         _selectedDoughRecipe = doughRecipes.first;
       }
     }
 
     if (_selectedFillingType == null && types.isNotEmpty) {
-      final fillingType = types.where((type) => type.category == Category.filling).firstOrNull;
+      final fillingType = types
+          .where((type) => type.category == Category.filling)
+          .firstOrNull;
       if (fillingType != null) {
         _selectedFillingType = fillingType;
       }
     }
 
     if (_selectedFillingType != null) {
-      final fillingRecipes = recipes.where((recipe) => recipe.typeId == _selectedFillingType!.id).toList();
+      final fillingRecipes = recipes
+          .where((recipe) => recipe.typeId == _selectedFillingType!.id)
+          .toList();
       if (_selectedFillingRecipe == null && fillingRecipes.isNotEmpty) {
         _selectedFillingRecipe = fillingRecipes.first;
       }
@@ -88,6 +118,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _quantityController.dispose();
     _sizeController.dispose();
     _ratioController.dispose();
@@ -95,12 +126,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _loadData() async {
-     final typeProvider = context.read<TypeProvider>();
-     final recipeProvider = context.read<RecipeProvider>();
+    final typeProvider = context.read<TypeProvider>();
+    final recipeProvider = context.read<RecipeProvider>();
 
     final types = await typeProvider.loadAllTypes();
     final recipes = await recipeProvider.loadAllRecipes();
-   
+
     if (!mounted) return;
     setState(() {
       _allRecipes = recipes;
@@ -109,24 +140,36 @@ class _AddTaskPageState extends State<AddTaskPage> {
     });
   }
 
-  List<Type> get _doughTypes => _allTypes.where((type) => type.category == Category.dough).toList();
+  List<Type> get _doughTypes =>
+      _allTypes.where((type) => type.category == Category.dough).toList();
 
   List<Type> get _fillingTypes {
-    if (_selectedDoughType == null) return [];
+    if (_selectedDoughType == null) {
+      return _allTypes
+          .where((type) => type.category == Category.filling)
+          .toList();
+    }
     return _allTypes.where((type) {
       if (type.category != Category.filling) return false;
-      return type.matchedDoughTypeIds?.any((matched) => matched == _selectedDoughType!.id) ?? false;
+      return type.matchedDoughTypeIds?.any(
+            (matched) => matched == _selectedDoughType!.id,
+          ) ??
+          type.category == Category.filling; // If matchedDoughTypeIds is null, consider it as a general filling type
     }).toList();
   }
 
   List<Recipe> get _doughRecipes {
     if (_selectedDoughType == null) return [];
-    return _allRecipes.where((recipe) => recipe.typeId == _selectedDoughType!.id).toList();
+    return _allRecipes
+        .where((recipe) => recipe.typeId == _selectedDoughType!.id)
+        .toList();
   }
 
   List<Recipe> get _fillingRecipes {
     if (_selectedFillingType == null) return [];
-    return _allRecipes.where((recipe) => recipe.typeId == _selectedFillingType!.id).toList();
+    return _allRecipes
+        .where((recipe) => recipe.typeId == _selectedFillingType!.id)
+        .toList();
   }
 
   void _setQuantity(int value) {
@@ -144,10 +187,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
   Map<String, String?> _validateSelections(String lang) {
     return {
       'doughType': _selectedDoughType == null
-          ? AppStrings.get('validRecipeTypeMsg', lang) 
+          ? AppStrings.get('validRecipeTypeMsg', lang)
           : null,
       'doughRecipe': _selectedDoughRecipe == null
-          ? AppStrings.get('validDoughRecipeMsg', lang) 
+          ? AppStrings.get('validDoughRecipeMsg', lang)
           : null,
       'fillingType': _selectedFillingType == null
           ? AppStrings.get('validFillingTypeMsg', lang)
@@ -159,7 +202,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _calculateTask() async {
-
     final validationErrors = _validateSelections(lang);
 
     setState(() {
@@ -169,7 +211,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
       _fillingRecipeError = validationErrors['fillingRecipe'];
     });
 
-    if (validationErrors.values.any((message) => message != null && message.isNotEmpty)) {
+    if (validationErrors.values.any(
+      (message) => message != null && message.isNotEmpty,
+    )) {
       return;
     }
 
@@ -185,14 +229,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
         size: int.parse(_sizeController.text.trim()),
         ratio: ratio,
       );
-    final provider = context.read<TaskProvider>();
-    await provider.insertTask(newTask);
+      final provider = context.read<TaskProvider>();
+      await provider.insertTask(newTask);
 
       if (!mounted) return;
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => TaskDetailsPage(taskId: newTask.id),
-        ),
+        MaterialPageRoute(builder: (_) => TaskDetailsPage(taskId: newTask.id)),
       );
     } finally {
       if (mounted) {
@@ -210,7 +252,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [ 
+      children: [
         Text(label, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (errorText != null && errorText.isNotEmpty)
@@ -233,10 +275,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               final type = types[index];
               final selected = selectedType?.id == type.id;
               return Padding(
-                padding: EdgeInsets.only(
-                  left: index == 0 ? 0 : 8,
-                  right: 0,
-                ),
+                padding: EdgeInsets.only(left: index == 0 ? 0 : 8, right: 0),
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width / 3 - 8,
                   child: StyleImageButton(
@@ -254,17 +293,14 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
   }
 
-  Widget _buildRecipeSelection({    
-
+  Widget _buildRecipeSelection({
     required String label,
     required List<Recipe> recipes,
     required Recipe? selectedRecipe,
     required ValueChanged<Recipe?> onSelected,
     String? errorText,
-
-  }) {    
-
-    return Column(      
+  }) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         LabelWithSpacing(label: label),
@@ -286,19 +322,26 @@ class _AddTaskPageState extends State<AddTaskPage> {
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
-            child:  Text(AppStrings.get('msgNoRecipe', lang), style: const TextStyle(color: Colors.grey)),
+            child: Text(
+              AppStrings.get('msgNoRecipe', lang),
+              style: const TextStyle(color: Colors.grey),
+            ),
           )
         else
           Row(
-            spacing: 8,          
+            spacing: 8,
             children: recipes.map((recipe) {
               final selected = selectedRecipe?.id == recipe.id;
-              return Expanded(              
+              return Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: selected ? Theme.of(context).colorScheme.primaryContainer : null,
+                    backgroundColor: selected
+                        ? Theme.of(context).colorScheme.primaryContainer
+                        : null,
                     side: BorderSide(
-                      color: selected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+                      color: selected
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey.shade300,
                     ),
                   ),
                   onPressed: () => onSelected(recipe),
@@ -314,7 +357,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   Widget _buildOptionButtons({
     required List<int> values,
     required ValueChanged<int> onSelected,
-  }) { 
+  }) {
     return OptionButtons(values: values, onSelected: onSelected);
   }
 
@@ -324,17 +367,16 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   Widget build(BuildContext context) {
-
+    final lang = context.watch<LanguageProvider>().languageCode;
 
     return Center(
       child: SingleChildScrollView(
-       // padding: const EdgeInsets.all(16),
+        // padding: const EdgeInsets.all(16),
         child: Form(
-        
-          child: Column(            
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [          
-              _buildTypeSelection(               
+            children: [
+              _buildTypeSelection(
                 label: AppStrings.get('lblWhichType', lang),
                 types: _doughTypes,
                 selectedType: _selectedDoughType,
@@ -350,7 +392,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 },
               ),
               const SizedBox(height: 16),
-                         
+
               _buildRecipeSelection(
                 label: AppStrings.get('lblwhichDoughRecipe', lang),
                 recipes: _doughRecipes,
@@ -379,7 +421,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               const SizedBox(height: 16),
               _buildRecipeSelection(
-                label: AppStrings.get('lblwhichFillingRecipe',lang),
+                label: AppStrings.get('lblwhichFillingRecipe', lang),
                 recipes: _fillingRecipes,
                 selectedRecipe: _selectedFillingRecipe,
                 errorText: _fillingRecipeError,
@@ -392,12 +434,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               const SizedBox(height: 24),
               LabelWithSpacing(label: AppStrings.get('quantity', lang)),
-              _buildOptionButtons(values: [4, 8, 10, 16], onSelected: _setQuantity),
+              _buildOptionButtons(
+                values: [4, 8, 10, 16],
+                onSelected: _setQuantity,
+              ),
               const SizedBox(height: 20),
               LabelWithSpacing(label: AppStrings.get('size', lang)),
               _buildOptionButtons(values: [50, 75, 100], onSelected: _setSize),
               const SizedBox(height: 20),
-             LabelWithSpacing(label: AppStrings.get('ratio', lang)),
+              LabelWithSpacing(label: AppStrings.get('ratio', lang)),
               _buildRatioButtons(),
               const SizedBox(height: 24),
               SizedBox(
@@ -405,9 +450,17 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 child: ElevatedButton.icon(
                   onPressed: _isCalculating ? null : _calculateTask,
                   icon: _isCalculating
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.calculate),
-                  label: Text(_isCalculating ? AppStrings.get('calculating',lang) : AppStrings.get('calculateSave',lang)),
+                  label: Text(
+                    _isCalculating
+                        ? AppStrings.get('calculating', lang)
+                        : AppStrings.get('calculateSave', lang),
+                  ),
                 ),
               ),
             ],
@@ -417,4 +470,3 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
   }
 }
-

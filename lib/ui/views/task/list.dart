@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../data/database/db_helper.dart';
-import '../../../data/model/task.dart';
-import '../../../data/repository/task.dart';
+
 import '../../../provider/task.dart';
+import '../../../provider/recipe.dart';
+import '../../../data/model/task.dart';
+
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/helper.dart';
@@ -11,30 +12,22 @@ import '../../utils/language_provider.dart';
 import 'add.dart';
 import 'details.dart';
 
-class TaskListPage extends StatelessWidget {
+class TaskListPage extends StatefulWidget {
   final String? recipeId;
   const TaskListPage({super.key, this.recipeId});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<TaskProvider>(
-      create: (_) => TaskProvider(TaskRepository(MCDatabase.instance)),
-      child: const _TaskListView(),
-    );
-  }
+  State<TaskListPage> createState() => _TaskListPageState();
 }
 
-class _TaskListView extends StatefulWidget {
-  const _TaskListView({super.key});
+class _TaskListPageState extends State<TaskListPage> {
+  String get lang => context.read<LanguageProvider>().languageCode;
 
-  @override
-  State<_TaskListView> createState() => _TaskListViewState();
-}
-
-class _TaskListViewState extends State<_TaskListView> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Task> _tasks = [];
+  // taskId -> "Dough Type + Filling Type"
+  final Map<String, String> _titles = {};
 
   @override
   void initState() {
@@ -49,42 +42,42 @@ class _TaskListViewState extends State<_TaskListView> {
     });
 
     try {
-      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-      final tasks = await taskProvider.loadAllTasks();
+      final recipeProvider = context.read<RecipeProvider>();
+      final tasks = await context.read<TaskProvider>().loadAllTasks();
+
+      final entries = await Future.wait(
+        tasks.map((task) async {
+          final results = await Future.wait([
+            recipeProvider.loadType(task.doughRecipeId),
+            recipeProvider.loadType(task.fillingRecipeId),
+          ]);
+          return MapEntry(task.id, '${results[0]} + ${results[1]}');
+        }),
+      );
+
       if (!mounted) return;
       setState(() {
         _tasks = tasks;
+        _titles
+          ..clear()
+          ..addEntries(entries);
+        _isLoading = false;
       });
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString();
-      });
-    } finally {
-      if (!mounted) return;
-      setState(() {
         _isLoading = false;
       });
     }
   }
 
   Future<void> _deleteTask(Task task) async {
-    final languageProvider = Provider.of<LanguageProvider>(
-      context,
-      listen: false,
-    );
-    final lang = languageProvider.languageCode;
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppStrings.get('delete_task', lang)),
-        content: Text(
-          AppStrings.get(
-                'confirm_delete_task',
-                lang,
-              ),
-        ),
+        content: Text(AppStrings.get('confirm_delete_task', lang)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -101,41 +94,38 @@ class _TaskListViewState extends State<_TaskListView> {
       ),
     );
 
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
 
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    await taskProvider.deleteTask(task.id);
+    await context.read<TaskProvider>().deleteTask(task.id);
     await _loadTasks();
   }
 
-  Widget _buildTaskTile(Task task, String lang) {
-    final subtitle = <String>[];
+  Widget _buildTaskTile(Task task) {
     final createdAt = task.createdAt;
     final createdDate =
-        '${createdAt.year.toString().padLeft(4, '0')}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')}';
-    subtitle.add('${AppStrings.get('quantity', lang)}: ${task.quantity}');
-    subtitle.add('${AppStrings.get('size', lang)}: ${task.size}');
-    subtitle.add(
+        '${createdAt.year.toString().padLeft(4, '0')}-'
+        '${createdAt.month.toString().padLeft(2, '0')}-'
+        '${createdAt.day.toString().padLeft(2, '0')}';
+
+    final subtitle = [
+      '${AppStrings.get('quantity', lang)}: ${task.quantity}',
+      '${AppStrings.get('size', lang)}: ${task.size}',
       '${AppStrings.get('ratio', lang)}: ${Helper.ratioToString(task.ratio)}',
-    );
-    subtitle.add('${AppStrings.get('created_at', lang)}: $createdDate');
-    if (task.comment != null && task.comment!.isNotEmpty) {
-      subtitle.add(task.comment!);
-    }
+      '${AppStrings.get('created_at', lang)}: $createdDate',
+      if (task.comment != null && task.comment!.isNotEmpty) task.comment!,
+    ];
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      title: Text('Task ${task.id.substring(0, task.id.length.clamp(0, 8))}'),
+      leading: Icon(
+        task.isCompleted == true ? Icons.check_circle : Icons.pending,
+        color: task.isCompleted == true ? Colors.green : Colors.grey,
+      ),
+      title: Text(_titles[task.id] ?? ''),
       subtitle: Text(subtitle.join(' · ')),
       trailing: IconButton(
         icon: const Icon(Icons.delete, color: Colors.redAccent),
         onPressed: () => _deleteTask(task),
-      ),
-      leading: Icon(
-        task.isCompleted == true ? Icons.check_circle : Icons.pending,
-        color: task.isCompleted == true ? Colors.green : Colors.grey,
       ),
       onTap: () async {
         await Navigator.of(context).push<bool>(
@@ -148,9 +138,6 @@ class _TaskListViewState extends State<_TaskListView> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(AppStrings.get('tasks', lang)),
@@ -170,18 +157,15 @@ class _TaskListViewState extends State<_TaskListView> {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: _tasks.length,
-                separatorBuilder: (context, index) => const Divider(height: 0),
-                itemBuilder: (context, index) =>
-                    _buildTaskTile(_tasks[index], lang),
+                separatorBuilder: (_, __) => const Divider(height: 0),
+                itemBuilder: (_, index) => _buildTaskTile(_tasks[index]),
               ),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.of(
-            context,
-          ).push<bool>(MaterialPageRoute(builder: (_) => const AddTaskPage()));
+            Navigator.of(context).popUntil((route) => route.isFirst);
           await _loadTasks();
-        },
+        }, 
         tooltip: AppStrings.get('saveTask', lang),
         child: const Icon(Icons.add),
       ),

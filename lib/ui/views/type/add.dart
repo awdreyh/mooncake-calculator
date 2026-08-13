@@ -20,15 +20,19 @@ class AddTypePage extends StatefulWidget {
 }
 
 class _AddTypePageState extends State<AddTypePage> {
-      LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context, listen: false);
-    String get lang => languageProvider.languageCode;
+  LanguageProvider get languageProvider =>
+  Provider.of<LanguageProvider>(context, listen: false);
+  String get lang => languageProvider.languageCode;
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   Category _category = Category.dough;
   bool _isSaving = false;
   String? _imagePath;
   List<Type> _doughTypes = [];
+  List<Type> _fillingTypes = [];
   List<Type> _selectedMatchedDoughTypes = [];
+  List<Type> _selectedMatchedFillingTypes = [];
+  String? _matchedTypeError;
 
   @override
   void initState() {
@@ -40,11 +44,17 @@ class _AddTypePageState extends State<AddTypePage> {
     try {
       final typeProvider = context.read<TypeProvider>();
       final types = await typeProvider.loadAllTypes();
-      final doughTypes = types.where((type) => type.category == Category.dough).toList();
-      
+      final doughTypes = types
+          .where((type) => type.category == Category.dough)
+          .toList();
+      final fillingTypes = types
+          .where((type) => type.category == Category.filling)
+          .toList();
+
       if (mounted) {
         setState(() {
           _doughTypes = doughTypes;
+          _fillingTypes = fillingTypes;
         });
       }
     } catch (e) {
@@ -63,7 +73,7 @@ class _AddTypePageState extends State<AddTypePage> {
     super.dispose();
   }
 
-    Future<void> _pickImage() async {
+  Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
@@ -71,13 +81,14 @@ class _AddTypePageState extends State<AddTypePage> {
     final savedPath = await _copySelectedImage(pickedFile.path);
     if (savedPath != null) {
       setState(() => _imagePath = savedPath);
+  
     }
   }
 
   Future<String?> _copySelectedImage(String sourcePath) async {
     try {
       final appDir = await getApplicationDocumentsDirectory();
-      final imageDir = Directory(p.join(appDir.path, 'type_images'));
+      final imageDir = Directory(p.join(appDir.path, 'images/types/'));
       await imageDir.create(recursive: true);
       final extension = p.extension(sourcePath);
       final fileName = '${const Uuid().v4()}$extension';
@@ -91,6 +102,7 @@ class _AddTypePageState extends State<AddTypePage> {
 
   void _toggleMatchedDoughType(Type type) {
     setState(() {
+      _matchedTypeError = null;
       if (_selectedMatchedDoughTypes.any((item) => item.id == type.id)) {
         _selectedMatchedDoughTypes.removeWhere((item) => item.id == type.id);
       } else {
@@ -98,8 +110,19 @@ class _AddTypePageState extends State<AddTypePage> {
       }
     });
   }
-  
-   Widget _buildImagePreview() {
+
+  void _toggleMatchedFillingType(Type type) {
+    setState(() {
+      _matchedTypeError = null;
+      if (_selectedMatchedFillingTypes.any((item) => item.id == type.id)) {
+        _selectedMatchedFillingTypes.removeWhere((item) => item.id == type.id);
+      } else {
+        _selectedMatchedFillingTypes.add(type);
+      }
+    });
+  }
+
+  Widget _buildImagePreview() {
     if (_imagePath == null) {
       return const SizedBox.shrink();
     }
@@ -110,6 +133,7 @@ class _AddTypePageState extends State<AddTypePage> {
         borderRadius: BorderRadius.circular(12),
         child: Image.file(
           File(_imagePath!),
+          key: ValueKey(_imagePath),
           width: double.infinity,
           height: 180,
           fit: BoxFit.cover,
@@ -120,38 +144,66 @@ class _AddTypePageState extends State<AddTypePage> {
 
   Future<void> _saveType() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
+    if (_category == Category.filling && _selectedMatchedDoughTypes.isEmpty) {
+      setState(() {
+        _matchedTypeError = AppStrings.get('validMatchedDoughTypesMsg', lang);
+      });
+      return;
+    }
+    if (_category == Category.dough && _selectedMatchedFillingTypes.isEmpty) {
+      setState(() {
+        _matchedTypeError = AppStrings.get('validMatchedFillingTypesMsg', lang);
+      });
+      return;
+    }
 
     final name = _nameController.text.trim();
 
     setState(() => _isSaving = true);
 
-    final matchedIds = _category == Category.filling 
-        ? _selectedMatchedDoughTypes.map((type) => type.id).toList() 
+    final matchedIds = _category == Category.filling
+        ? _selectedMatchedDoughTypes.map((type) => type.id).toList()
         : null;
 
     final newType = Type(
       id: const Uuid().v4(),
       category: _category,
       name: name,
-      imagePath: null,
+      imagePath: _imagePath,
       matchedDoughTypeIds: matchedIds,
     );
 
     try {
-      print('Saving type: $newType');
-      print('Category: ${_category.toMap()}');
-      print('Matched IDs: $matchedIds');
-      
-      await context.read<TypeProvider>().insertType(newType);
-      
+      final typeProvider = context.read<TypeProvider>();
+      await typeProvider.insertType(newType);
+
+      // When adding a dough type, add its ID into all selected filling types.
+      if (_category == Category.dough) {
+        for (final filling in _selectedMatchedFillingTypes) {
+          final ids = List<String>.from(filling.matchedDoughTypeIds ?? []);
+          if (!ids.contains(newType.id)) {
+            ids.add(newType.id);
+          }
+          await typeProvider.updateType(
+            Type(
+              id: filling.id,
+              category: filling.category,
+              name: filling.name,
+              imagePath: filling.imagePath,
+              matchedDoughTypeIds: ids,
+            ),
+          );
+        }
+      }
+
       if (mounted) {
         Navigator.of(context).pop(true);
       }
     } catch (error, stackTrace) {
       print('Error saving type: $error');
       print('Stack trace: $stackTrace');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -169,12 +221,8 @@ class _AddTypePageState extends State<AddTypePage> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppStrings.get('addType', lang)),
-      ),
+      appBar: AppBar(title: Text(AppStrings.get('addType', lang))),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -202,7 +250,7 @@ class _AddTypePageState extends State<AddTypePage> {
                   items: Category.values.map((category) {
                     return DropdownMenuItem(
                       value: category,
-                      child: Text(category.toMap()),
+                      child: Text(AppStrings.get(category.toMap(), lang)),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -226,9 +274,23 @@ class _AddTypePageState extends State<AddTypePage> {
                 if (_category == Category.filling) ...[
                   Text(
                     AppStrings.get('matched_dough_types', lang),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
+                  if (_matchedTypeError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        _matchedTypeError!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   if (_doughTypes.isEmpty)
                     const Text('No dough types available')
                   else
@@ -248,20 +310,62 @@ class _AddTypePageState extends State<AddTypePage> {
                     ),
                   const SizedBox(height: 24),
                 ],
-                 _buildImagePreview(),
+                // Matched Filling Types for Dough
+                if (_category == Category.dough) ...[
+                  Text(
+                    AppStrings.get('matched_filling_types', lang),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_matchedTypeError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        _matchedTypeError!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  if (_fillingTypes.isEmpty)
+                    const Text('No filling types available')
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _fillingTypes.map((type) {
+                        final selected = _selectedMatchedFillingTypes.any(
+                          (item) => item.id == type.id,
+                        );
+                        return FilterChip(
+                          label: Text(type.name),
+                          selected: selected,
+                          onSelected: (_) => _toggleMatchedFillingType(type),
+                        );
+                      }).toList(),
+                    ),
+                  const SizedBox(height: 24),
+                ],
+                _buildImagePreview(),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.photo),
                   label: Text(AppStrings.get('selectImage', lang)),
                   onPressed: _pickImage,
                 ),
-                 const SizedBox(height: 24),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isSaving ? null : _saveType,
-                    child: Text(_isSaving
-                        ? AppStrings.get('saving', lang) 
-                        : AppStrings.get('save', lang)),
+                    child: Text(
+                      _isSaving
+                          ? AppStrings.get('saving', lang)
+                          : AppStrings.get('save', lang),
+                    ),
                   ),
                 ),
               ],
