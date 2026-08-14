@@ -14,6 +14,7 @@ import '../../../provider/task.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../utils/helper.dart';
+import '../recipe/add.dart';
 import 'details.dart';
 import '../../widgets/image_button.dart';
 import '../../widgets/selection_buttons.dart';
@@ -299,6 +300,7 @@ class _AddTaskPageState extends State<AddTaskPage>
     required Recipe? selectedRecipe,
     required ValueChanged<Recipe?> onSelected,
     String? errorText,
+    Type? selectedType,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -322,9 +324,25 @@ class _AddTaskPageState extends State<AddTaskPage>
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(
-              AppStrings.get('msgNoRecipe', lang),
-              style: const TextStyle(color: Colors.grey),
+            child: InkWell(
+              onTap: selectedType == null
+                  ? null
+                  : () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              AddRecipePage(initialType: selectedType),
+                        ),
+                      );
+                    },
+              child: Text(
+                AppStrings.get('noRecipesForType', lang)
+                    .replaceAll('{type}', selectedType?.name ?? ''),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
           )
         else
@@ -385,7 +403,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                   setState(() {
                     _doughTypeError = null;
                     _selectedDoughType = type;
-                    _selectedDoughRecipe = null;
+                    _selectedDoughRecipe = _doughRecipes.firstOrNull;
                     _selectedFillingType = null;
                     _selectedFillingRecipe = null;
                   });
@@ -398,6 +416,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                 recipes: _doughRecipes,
                 selectedRecipe: _selectedDoughRecipe,
                 errorText: _doughRecipeError,
+                selectedType: _selectedDoughType,
                 onSelected: (recipe) {
                   setState(() {
                     _doughRecipeError = null;
@@ -415,7 +434,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                   setState(() {
                     _fillingTypeError = null;
                     _selectedFillingType = type;
-                    _selectedFillingRecipe = null;
+                    _selectedFillingRecipe = _fillingRecipes.firstOrNull;
                   });
                 },
               ),
@@ -425,6 +444,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                 recipes: _fillingRecipes,
                 selectedRecipe: _selectedFillingRecipe,
                 errorText: _fillingRecipeError,
+                selectedType: _selectedFillingType,
                 onSelected: (recipe) {
                   setState(() {
                     _fillingRecipeError = null;
@@ -433,16 +453,85 @@ class _AddTaskPageState extends State<AddTaskPage>
                 },
               ),
               const SizedBox(height: 24),
-              LabelWithSpacing(label: AppStrings.get('quantity', lang)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      AppStrings.get('quantity', lang),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _quantityController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               _buildOptionButtons(
                 values: [4, 8, 10, 16],
                 onSelected: _setQuantity,
               ),
               const SizedBox(height: 20),
-              LabelWithSpacing(label: AppStrings.get('size', lang)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      AppStrings.get('size', lang),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _sizeController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               _buildOptionButtons(values: [50, 75, 100], onSelected: _setSize),
               const SizedBox(height: 20),
-              LabelWithSpacing(label: AppStrings.get('ratio', lang)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      AppStrings.get('ratio', lang),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _ratioController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               _buildRatioButtons(),
               const SizedBox(height: 24),
               SizedBox(

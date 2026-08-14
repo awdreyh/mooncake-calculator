@@ -19,7 +19,9 @@ import '../../widgets/selection_buttons.dart';
 import '../../core/nav_bottom.dart';
 
 class AddRecipePage extends StatefulWidget {
-  const AddRecipePage({super.key});
+  const AddRecipePage({super.key, this.initialType});
+
+  final Type? initialType;
 
   @override
   State<AddRecipePage> createState() => _AddRecipePageState();
@@ -102,6 +104,14 @@ class _AddRecipePageState extends State<AddRecipePage> {
       if (_selectedType == null ||
           !_allTypes.any((type) => type.id == _selectedType!.id)) {
         _selectedType = _getDefaultType(_recipeCategory);
+      }
+      final initial = widget.initialType;
+      if (initial != null &&
+          _allTypes.any((type) => type.id == initial.id)) {
+        _recipeCategory = initial.category;
+        _selectedType = _allTypes.firstWhere(
+          (type) => type.id == initial.id,
+        );
       }
     });
   }

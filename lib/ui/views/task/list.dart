@@ -9,7 +9,6 @@ import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
-import 'add.dart';
 import 'details.dart';
 
 class TaskListPage extends StatefulWidget {
@@ -108,25 +107,28 @@ class _TaskListPageState extends State<TaskListPage> {
         '${createdAt.day.toString().padLeft(2, '0')}';
 
     final subtitle = [
-      '${AppStrings.get('quantity', lang)}: ${task.quantity}',
-      '${AppStrings.get('size', lang)}: ${task.size}',
+      '${task.quantity}',
+      ' * ',
+      '${task.size}',
+      'g \n',
       '${AppStrings.get('ratio', lang)}: ${Helper.ratioToString(task.ratio)}',
-      '${AppStrings.get('created_at', lang)}: $createdDate',
-      if (task.comment != null && task.comment!.isNotEmpty) task.comment!,
+      '\n',
+      '$createdDate',
+      
     ];
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       leading: Icon(
-        task.isCompleted == true ? Icons.check_circle : Icons.pending,
+        task.isCompleted == true ? Icons.check_circle : Icons.check_circle_outline,
         color: task.isCompleted == true ? Colors.green : Colors.grey,
       ),
       title: Text(_titles[task.id] ?? ''),
-      subtitle: Text(subtitle.join(' · ')),
+      subtitle: Text(subtitle.join('')),
       trailing: IconButton(
         icon: const Icon(Icons.delete, color: Colors.redAccent),
         onPressed: () => _deleteTask(task),
-      ),
+      ), 
       onTap: () async {
         await Navigator.of(context).push<bool>(
           MaterialPageRoute(builder: (_) => TaskDetailsPage(taskId: task.id)),

@@ -54,6 +54,7 @@ class AppStrings {
       'chinese': 'Chinese',
       'noRecipesFound': 'No recipes found',
       'noRecipesAvailable': 'No recipes available',
+      'noRecipesForType': 'No recipes found, please add recipe for {type}',
       'back': 'Back',
       'close': 'Close',
       'noTasks': 'No tasks yet. Create one to get started!',
@@ -100,6 +101,9 @@ class AppStrings {
       'selectImage': 'Select Image',
       'delete': 'Delete',
       'confirm_delete': 'Are you sure you want to delete {name}?',
+      'no_image_uploaded': 'No image uploaded',
+      'completed': 'Completed',
+      'enter_comment': 'Enter your comment here...',
 
     },
     'zh': {
@@ -158,6 +162,7 @@ class AppStrings {
       'chinese': '中文',
       'noRecipesFound': '未找到食谱',
       'noRecipesAvailable': '没有可用的食谱',
+      'noRecipesForType': '未找到食谱，请为 {type} 添加食谱',
       'back': '返回',
       'close': '关闭',
       'noTasks': '还没有任务。创建一个任务开始！',
@@ -204,6 +209,9 @@ class AppStrings {
       'selectImage': '选择图片',
       'delete': '删除',
       'confirm_delete': '您确定要删除 {name} 吗？',
+      'no_image_uploaded': '未上传图片',
+      'completed': '已完成',
+      'enter_comment': '在此输入评论...',
     },
   };
 
