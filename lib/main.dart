@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'ui/core/app_theme.dart';
 import 'ui/core/nav_bottom.dart';
 import 'ui/utils/app_strings.dart';
 import 'ui/utils/language_provider.dart';
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
     final languageProvider = Provider.of<LanguageProvider>(context, listen: true);
     return MaterialApp(
       title: 'Moon Cake Calculator',
-      // theme: AppTheme.lightTheme,
+      theme: AppTheme.light,
       locale: languageProvider.locale, 
       home: const MyHomePage(title: 'Moon Cake Calculator'),
     );
@@ -89,7 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
-        //title: Text(widget.title),
         toolbarHeight: 32,
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: const Color.fromARGB(

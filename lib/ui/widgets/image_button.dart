@@ -1,7 +1,7 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import '../../data/model/type.dart';
+import '../../ui/core/app_theme.dart';
 
 class StyleImageButton extends StatelessWidget {
   final String title;
@@ -19,6 +19,8 @@ class StyleImageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     const placeholderImage = 'assets/images/types/placeholder.jpg';
     final imagePath = type.imagePath?.trim();
     final isLocalFile = imagePath != null &&
@@ -50,16 +52,16 @@ class StyleImageButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: selected
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.grey,
+                  ? AppColors.borderLight
+                  : colorScheme.outline,
               width: 1,
             ),
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withAlpha(100),
-                      blurRadius: 8,
-                      spreadRadius: 2,
+                      color: colorScheme.primary.withAlpha(10),
+                      blurRadius: 2,
+                      spreadRadius: 4,
                     ),
                   ]
                 : [],
@@ -81,10 +83,10 @@ class StyleImageButton extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: selected
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.white,
+                        ? AppColors.accentLight
+                        : AppColors.accentLight.withValues(alpha: 0.5),
                     borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(10),
+                      bottom: Radius.circular(12),
                     ),
                   ),
                   child: Center(
@@ -93,10 +95,11 @@ class StyleImageButton extends StatelessWidget {
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: selected ? Colors.white : Colors.black87,
-                        fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                        fontSize: 12,
+                      style: text.labelLarge?.copyWith(
+                        color: selected
+                            ? AppColors.textPrimary
+                            : colorScheme.onSurface,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -112,8 +115,11 @@ class StyleImageButton extends StatelessWidget {
 
 Widget _placeholder() => Container(
   height: 100,
-  color: Colors.grey[300],
-  child: const Icon(Icons.image_not_supported),
+  color: AppColors.espresso,
+  child: Icon(
+    Icons.image_not_supported,
+    color: AppColors.espressoLight,
+  ),
 );
 
 class StyleTypeSelectionSection extends StatelessWidget {
@@ -147,7 +153,7 @@ class StyleTypeSelectionSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -180,7 +186,7 @@ class StyleTypeSelectionSection extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             matchedDoughLabel,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
           Wrap(

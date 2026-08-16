@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
-
 import '../../../data/model/recipe.dart';
 import '../../../data/model/type.dart';
-
 import '../../../data/repository/task.dart';
-
 import '../../../provider/recipe.dart';
 import '../../../provider/type.dart';
 import '../../../provider/task.dart';
-
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../utils/helper.dart';
@@ -19,6 +15,7 @@ import 'details.dart';
 import '../../widgets/image_button.dart';
 import '../../widgets/selection_buttons.dart';
 import '../../widgets/text.dart';
+import '../../core/app_theme.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
@@ -27,17 +24,19 @@ class AddTaskPage extends StatefulWidget {
   State<AddTaskPage> createState() => _AddTaskPageState();
 }
 
-class _AddTaskPageState extends State<AddTaskPage>
-    with WidgetsBindingObserver {
+class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
   LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
-
+  TextTheme get text => Theme.of(context).textTheme;
   bool _isSaving = false;
   Type? _selectedDoughType;
   Recipe? _selectedDoughRecipe;
   Type? _selectedFillingType;
   Recipe? _selectedFillingRecipe;
+  int? _selectedQuantity;
+  int? _selectedSize; 
+  double? _selectedRatio;
 
   final TextEditingController _quantityController = TextEditingController(
     text: '8',
@@ -61,6 +60,9 @@ class _AddTaskPageState extends State<AddTaskPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _selectedQuantity = int.tryParse(_quantityController.text);
+    _selectedSize = int.tryParse(_sizeController.text);
+    _selectedRatio = Helper.stringToRatio(_ratioController.text);
     _loadData();
   }
 
@@ -155,7 +157,9 @@ class _AddTaskPageState extends State<AddTaskPage>
       return type.matchedDoughTypeIds?.any(
             (matched) => matched == _selectedDoughType!.id,
           ) ??
-          type.category == Category.filling; // If matchedDoughTypeIds is null, consider it as a general filling type
+          type.category ==
+              Category
+                  .filling; // If matchedDoughTypeIds is null, consider it as a general filling type
     }).toList();
   }
 
@@ -174,15 +178,24 @@ class _AddTaskPageState extends State<AddTaskPage>
   }
 
   void _setQuantity(int value) {
-    _quantityController.text = value.toString();
+    setState(() {
+      _selectedQuantity = value;
+      _quantityController.text = value.toString();
+    });
   }
 
   void _setSize(int value) {
-    _sizeController.text = value.toString();
+    setState(() {
+      _selectedSize = value;
+      _sizeController.text = value.toString();
+    });
   }
 
   void _setRatio(String value) {
-    _ratioController.text = value;
+    setState(() {
+      _selectedRatio = Helper.stringToRatio(value);
+      _ratioController.text = value;
+    });
   }
 
   Map<String, String?> _validateSelections(String lang) {
@@ -254,7 +267,7 @@ class _AddTaskPageState extends State<AddTaskPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label, style: Theme.of(context).textTheme.titleMedium),
+        Text(label, style: text.titleSmall),
         const SizedBox(height: 8),
         if (errorText != null && errorText.isNotEmpty)
           Padding(
@@ -270,6 +283,7 @@ class _AddTaskPageState extends State<AddTaskPage>
         SizedBox(
           height: 150,
           child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 4),
             scrollDirection: Axis.horizontal,
             itemCount: types.length,
             itemBuilder: (context, index) {
@@ -305,25 +319,20 @@ class _AddTaskPageState extends State<AddTaskPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        LabelWithSpacing(label: label),
+        Text(label, style: text.titleSmall),
+        const SizedBox(height: 8),
         if (errorText != null && errorText.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               errorText,
-              style: TextStyle(
+              style: text.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.error,
-                fontSize: 12,
               ),
             ),
           ),
         if (recipes.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
-            ),
+          Card(
             child: InkWell(
               onTap: selectedType == null
                   ? null
@@ -335,35 +344,55 @@ class _AddTaskPageState extends State<AddTaskPage>
                         ),
                       );
                     },
-              child: Text(
-                AppStrings.get('noRecipesForType', lang)
-                    .replaceAll('{type}', selectedType?.name ?? ''),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  decoration: TextDecoration.underline,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  AppStrings.get(
+                    'noRecipesForType',
+                    lang,
+                  ).replaceAll('{type}', selectedType?.name ?? ''),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    //decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),
           )
         else
-          Row(
-            spacing: 8,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: recipes.map((recipe) {
               final selected = selectedRecipe?.id == recipe.id;
-              return Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: selected
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : null,
-                    side: BorderSide(
-                      color: selected
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey.shade300,
-                    ),
+              return OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: selected
+                      ? AppColors.sectionBg
+                      : null,   
+                  foregroundColor: selected
+                      ? AppColors.textSecondary
+                      : AppColors.textSecondary,       
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
                   ),
-                  onPressed: () => onSelected(recipe),
-                  child: Text(recipe.name),
+                ),
+                onPressed: () => onSelected(recipe),
+                icon: Icon(
+                  selected ? Icons.check_circle : Icons.circle_outlined,                 
+                  // color: selected
+                  //     ? AppColors.textOnDark
+                  //     : Theme.of(context).colorScheme.outline,
+                  size: 20,
+                ),
+                label: Text(
+                  recipe.name,
+                  style: TextStyle(
+                    color: selected
+                        ? AppColors.textSecondary
+                        : AppColors.textSecondary,
+                  ),
                 ),
               );
             }).toList(),
@@ -375,12 +404,17 @@ class _AddTaskPageState extends State<AddTaskPage>
   Widget _buildOptionButtons({
     required List<int> values,
     required ValueChanged<int> onSelected,
+    int? selectedValue,
   }) {
-    return OptionButtons(values: values, onSelected: onSelected);
+    return OptionButtons(
+      values: values,
+      onSelected: onSelected,
+      selectedValue: selectedValue,
+    );
   }
 
-  Widget _buildRatioButtons() {
-    return RatioButtons(onSelected: _setRatio);
+  Widget _buildRatioButtons({String? selectedValue}) {
+    return RatioButtons(onSelected: _setRatio, selectedValue: selectedValue);
   }
 
   @override
@@ -455,23 +489,18 @@ class _AddTaskPageState extends State<AddTaskPage>
               const SizedBox(height: 24),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 100,
-                    child: Text(
+                children: [                             
+                   Text(
                       AppStrings.get('quantity', lang),
-                      style: Theme.of(context).textTheme.titleMedium,
+                       style: text.titleSmall,
                     ),
-                  ),
+                  
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
+                      decoration: const InputDecoration(),
                       controller: _quantityController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
                     ),
                   ),
                 ],
@@ -480,59 +509,57 @@ class _AddTaskPageState extends State<AddTaskPage>
               _buildOptionButtons(
                 values: [4, 8, 10, 16],
                 onSelected: _setQuantity,
+                selectedValue: _selectedQuantity,
               ),
               const SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 100,
-                    child: Text(
+                children: [               
+                  
+                   Text(
                       AppStrings.get('size', lang),
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: text.titleSmall,
                     ),
-                  ),
+                 
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
+                      decoration: const InputDecoration(),
                       controller: _sizeController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
+                      style: text.bodyMedium,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              _buildOptionButtons(values: [50, 75, 100], onSelected: _setSize),
+              _buildOptionButtons(
+                values: [35, 50, 75, 100],
+                onSelected: _setSize,
+                selectedValue: _selectedSize,
+              ),
               const SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 100,
-                    child: Text(
+                  Text(
                       AppStrings.get('ratio', lang),
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: text.titleSmall,
                     ),
-                  ),
+                
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       controller: _ratioController,
                       keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
+                      decoration: const InputDecoration(),
+                      style: text.bodyMedium,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              _buildRatioButtons(),
+              _buildRatioButtons(selectedValue: _selectedRatio != null ? Helper.ratioToString(_selectedRatio!) : null),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,

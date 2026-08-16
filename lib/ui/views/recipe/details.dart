@@ -74,20 +74,27 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   Future<void> _loadTypes() async {
     final types = await typeProvider.loadAllTypes();
     final matchedDoughTypes = await typeProvider.loadMatchedDoughTypes(_recipe.typeId);
-    final  type = await typeProvider.loadType(_recipe.typeId!);
+    if (_recipe.typeId != null) {
+      final type = await typeProvider.loadType(_recipe.typeId!);
+      if (!mounted) return;
+      setState(() {
+        _typeName = type.name;
+      });
+    }
     
     if (!mounted) return;
     setState(() {
       _allTypes = types;
-      _typeName = type.name;
       _selectedMatchedDoughTypes = matchedDoughTypes;
     });
   }
 
   Future<void> _loadTaskUsageCount() async {
     if (!mounted) return;
+    final count = await receipeProvider.countTasksUsingRecipe(_recipe.id);
+    if (!mounted) return;
     setState(() {
-      _taskUsageCount = receipeProvider.countTasksUsingRecipe(_recipe.id) as int;
+      _taskUsageCount = count;
     });
   }
 
