@@ -501,6 +501,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                       decoration: const InputDecoration(),
                       controller: _quantityController,
                       keyboardType: TextInputType.number,
+                      
                     ),
                   ),
                 ],

@@ -25,11 +25,11 @@ class OptionButtons extends StatelessWidget {
           child: OutlinedButton(
           onPressed: () => onSelected(value),
             style: OutlinedButton.styleFrom(
-                  backgroundColor: isSelected
-                      ?  AppColors.sectionBg
-                      : AppColors.cream,  
+                 backgroundColor: isSelected
+                      ? AppColors.sectionBg
+                      : null,   
                   foregroundColor: isSelected
-                      ? AppColors.textPrimary
+                      ? AppColors.textSecondary
                       : AppColors.textSecondary,
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(                  
@@ -73,8 +73,8 @@ class RatioButtons extends StatelessWidget {
                       : AppColors.textSecondary,
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                
+                    vertical: 4,
                   ),
                 ),
           child: Text(value),

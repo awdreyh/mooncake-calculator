@@ -93,7 +93,7 @@ class StyleImageButton extends StatelessWidget {
                     child: Text(
                       title,
                       textAlign: TextAlign.center,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: text.labelLarge?.copyWith(
                         color: selected

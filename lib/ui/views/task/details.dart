@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../utils/language_provider.dart';
 import '../../utils/app_strings.dart';
+import '../../core/nav_bottom.dart';
+import '../../utils/helper.dart';
 
 import '../../../data/model/task.dart';
 import '../../../data/model/recipe.dart';
@@ -26,7 +28,7 @@ class TaskDetailsPage extends StatefulWidget {
 }
 
 class _TaskDetailsPageState extends State<TaskDetailsPage> {
-LanguageProvider get languageProvider =>
+  LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
 
@@ -37,7 +39,7 @@ LanguageProvider get languageProvider =>
   bool _isSavingImages = false;
   bool _isSaving = false;
   List<String> _imagePaths = [];
-  String _title = 'Task Details';
+  String _title = '';
   late TextEditingController _commentController;
   bool _isCompleted = false;
 
@@ -69,13 +71,17 @@ LanguageProvider get languageProvider =>
         try {
           doughRecipe = await recipeProvider.loadRecipe(task.doughRecipeId);
         } catch (error, stackTrace) {
-          debugPrint('Failed to load dough recipe ${task.doughRecipeId}: $error\n$stackTrace');
+          debugPrint(
+            'Failed to load dough recipe ${task.doughRecipeId}: $error\n$stackTrace',
+          );
         }
 
         try {
           fillingRecipe = await recipeProvider.loadRecipe(task.fillingRecipeId);
         } catch (error, stackTrace) {
-          debugPrint('Failed to load filling recipe ${task.fillingRecipeId}: $error\n$stackTrace');
+          debugPrint(
+            'Failed to load filling recipe ${task.fillingRecipeId}: $error\n$stackTrace',
+          );
         }
 
         try {
@@ -85,7 +91,9 @@ LanguageProvider get languageProvider =>
           ]);
           title = '${typeNames[0]} + ${typeNames[1]}';
         } catch (error, stackTrace) {
-          debugPrint('Failed to load type names for task ${task.id}: $error\n$stackTrace');
+          debugPrint(
+            'Failed to load type names for task ${task.id}: $error\n$stackTrace',
+          );
         }
       }
 
@@ -167,7 +175,9 @@ LanguageProvider get languageProvider =>
     setState(() => _isSaving = true);
 
     final updatedTask = _task!.copyWith(
-      comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
+      comment: _commentController.text.trim().isEmpty
+          ? null
+          : _commentController.text.trim(),
       isCompleted: _isCompleted,
       updatedAt: DateTime.now(),
     );
@@ -187,15 +197,14 @@ LanguageProvider get languageProvider =>
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.get('failed_to_update_changes', lang))),
+        SnackBar(
+          content: Text(AppStrings.get('failed_to_update_changes', lang)),
+        ),
       );
     }
   }
 
-  Widget _buildIngredientSection(
-    String title,
-    List<Ingredient> ingredients,
-  ) {
+  Widget _buildIngredientSection(String title, List<Ingredient> ingredients) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -234,31 +243,149 @@ LanguageProvider get languageProvider =>
     if (_task == null) {
       return const Scaffold(body: Center(child: Text('Task not found')));
     }
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_title)),
+      appBar: AppBar(title: Text(AppStrings.get('task_details_title', lang)),actions: [
+          if (!_isSaving)
+            IconButton(
+              icon: const Icon(Icons.save, color: Colors.green),
+              onPressed: _saveTask,
+            )
+          else
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Dough recipe: ${_doughRecipe?.name ?? _task!.doughRecipeId}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              _title,
+               style: textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
             Text(
-              'Filling recipe: ${_fillingRecipe?.name ?? _task!.fillingRecipeId}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              ' ${_task!.createdAt.toLocal().toString().split('.').first}',
+              style: textTheme.bodySmall,
             ),
             const SizedBox(height: 16),
-             const SizedBox(height: 16),
-            Text('Qty: ${_task!.quantity}'),
-            Text('Size: ${_task!.size}'),
-            Text('Ratio: ${_task!.ratio.toStringAsFixed(2)}'),
-            const SizedBox(height: 24),
-            
-             Text(AppStrings.get('ingredients', lang),
+            Row(
+              spacing: 4,
+              children: [
+                Flexible(
+                  child: Chip(
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    label: Text(
+                      ' ${_task!.quantity} pcs',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: -4,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: Chip(
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    label: Text(
+                      ' ${_task!.size} g',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    backgroundColor: Colors.grey.shade200,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: -4,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: Chip(
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    label: Text(
+                      ' ${Helper.ratioToString(_task!.ratio)}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    backgroundColor: Colors.grey.shade200,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: -4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            ListTile(
+              contentPadding: EdgeInsets.zero, // removes left/right padding
+              title: Text(AppStrings.get('lblCompleted', lang)),
+              trailing: SizedBox(
+                height: 36,
+                width: 80,
+                child: FittedBox(
+                  child: Switch(
+                    value: _isCompleted,
+                    onChanged: (value) => setState(() => _isCompleted = value),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            SizedBox(
+  width: double.infinity,
+              child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.get('used_recipe_details', lang),
+                      style: textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Dough recipe: ${_doughRecipe?.name ?? _task!.doughRecipeId}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Filling recipe: ${_fillingRecipe?.name ?? _task!.fillingRecipeId}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            ),
+            const SizedBox(height: 16),        
+
+
+            Text(
+              AppStrings.get('ingredients', lang),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -279,13 +406,15 @@ LanguageProvider get languageProvider =>
                     .toList(),
               ),
             ],
-          Row(
+            Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _isSavingImages ? null : _pickImages,
                     icon: const Icon(Icons.photo_library),
-                    label: Text(_isSavingImages ? 'Uploading...' : 'Upload Images'),
+                    label: Text(
+                      _isSavingImages ? 'Uploading...' : 'Upload Images',
+                    ),
                   ),
                 ),
               ],
@@ -308,17 +437,14 @@ LanguageProvider get languageProvider =>
                   final path = _imagePaths[index];
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      File(path),
-                      fit: BoxFit.cover,
-                    ),
+                    child: Image.file(File(path), fit: BoxFit.cover),
                   );
                 },
               ),
             const SizedBox(height: 24),
             Text(
               AppStrings.get('comment', lang),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -330,33 +456,26 @@ LanguageProvider get languageProvider =>
               ),
             ),
             const SizedBox(height: 16),
-            SwitchListTile(
-              title: Text(
-                AppStrings.get('completed', lang),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              value: _isCompleted,
-              onChanged: (value) => setState(() => _isCompleted = value),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _isSaving ? null : _saveTask,
-                icon: _isSaving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.save),
-                label: Text(AppStrings.get('save', lang)),
-              ),
-            ),
-            const SizedBox(height: 32),
-           ],
+
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: ElevatedButton.icon(
+            //     onPressed: _isSaving ? null : _saveTask,
+            //     icon: _isSaving
+            //         ? const SizedBox(
+            //             width: 16,
+            //             height: 16,
+            //             child: CircularProgressIndicator(strokeWidth: 2),
+            //           )
+            //         : const Icon(Icons.save),
+            //     label: Text(AppStrings.get('save', lang)),
+            //   ),
+            // ),
+            // const SizedBox(height: 32),
+          ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 1),
     );
   }
 }

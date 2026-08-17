@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'ui/core/app_theme.dart';
 import 'ui/core/nav_bottom.dart';
@@ -19,21 +20,29 @@ import 'package:flutter/services.dart';
 import 'ui/views/task/add.dart';
 
 void main() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
+
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
- runApp(
+  
+  runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
-        ChangeNotifierProvider(create: (_) => TypeProvider(TypeRepository(MCDatabase.instance))),
-        ChangeNotifierProvider(create: (_) => TaskProvider(TaskRepository(MCDatabase.instance))),
-        ChangeNotifierProvider(create: (_) => RecipeProvider(RecipeRepository(MCDatabase.instance))),    
+        ChangeNotifierProvider(
+          create: (_) => TypeProvider(TypeRepository(MCDatabase.instance)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => TaskProvider(TaskRepository(MCDatabase.instance)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => RecipeProvider(RecipeRepository(MCDatabase.instance)),
+        ),
       ],
-      
+
       child: const MyApp(),
     ),
   );
@@ -41,14 +50,22 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+ 
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+    FocusScope.of(context).unfocus();
+  });
+
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: true,
+    );
     return MaterialApp(
       title: 'Moon Cake Calculator',
       theme: AppTheme.light,
-      locale: languageProvider.locale, 
+      locale: languageProvider.locale,
       home: const MyHomePage(title: 'Moon Cake Calculator'),
     );
   }
@@ -65,11 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
   //int _counter = 0;
   final int _currentNavIndex = 0;
 
- 
   final TextEditingController _sizeController = TextEditingController(
     text: '100',
   );
-
 
   @override
   void dispose() {
@@ -77,7 +92,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
- 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
@@ -92,13 +106,10 @@ class _MyHomePageState extends State<MyHomePage> {
         scrolledUnderElevation: 0,
         toolbarHeight: 32,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: const Color.fromARGB(
-            255,
-            158,
-            10,
-            10,
-          ), // background of the top bar
+          // background of the top bar
           statusBarIconBrightness: Brightness.dark, // icons become white
+          systemNavigationBarColor: AppColors.espressoLight,
+          systemNavigationBarIconBrightness: Brightness.light,
         ),
 
         actions: [
@@ -163,11 +174,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Theme.of(context).textTheme.headlineLarge?.color,
                 ),
               ),
-              const SizedBox(height: 20),         
+              const SizedBox(height: 20),
               const AddTaskPage(),
-              const SizedBox(height: 8),            
-       
-             ],
+              const SizedBox(height: 8),
+            ],
           ),
         ),
       ),
@@ -177,6 +187,4 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
-
- }
+}

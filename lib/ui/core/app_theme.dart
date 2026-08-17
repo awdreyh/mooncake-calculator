@@ -29,6 +29,10 @@ class AppColors {
   static const Color accentLight = Color(0xFFF5F1E8);
   static const Color borderLight = Color(0xFFC3BDB1);
   static const Color sectionBg = Color(0xFFF5F1E8);
+  static const Color success = Color(0xFF5C8A5C);
+  static const Color error = Color(0xFFB3412C);
+  static const Color warning = Color(0xFFE6A23C);
+  static const Color info = Color(0xFF909399);
 
   static const Color textPrimary = Color(0xFF1C1410); // on cream
   static const Color textSecondary = Color(0xFF7A6E62);
@@ -204,10 +208,25 @@ class AppTheme {
         ),
       ),
 
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: AppColors.espressoLight,
+        selectedItemColor: AppColors.accent,
+        unselectedItemColor: Colors.white,
+        type: BottomNavigationBarType.fixed,        
+        selectedLabelStyle: _body(12, FontWeight.w600, AppColors.accent),
+        unselectedLabelStyle: _body(12, FontWeight.w400, Colors.white),
+        selectedIconTheme: const IconThemeData(color: AppColors.accent),
+        unselectedIconTheme: const IconThemeData(color: Colors.white, size: 18),
+        
+  
+
+      ),
+
       // ---- Cards: dish/restaurant cards, soft shadow, rounded ----
       cardTheme: CardThemeData(
         color: AppColors.cardBg,
-        elevation: 0,
+        elevation: 2,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
@@ -216,16 +235,27 @@ class AppTheme {
         clipBehavior: Clip.antiAlias,
       ),
 
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.all(AppColors.success),
+        trackColor: WidgetStateProperty.all(AppColors.sectionBg),
+        trackOutlineColor: WidgetStateProperty.all(AppColors.borderLight),
+      ),
+
       // ---- Chips: filter pills ("All", "Italian", "Japanese"...) ----
-      chipTheme: ChipThemeData(
+      chipTheme: ChipThemeData(        
         backgroundColor: AppColors.chipBg,
         selectedColor: AppColors.espresso,
         disabledColor: AppColors.chipBg,
-        labelStyle: _body(12.5, FontWeight.w500, AppColors.textPrimary),
+        labelStyle: _body(11, FontWeight.w500, AppColors.textPrimary),
         secondaryLabelStyle: _body(12.5, FontWeight.w500, AppColors.textOnDark),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        shape: StadiumBorder(side: BorderSide(color: AppColors.chipBorder)),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        
         side: BorderSide(color: AppColors.chipBorder),
+        shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        4,
+                      ), // this is the radius
+                    ),
       ),
 
       // ---- Inputs: newsletter field, search etc. ----

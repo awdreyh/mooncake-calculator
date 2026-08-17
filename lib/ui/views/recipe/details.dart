@@ -10,9 +10,7 @@ import '../../../provider/ingredient.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
-
 import "../../core/nav_bottom.dart";
-
 import '../task/list.dart';
 
 class RecipeDetailsPage extends StatefulWidget {

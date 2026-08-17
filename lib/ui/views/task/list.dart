@@ -9,6 +9,7 @@ import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
+import '../../core/app_theme.dart';
 import 'details.dart';
 
 class TaskListPage extends StatefulWidget {
@@ -43,6 +44,7 @@ class _TaskListPageState extends State<TaskListPage> {
     try {
       final recipeProvider = context.read<RecipeProvider>();
       final tasks = await context.read<TaskProvider>().loadAllTasks();
+      tasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       final entries = await Future.wait(
         tasks.map((task) async {
@@ -71,34 +73,6 @@ class _TaskListPageState extends State<TaskListPage> {
     }
   }
 
-  Future<void> _deleteTask(Task task) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.get('delete_task', lang)),
-        content: Text(AppStrings.get('confirm_delete_task', lang)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppStrings.get('cancel', lang)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              AppStrings.get('delete_task', lang),
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    await context.read<TaskProvider>().deleteTask(task.id);
-    await _loadTasks();
-  }
-
   Widget _buildTaskTile(Task task) {
     final createdAt = task.createdAt;
     final createdDate =
@@ -106,36 +80,116 @@ class _TaskListPageState extends State<TaskListPage> {
         '${createdAt.month.toString().padLeft(2, '0')}-'
         '${createdAt.day.toString().padLeft(2, '0')}';
 
-    final subtitle = [
-      '${task.quantity}',
-      ' * ',
-      '${task.size}',
-      'g \n',
-      '${AppStrings.get('ratio', lang)}: ${Helper.ratioToString(task.ratio)}',
-      '\n',
-      '$createdDate',
-      
-    ];
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Icon(
-        task.isCompleted == true ? Icons.check_circle : Icons.check_circle_outline,
-        color: task.isCompleted == true ? Colors.green : Colors.grey,
-      ),
-      title: Text(_titles[task.id] ?? ''),
-      subtitle: Text(subtitle.join('')),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete, color: Colors.redAccent),
-        onPressed: () => _deleteTask(task),
-      ), 
-      onTap: () async {
-        await Navigator.of(context).push<bool>(
-          MaterialPageRoute(builder: (_) => TaskDetailsPage(taskId: task.id)),
-        );
-        await _loadTasks();
-      },
-    );
+    return 
+     
+       Card(
+        clipBehavior: Clip.none,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            InkWell(
+              onTap: () async {
+                await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => TaskDetailsPage(taskId: task.id),
+                  ),
+                );
+                await _loadTasks();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 48,
+                      child: Text(
+                      _titles[task.id] ?? '',
+                      style: Theme.of(context).textTheme.titleMedium,
+                      maxLines: 2,
+                      textHeightBehavior: TextHeightBehavior(
+                        applyHeightToFirstAscent: false,
+                        applyHeightToLastDescent: false,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  
+                    ),
+                      const SizedBox(height: 6),
+                      Row(
+                        spacing: 4,
+                        children: [
+                          Flexible(
+                            child: Chip(
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              label: Text(
+                                '${task.quantity} pcs',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                              labelPadding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: -4,
+                              ),
+                            ),
+                          ),
+                          Flexible(
+                            child: Chip(
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              label: Text(
+                                '${task.size} g',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                              backgroundColor: Colors.grey.shade200,
+                              labelPadding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: -4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 16),
+                    Divider(color: AppColors.borderLight, height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          createdDate,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        Icon(
+                          task.isCompleted == true
+                              ? Icons.check_circle
+                              : Icons.check_circle_outline,
+                          color: task.isCompleted == true
+                              ? AppColors.success
+                              : AppColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                  ],
+                  
+                ),
+              ),
+            ),
+          ],
+              ),
+      );
+    
   }
 
   @override
@@ -156,18 +210,23 @@ class _TaskListPageState extends State<TaskListPage> {
           ? Center(child: Text(AppStrings.get('noTasks', lang)))
           : RefreshIndicator(
               onRefresh: _loadTasks,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GridView.builder(
+                padding: const EdgeInsets.all(12),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.9,
+                ),
                 itemCount: _tasks.length,
-                separatorBuilder: (_, __) => const Divider(height: 0),
                 itemBuilder: (_, index) => _buildTaskTile(_tasks[index]),
               ),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-            Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.of(context).popUntil((route) => route.isFirst);
           await _loadTasks();
-        }, 
+        },
         tooltip: AppStrings.get('saveTask', lang),
         child: const Icon(Icons.add),
       ),
