@@ -17,6 +17,9 @@ import '../../../data/model/ingredient.dart';
 
 import '../../../provider/recipe.dart';
 import '../../../provider/task.dart';
+import '../../core/app_theme.dart';
+import '../../widgets/info_chips.dart';
+import '../recipe/details.dart';
 
 class TaskDetailsPage extends StatefulWidget {
   final String taskId;
@@ -204,17 +207,34 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     }
   }
 
-  Widget _buildIngredientSection(String title, List<Ingredient> ingredients) {
+  Widget _buildIngredientSection(String title, Recipe recipe, List<Ingredient> ingredients) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+
+            ActionChip(label: Text(recipe.name),onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RecipeDetailsPage(recipe: recipe),
+                ),
+              );
+            },)
+          ],
         ),
+        
         const SizedBox(height: 4),
         if (ingredients.isEmpty)
-          const Text('No ingredients were calculated.')
+          Text(AppStrings.get('noIngredients', lang))
         else
           ...ingredients.map((ingredient) {
             return Padding(
@@ -247,7 +267,9 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.get('task_details_title', lang)),actions: [
+      appBar: AppBar(
+        title: Text(AppStrings.get('task_details_title', lang)),
+        actions: [
           if (!_isSaving)
             IconButton(
               icon: const Icon(Icons.save, color: Colors.green),
@@ -262,75 +284,46 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
-        ],),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _title,
-               style: textTheme.titleLarge,
-            ),
-            Text(
-              ' ${_task!.createdAt.toLocal().toString().split('.').first}',
-              style: textTheme.bodySmall,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              spacing: 4,
-              children: [
-                Flexible(
-                  child: Chip(
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    label: Text(
-                      ' ${_task!.quantity} pcs',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: -4,
-                    ),
+            SizedBox(
+              width: double.infinity,
+              child: Card(
+                color: AppColors.accent,
+
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _title,
+                        style: textTheme.titleLarge?.copyWith(
+                          color: AppColors.cream,
+                        ),
+                      ),
+                      Text(
+                        ' ${_task!.createdAt.toLocal().toString().split('.').first}',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.cream,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      InfoChips(
+                        qty: _task!.quantity,
+                        size: _task!.size,
+                        ratio: Helper.ratioToString(_task!.ratio),
+                      ),
+                    ],
                   ),
                 ),
-                Flexible(
-                  child: Chip(
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    label: Text(
-                      ' ${_task!.size} g',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    backgroundColor: Colors.grey.shade200,
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: -4,
-                    ),
-                  ),
-                ),
-                Flexible(
-                  child: Chip(
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    label: Text(
-                      ' ${Helper.ratioToString(_task!.ratio)}',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    backgroundColor: Colors.grey.shade200,
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: -4,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
 
             ListTile(
@@ -348,80 +341,75 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            // const SizedBox(height: 8),
             SizedBox(
-  width: double.infinity,
+              width: double.infinity,
               child: Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.get('ingredients_sheet', lang),
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
 
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.get('used_recipe_details', lang),
-                      style: textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Dough recipe: ${_doughRecipe?.name ?? _task!.doughRecipeId}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Filling recipe: ${_fillingRecipe?.name ?? _task!.fillingRecipeId}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                      if (_task!.ingredients.isEmpty)
+                        Text(AppStrings.get('noIngredients', lang))
+                      else ...[
+                        _buildIngredientSection(
+                          '${AppStrings.get('dough', lang)}',
+                          _doughRecipe!,
+                          _task!.ingredients
+                              .take(_doughRecipe?.ingredients.length ?? 0)
+                              .toList(),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildIngredientSection(
+                          AppStrings.get('filling', lang),
+                          _fillingRecipe!,
+                          _task!.ingredients
+                              .skip(_doughRecipe?.ingredients.length ?? 0)
+                              .toList(),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),
-            ),
-            const SizedBox(height: 16),        
+            const SizedBox(height: 16),
 
-
+            Divider(color: AppColors.borderLight, thickness: 0.5),
+            const SizedBox(height: 16),
             Text(
-              AppStrings.get('ingredients', lang),
+              AppStrings.get('comment', lang),
+              style: textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _commentController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: AppStrings.get('enter_comment', lang),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            Text(
+              AppStrings.get('image_title', lang),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            if (_task!.ingredients.isEmpty)
-              const Text('No ingredients were calculated.')
-            else ...[
-              _buildIngredientSection(
-                'Dough: ${_doughRecipe?.name ?? _task!.doughRecipeId}',
-                _task!.ingredients
-                    .take(_doughRecipe?.ingredients.length ?? 0)
-                    .toList(),
-              ),
-              const SizedBox(height: 16),
-              _buildIngredientSection(
-                'Filling: ${_fillingRecipe?.name ?? _task!.fillingRecipeId}',
-                _task!.ingredients
-                    .skip(_doughRecipe?.ingredients.length ?? 0)
-                    .toList(),
-              ),
-            ],
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _isSavingImages ? null : _pickImages,
-                    icon: const Icon(Icons.photo_library),
-                    label: Text(
-                      _isSavingImages ? 'Uploading...' : 'Upload Images',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_imagePaths.isEmpty)
-              const Text('No images uploaded for this task yet.')
+ if (_imagePaths.isEmpty)
+               Text(AppStrings.get('no_image_uploaded', lang))
             else
               GridView.builder(
                 shrinkWrap: true,
@@ -441,37 +429,23 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                   );
                 },
               ),
-            const SizedBox(height: 24),
-            Text(
-              AppStrings.get('comment', lang),
-              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _commentController,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: AppStrings.get('enter_comment', lang),
-                border: const OutlineInputBorder(),
-              ),
-            ),
+            
             const SizedBox(height: 16),
-
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: ElevatedButton.icon(
-            //     onPressed: _isSaving ? null : _saveTask,
-            //     icon: _isSaving
-            //         ? const SizedBox(
-            //             width: 16,
-            //             height: 16,
-            //             child: CircularProgressIndicator(strokeWidth: 2),
-            //           )
-            //         : const Icon(Icons.save),
-            //     label: Text(AppStrings.get('save', lang)),
-            //   ),
-            // ),
-            // const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isSavingImages ? null : _pickImages,
+                    icon: const Icon(Icons.photo_library),
+                    label: Text(
+                      _isSavingImages ? 'Uploading...' : 'Upload Images',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+           
+            const SizedBox(height: 16),            
           ],
         ),
       ),

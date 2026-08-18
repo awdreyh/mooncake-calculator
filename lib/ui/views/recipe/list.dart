@@ -6,6 +6,7 @@ import '../../../data/model/type.dart';
 import '../../../provider/recipe.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
+import '../../core/app_theme.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import 'add.dart';
@@ -95,8 +96,6 @@ class _RecipeListPageState extends State<RecipeListPage> {
   }
 
   Future<void> _deleteRecipe(Recipe recipe) async {
-
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -146,10 +145,9 @@ class _RecipeListPageState extends State<RecipeListPage> {
       return Center(child: Text(AppStrings.get('noRecipesAvailable', lang)));
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
       itemCount: recipes.length,
-      separatorBuilder: (context, index) => const Divider(height: 0),
       itemBuilder: (context, index) {
         final recipe = recipes[index];
         final recipeCategory = _categoryForRecipe(recipe);
@@ -160,68 +158,83 @@ class _RecipeListPageState extends State<RecipeListPage> {
             ? AppStrings.get('filling', lang)
             : AppStrings.get('dough', lang);
 
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
-          leading: CircleAvatar(
-            radius: 22,
-            backgroundColor: recipeCategory == Category.filling
-                ? Colors.pink.shade50
-                : Colors.orange.shade50,
-            child: Icon(
-              categoryIcon,
-              color: recipeCategory == Category.filling
-                  ? Colors.pink
-                  : Colors.orange,
-            ),
-          ),
-          title: Text(recipe.name),
-          subtitle: Text(
-            '${AppStrings.get('category', lang)}: $categoryLabel\n'
-            '${AppStrings.get('quantity', lang)}: ${recipe.quantity}, ${AppStrings.get('size', lang)}: ${recipe.size}',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          isThreeLine: true,
-          trailing: SizedBox(
-            width: 106,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    recipe.isFavorite == true
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: recipe.isFavorite == true ? Colors.red : Colors.grey,
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Card(
+            child: InkWell(
+              onTap: () async {
+                final result = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RecipeDetailsPage(recipe: recipe),
                   ),
-                  onPressed: () => _toggleFavorite(recipe),
-                  tooltip: recipe.isFavorite == true ? 'Unfavorite' : 'Favorite',
+                );
+                if (result == true) {
+                  _refreshRecipes();
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: recipeCategory == Category.filling
+                          ? Colors.pink.shade50
+                          : Colors.orange.shade50,
+                      child: Icon(
+                        categoryIcon,
+                        color: recipeCategory == Category.filling
+                            ? Colors.pink
+                            : Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            recipe.name,
+                            style: Theme.of(context).textTheme.titleMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${AppStrings.get('category', lang)}: $categoryLabel\n'
+                            '${AppStrings.get('quantity', lang)}: ${recipe.quantity}, ${AppStrings.get('size', lang)}: ${recipe.size}',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        recipe.isFavorite == true
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: recipe.isFavorite == true
+                            ? Colors.red
+                            : Colors.grey,
+                      ),
+                      onPressed: () => _toggleFavorite(recipe),
+                      tooltip: recipe.isFavorite == true
+                          ? 'Unfavorite'
+                          : 'Favorite',
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () => _deleteRecipe(recipe),
+                      tooltip: AppStrings.get('delete_recipe', lang),
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.redAccent,
-                  ),
-                  onPressed: () => _deleteRecipe(recipe),
-                  tooltip: AppStrings.get('delete_recipe', lang),
-                ),
-              ],
-            ),
-          ),
-          onTap: () async {
-            final result = await Navigator.push<bool>(
-              context,
-              MaterialPageRoute(
-                builder: (context) => RecipeDetailsPage(recipe: recipe),
               ),
-            );
-            if (result == true) {
-              _refreshRecipes();
-            }
-          },
+            ),
+          ),
         );
       },
     );
@@ -236,11 +249,14 @@ class _RecipeListPageState extends State<RecipeListPage> {
       return Center(child: Text(_errorMessage!));
     }
 
-    return TabBarView(
-      children: [
-        _buildRecipeList(_recipesByCategory(Category.dough), lang),
-        _buildRecipeList(_recipesByCategory(Category.filling), lang),
-      ],
+    return Container(
+      color: AppColors.sectionBg,
+      child: TabBarView(
+        children: [
+          _buildRecipeList(_recipesByCategory(Category.dough), lang),
+          _buildRecipeList(_recipesByCategory(Category.filling), lang),
+        ],
+      ),
     );
   }
 

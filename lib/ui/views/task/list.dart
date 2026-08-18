@@ -11,6 +11,7 @@ import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
 import '../../core/app_theme.dart';
 import 'details.dart';
+import '../../widgets/info_chips.dart';
 
 class TaskListPage extends StatefulWidget {
   final String? recipeId;
@@ -118,49 +119,11 @@ class _TaskListPageState extends State<TaskListPage> {
                   
                     ),
                       const SizedBox(height: 6),
-                      Row(
-                        spacing: 4,
-                        children: [
-                          Flexible(
-                            child: Chip(
-                              visualDensity: VisualDensity.compact,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              label: Text(
-                                '${task.quantity} pcs',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                              labelPadding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: -4,
-                              ),
-                            ),
-                          ),
-                          Flexible(
-                            child: Chip(
-                              visualDensity: VisualDensity.compact,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              label: Text(
-                                '${task.size} g',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                              backgroundColor: Colors.grey.shade200,
-                              labelPadding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: -4,
-                              ),
-                            ),
-                          ),
-                        ],
+                        InfoChips(
+                        qty: task.quantity,
+                        size:task.size,
+                        ratio: Helper.ratioToString(task.ratio),
+                        displayRatio: false,
                       ),
                     const SizedBox(height: 16),
                     Divider(color: AppColors.borderLight, height: 12),

@@ -11,7 +11,7 @@ class AppStrings {
       'recipe_list_title': 'Recipes',
       'type_details_title': 'Type Details',
       'task_details_title': 'Task Details',
-      'used_recipe_details': '使用的食谱详情',
+      'ingredients_sheet': 'Ingredients Sheet',
       'cantonese': 'Cantonese-style',
       'snowSkin': 'Snow skin',
       'selectRecipe': 'Select recipe',
@@ -106,6 +106,8 @@ class AppStrings {
       'no_image_uploaded': 'No image uploaded',
       'lblCompleted': 'Is this task completed?',
       'enter_comment': 'Enter your comment here...',
+      'image_title': 'Image(s)',
+
 
     },
     'zh': {
@@ -119,7 +121,7 @@ class AppStrings {
       'recipe_list_title': '食谱',
       'type_details_title': '类型详情',
       'task_details_title': '任务详情',
-      'used_recipe_details': '使用的食谱详情',
+      'ingredients_sheet': '配料表',
       'cantonese': '广式月饼',
       'snowSkin': '冰皮月饼',
       'selectRecipe': '选择食谱',
@@ -216,6 +218,7 @@ class AppStrings {
       'no_image_uploaded': '未上传图片',
       'lblCompleted': '此任务是否已完成？',
       'enter_comment': '在此输入备注...',
+      'image_title': '图片',
     },
   };
 

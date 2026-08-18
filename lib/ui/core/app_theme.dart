@@ -33,6 +33,7 @@ class AppColors {
   static const Color error = Color(0xFFB3412C);
   static const Color warning = Color(0xFFE6A23C);
   static const Color info = Color(0xFF909399);
+  static const Color sectionBgDark = Color(0xFFA2B49C);
 
   static const Color textPrimary = Color(0xFF1C1410); // on cream
   static const Color textSecondary = Color(0xFF7A6E62);
@@ -208,6 +209,15 @@ class AppTheme {
         ),
       ),
 
+      tabBarTheme: TabBarThemeData(
+        labelColor: AppColors.accent,
+        unselectedLabelColor: AppColors.textSecondary,
+   
+        indicator: UnderlineTabIndicator(
+          borderSide: BorderSide(color: AppColors.accent, width: 2),
+        ),
+      ),
+
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.espressoLight,
         selectedItemColor: AppColors.accent,
@@ -246,16 +256,17 @@ class AppTheme {
         backgroundColor: AppColors.chipBg,
         selectedColor: AppColors.espresso,
         disabledColor: AppColors.chipBg,
-        labelStyle: _body(11, FontWeight.w500, AppColors.textPrimary),
+        labelStyle: _body(11, FontWeight.w500, AppColors.textPrimary,),
         secondaryLabelStyle: _body(12.5, FontWeight.w500, AppColors.textOnDark),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),   
+        labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),     
         side: BorderSide(color: AppColors.chipBorder),
         shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                         4,
                       ), // this is the radius
                     ),
+                    
       ),
 
       // ---- Inputs: newsletter field, search etc. ----
