@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'ui/core/app_theme.dart';
 import 'ui/core/nav_bottom.dart';
@@ -21,8 +20,7 @@ import 'ui/views/task/add.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-
+  
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -54,9 +52,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-    FocusScope.of(context).unfocus();
-  });
+
 
     final languageProvider = Provider.of<LanguageProvider>(
       context,

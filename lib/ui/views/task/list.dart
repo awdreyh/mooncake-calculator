@@ -84,9 +84,9 @@ class _TaskListPageState extends State<TaskListPage> {
     return 
      
        Card(
-        clipBehavior: Clip.none,
+      // clipBehavior: Clip.none,
         child: Stack(
-          clipBehavior: Clip.none,
+        //   clipBehavior: Clip.none,
           children: [
             InkWell(
               onTap: () async {

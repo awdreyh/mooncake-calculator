@@ -34,6 +34,7 @@ class AppColors {
   static const Color warning = Color(0xFFE6A23C);
   static const Color info = Color(0xFF909399);
   static const Color sectionBgDark = Color(0xFFA2B49C);
+  static const Color accentRed = Color(0xFFC70C0F);
 
   static const Color textPrimary = Color(0xFF1C1410); // on cream
   static const Color textSecondary = Color(0xFF7A6E62);
@@ -205,14 +206,26 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
-          textStyle: _body(13, FontWeight.w600, AppColors.textPrimary),
+          textStyle: _body(13, FontWeight.w800, AppColors.textPrimary),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        ),
+      ),
+
+      dataTableTheme: DataTableThemeData(
+        headingRowColor: WidgetStateProperty.all(AppColors.cream),
+        dataRowColor: WidgetStateProperty.all(AppColors.cream),
+        headingTextStyle: _body(14, FontWeight.w600, AppColors.textPrimary),
+        dataTextStyle: _body(14, FontWeight.w400, AppColors.textPrimary),
+        dividerThickness: 1,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.borderLight, width: 1),
+          borderRadius: BorderRadius.circular(6),
         ),
       ),
 
       tabBarTheme: TabBarThemeData(
         labelColor: AppColors.accent,
-        unselectedLabelColor: AppColors.textSecondary,
-   
+        unselectedLabelColor: AppColors.textSecondary,   
         indicator: UnderlineTabIndicator(
           borderSide: BorderSide(color: AppColors.accent, width: 2),
         ),
@@ -220,14 +233,13 @@ class AppTheme {
 
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.espressoLight,
-        selectedItemColor: AppColors.accent,
+        selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
         type: BottomNavigationBarType.fixed,        
-        selectedLabelStyle: _body(12, FontWeight.w600, AppColors.accent),
-        unselectedLabelStyle: _body(12, FontWeight.w400, Colors.white),
+        selectedLabelStyle: _body(11, FontWeight.w600, AppColors.accent),
+        unselectedLabelStyle: _body(11, FontWeight.w400, Colors.white),
         selectedIconTheme: const IconThemeData(color: AppColors.accent),
-        unselectedIconTheme: const IconThemeData(color: Colors.white, size: 18),
-        
+        unselectedIconTheme: const IconThemeData(color: Colors.white, size: 18),       
   
 
       ),
@@ -268,6 +280,8 @@ class AppTheme {
                     ),
                     
       ),
+
+      
 
       // ---- Inputs: newsletter field, search etc. ----
       inputDecorationTheme: InputDecorationTheme(

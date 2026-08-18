@@ -21,7 +21,7 @@ class RecipeListPage extends StatefulWidget {
 
 class _RecipeListPageState extends State<RecipeListPage> {
   List<Recipe> _recipes = [];
-    LanguageProvider get languageProvider =>
+  LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
   String? _errorMessage;
@@ -79,9 +79,10 @@ class _RecipeListPageState extends State<RecipeListPage> {
     });
 
     try {
-      await context
-          .read<RecipeProvider>()
-          .updateRecipeFavorite(updatedRecipe.id, newFavorite);
+      await context.read<RecipeProvider>().updateRecipeFavorite(
+        updatedRecipe.id,
+        newFavorite,
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -140,6 +141,11 @@ class _RecipeListPageState extends State<RecipeListPage> {
         .toList();
   }
 
+  String _typeNameForRecipe(Recipe recipe) {
+    final matching = _types.where((type) => type.id == recipe.typeId);
+    return matching.isEmpty ? '' : matching.first.name;
+  }
+
   Widget _buildRecipeList(List<Recipe> recipes, String lang) {
     if (recipes.isEmpty) {
       return Center(child: Text(AppStrings.get('noRecipesAvailable', lang)));
@@ -152,11 +158,9 @@ class _RecipeListPageState extends State<RecipeListPage> {
         final recipe = recipes[index];
         final recipeCategory = _categoryForRecipe(recipe);
         final categoryIcon = recipeCategory == Category.filling
-            ? Icons.icecream
+            ? Icons.egg_alt
             : Icons.cookie;
-        final categoryLabel = recipeCategory == Category.filling
-            ? AppStrings.get('filling', lang)
-            : AppStrings.get('dough', lang);
+        final typeLabel = _typeNameForRecipe(recipe);
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -174,19 +178,19 @@ class _RecipeListPageState extends State<RecipeListPage> {
                 }
               },
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 22,
                       backgroundColor: recipeCategory == Category.filling
-                          ? Colors.pink.shade50
+                          ? Colors.brown.shade50
                           : Colors.orange.shade50,
                       child: Icon(
                         categoryIcon,
                         color: recipeCategory == Category.filling
-                            ? Colors.pink
-                            : Colors.orange,
+                            ? AppColors.accentRed
+                            : AppColors.accent,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -202,7 +206,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${AppStrings.get('category', lang)}: $categoryLabel\n'
+                            '${AppStrings.get('type', lang)}: $typeLabel\n'
                             '${AppStrings.get('quantity', lang)}: ${recipe.quantity}, ${AppStrings.get('size', lang)}: ${recipe.size}',
                             style: Theme.of(context).textTheme.bodyMedium,
                             maxLines: 2,
@@ -226,7 +230,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
                           : 'Favorite',
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
                       onPressed: () => _deleteRecipe(recipe),
                       tooltip: AppStrings.get('delete_recipe', lang),
                     ),
@@ -262,8 +266,6 @@ class _RecipeListPageState extends State<RecipeListPage> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -276,12 +278,18 @@ class _RecipeListPageState extends State<RecipeListPage> {
           bottom: TabBar(
             tabs: [
               Tab(
-                icon: const Icon(Icons.cookie),
-                text: AppStrings.get('dough', lang),
+                icon: const Icon(Icons.cookie, color: AppColors.accent),
+                child: Text(
+                  AppStrings.get('dough', lang),
+                  style: TextStyle(color: AppColors.accent),
+                ),
               ),
               Tab(
-                icon: const Icon(Icons.icecream),
-                text: AppStrings.get('filling', lang),
+                icon: const Icon(Icons.egg_alt, color: AppColors.accentRed),
+                child: Text(
+                  AppStrings.get('filling', lang),
+                  style: TextStyle(color: AppColors.accentRed),
+                ),
               ),
             ],
           ),

@@ -95,10 +95,11 @@ class AppBottomNavigationBar extends StatelessWidget {
     final theme = Theme.of(context).bottomNavigationBarTheme;
 
     final items = <({IconData icon, String label})>[
-      (icon: Icons.home, label: AppStrings.get('home', lang)),
+      (icon: Icons.heat_pump_rounded, label: AppStrings.get('create', lang)),
       (icon: Icons.task_alt, label: AppStrings.get('tasks', lang)),
       (icon: Icons.restaurant, label: AppStrings.get('recipes', lang)),
       (icon: Icons.category, label: AppStrings.get('type', lang)),
+      
     ];
 
     return Container(
@@ -106,34 +107,34 @@ class AppBottomNavigationBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: kBottomNavigationBarHeight,
+          height:48,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < items.length; i++)
                 Expanded(
-                  child: InkWell(
+                  child: InkWell(                   
                     onTap: () => _onTap(context, i),
                     child: Container(
                       color: i == currentIndex
-                          ? AppColors.textSecondary
+                          ? AppColors.accentRed
                           : Colors.transparent,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             items[i].icon,
-                            size: i == currentIndex ? 24 : 18,
+                            size: i == currentIndex ? 20 : 16,
                             color: i == currentIndex
-                                ? AppColors.accent
+                                ?  AppColors.cream
                                 : Colors.white,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 1),
                           Text(
-                            items[i].label,
+                            items[i].label,                        
                             style: i == currentIndex
-                                ? theme.selectedLabelStyle
-                                : theme.unselectedLabelStyle,
+                                ? const TextStyle(fontSize: 11, color: AppColors.cream)
+                                : const TextStyle(fontSize: 11, color: AppColors.cream)
                           ),
                         ],
                       ),

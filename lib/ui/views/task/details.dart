@@ -207,6 +207,46 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     }
   }
 
+  Future<void> _deleteTask() async {
+    if (_task == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppStrings.get('delete_task', lang), style: const TextStyle(fontSize: 18),),
+        content: Text(AppStrings.get('confirm_delete_task', lang)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppStrings.get('cancel', lang)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              AppStrings.get('delete_task', lang),
+              style: const TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await context.read<TaskProvider>().deleteTask(_task!.id);
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.get('failed_to_update_changes', lang)),
+        ),
+      );
+    }
+  }
+
   Widget _buildIngredientSection(String title, Recipe recipe, List<Ingredient> ingredients) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -270,20 +310,12 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       appBar: AppBar(
         title: Text(AppStrings.get('task_details_title', lang)),
         actions: [
-          if (!_isSaving)
-            IconButton(
-              icon: const Icon(Icons.save, color: Colors.green),
-              onPressed: _saveTask,
-            )
-          else
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: AppColors.textSecondary),
+            onPressed: _deleteTask,
+          ),
+             
+            
         ],
       ),
       body: SingleChildScrollView(
@@ -335,7 +367,31 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                 child: FittedBox(
                   child: Switch(
                     value: _isCompleted,
-                    onChanged: (value) => setState(() => _isCompleted = value),
+                    onChanged: (value) async {
+                      setState(() => _isCompleted = value);
+                      if (_task == null) return;
+                      final updatedTask = _task!.copyWith(
+                        isCompleted: value,
+                        updatedAt: DateTime.now(),
+                      );
+                      try {
+                        await context.read<TaskProvider>().updateTask(
+                          updatedTask,
+                        );
+                        if (!mounted) return;
+                        setState(() => _task = updatedTask);
+                      } catch (error) {
+                        if (!mounted) return;
+                        setState(() => _isCompleted = !value);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              AppStrings.get('failed_to_update_changes', lang),
+                            ),
+                          ),
+                        );
+                      }
+                    },
                   ),
                 ),
               ),
@@ -362,7 +418,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                         Text(AppStrings.get('noIngredients', lang))
                       else ...[
                         _buildIngredientSection(
-                          '${AppStrings.get('dough', lang)}',
+                          AppStrings.get('dough', lang),
                           _doughRecipe!,
                           _task!.ingredients
                               .take(_doughRecipe?.ingredients.length ?? 0)
@@ -399,6 +455,21 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               decoration: InputDecoration(
                 hintText: AppStrings.get('enter_comment', lang),
                 border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                onPressed: _isSaving ? null : _saveTask,
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save),
+                label: Text(AppStrings.get('save', lang)),
               ),
             ),
 

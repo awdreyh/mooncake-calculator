@@ -12,6 +12,8 @@ import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
 import "../../core/nav_bottom.dart";
 import '../task/list.dart';
+import '../../core/app_theme.dart';
+import '../../widgets/info_chips.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
   final Recipe recipe;
@@ -23,39 +25,33 @@ class RecipeDetailsPage extends StatefulWidget {
 }
 
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
-    LanguageProvider get languageProvider => Provider.of<LanguageProvider>(
-      context,
-      listen: false,
-    );
-    String get lang => languageProvider.languageCode;
-    
+  LanguageProvider get languageProvider =>
+      Provider.of<LanguageProvider>(context, listen: false);
+  String get lang => languageProvider.languageCode;
+
   late Recipe _recipe;
   List<Ingredient> _ingredients = [];
 
   RecipeProvider get receipeProvider => context.read<RecipeProvider>();
   TypeProvider get typeProvider => context.read<TypeProvider>();
-  IngredientProvider get ingredientProvider =>context.read<IngredientProvider>();
-
+  IngredientProvider get ingredientProvider =>
+      context.read<IngredientProvider>();
 
   List<Type> _allTypes = [];
   bool _changed = false;
-  String _typeName='';
-
-  int _taskUsageCount = 0;  
-  List<Type> _selectedMatchedDoughTypes = [];
+  String _typeName = '';
+  int _taskUsageCount = 0;
   bool _isSaving = false;
-  bool _isUpdatingMatchedDoughTypes = false;
   double _selectedRating = 0;
   bool _isFavorite = false;
-
-  final TextEditingController _commentController = TextEditingController(); 
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _recipe = widget.recipe;    
-    _ingredients=_recipe.ingredients;
-    _typeName='';
+    _recipe = widget.recipe;
+    _ingredients = _recipe.ingredients;
+    _typeName = '';
     _commentController.text = _recipe.comment ?? '';
     _selectedRating = _recipe.rating ?? 0;
     _isFavorite = _recipe.isFavorite ?? false;
@@ -71,7 +67,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   Future<void> _loadTypes() async {
     final types = await typeProvider.loadAllTypes();
-    final matchedDoughTypes = await typeProvider.loadMatchedDoughTypes(_recipe.typeId);
+
     if (_recipe.typeId != null) {
       final type = await typeProvider.loadType(_recipe.typeId!);
       if (!mounted) return;
@@ -79,11 +75,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         _typeName = type.name;
       });
     }
-    
+
     if (!mounted) return;
     setState(() {
       _allTypes = types;
-      _selectedMatchedDoughTypes = matchedDoughTypes;
     });
   }
 
@@ -115,62 +110,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     _saveChanges();
   }
 
-  Future<void> _toggleMatchedDoughType(Type type) async {
-    if (_isUpdatingMatchedDoughTypes) return;
-
-    final recipeTypeIndex = _allTypes.indexWhere(
-      (item) => item.id == _recipe.typeId,
-    );
-    if (recipeTypeIndex == -1 ||
-        _allTypes[recipeTypeIndex].category != Category.filling) {
-      return;
-    }
-
-    final previousMatchedTypes = List<Type>.from(_selectedMatchedDoughTypes);
-    final isSelected = previousMatchedTypes.any((item) => item.id == type.id);
-    final updatedMatchedTypes = List<Type>.from(previousMatchedTypes);
-    if (isSelected) {
-      updatedMatchedTypes.removeWhere((item) => item.id == type.id);
-    } else {
-      updatedMatchedTypes.add(type);
-    }
-
-    final recipeType = _allTypes[recipeTypeIndex];
-    final updatedRecipeType = Type(
-      id: recipeType.id,
-      category: recipeType.category,
-      name: recipeType.name,
-      imagePath: recipeType.imagePath,
-      matchedDoughTypeIds: updatedMatchedTypes.map((item) => item.id).toList(),
-    );
-
-    setState(() {
-      _isUpdatingMatchedDoughTypes = true;
-      _selectedMatchedDoughTypes = updatedMatchedTypes;
-    });
-
-    try {
-      await typeProvider.updateType(updatedRecipeType);
-      if (!mounted) return;
-      setState(() {
-        _allTypes[recipeTypeIndex] = updatedRecipeType;
-        _changed = true;
-        _isUpdatingMatchedDoughTypes = false;
-      });
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _selectedMatchedDoughTypes = previousMatchedTypes;
-        _isUpdatingMatchedDoughTypes = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save matched dough types: $error')),
-      );
-    }
-  }
-
   Future<void> _saveChanges() async {
-
     if (_isSaving) return;
     final updatedRating = _selectedRating;
     final updatedComment = _commentController.text.trim();
@@ -184,7 +124,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       description: _recipe.description,
       ingredients: _recipe.ingredients,
       isFavorite: _isFavorite,
-      rating:  updatedRating > 0 ? updatedRating : null,
+      rating: updatedRating > 0 ? updatedRating : null,
       url: _recipe.url,
       comment: updatedComment.isEmpty ? null : updatedComment,
       directions: _recipe.directions,
@@ -197,7 +137,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     });
 
     try {
-      await receipeProvider.updateRecipe(updatedRecipe);  
+      await receipeProvider.updateRecipe(updatedRecipe);
 
       if (!mounted) return;
       setState(() {
@@ -206,7 +146,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         _isSaving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(AppStrings.get('changes_saved', lang))),
+        SnackBar(content: Text(AppStrings.get('changes_saved', lang))),
       );
     } catch (e) {
       if (!mounted) return;
@@ -214,13 +154,16 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         _isSaving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppStrings.get('failed_to_update_changes', lang)}: $e')),
+        SnackBar(
+          content: Text(
+            '${AppStrings.get('failed_to_update_changes', lang)}: $e',
+          ),
+        ),
       );
     }
   }
 
   void _deleteRecipe() async {
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -257,12 +200,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-
-    final ratioString = Helper.ratioToString(_recipe.ratio ?? 0.0);
-    final matchedDoughTypes = _selectedMatchedDoughTypes;
-    final isFillingRecipe = _allTypes.any(
-      (type) => type.id == _recipe.typeId && type.category == Category.filling,
-    );
+    final textTheme = Theme.of(context).textTheme;   
 
     return PopScope<bool>(
       canPop: false,
@@ -273,368 +211,328 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-        title: Text(AppStrings.get('viewDetails', lang)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context, _changed),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isFavorite
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              color: Colors.red,
-            ),
-            onPressed: _toggleFavorite,
+          title: Text(AppStrings.get('viewDetails', lang)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context, _changed),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: _deleteRecipe,
-          ),
-          if (!_isSaving)
+          actions: [
             IconButton(
-              icon: const Icon(Icons.save, color: Colors.green),
-              onPressed: _saveChanges,
-            )
-          else
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+              icon: Icon(
+                _isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: Colors.red,
               ),
+              onPressed: _toggleFavorite,
             ),
-        ],
-      ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: _deleteRecipe,
+            ),
+            if (_isSaving)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+          ],
+        ),
         body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Type and Sub-type Info
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Type and Sub-type Info
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: Colors.brown.shade50,
+                            child: Icon(
+                              Icons.egg_alt,
+                              size: 24,
+                              color: AppColors.accentRed,
+                            ),
                           ),
-                          child: Icon(Icons.grain),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _recipe.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Builder(
-                                builder: (context) {
-                                  final recipeType = _allTypes.firstWhere(
-                                    (type) => type.id == _recipe.typeId,
-                                    orElse: () => Type(
-                                      id: _recipe.typeId ?? '',
-                                      category: Category.dough,
-                                      name: '',
-                                    ),
-                                  );
-                                  final labelKey =
-                                      recipeType.category == Category.filling
-                                      ? 'filling_type'
-                                      : 'dough_type';                            
-                                  
-                                  return Text(
-                                    '${AppStrings.get(labelKey, lang)}:$_typeName',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black54,
-                                    ), 
-                                
-                                  );
-                                },
-                              ),
 
-                              const SizedBox(height: 4),
-                              // Description
-                              if (_recipe.description != null &&
-                                  _recipe.description!.isNotEmpty)
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  _recipe.description!,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
+                                  _recipe.name,
+                                  style: textTheme.titleLarge?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                             
-                              if (matchedDoughTypes.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    '${AppStrings.get('matched_dough_types', lang)}: ${matchedDoughTypes.map((type) => type.name).join(', ')}',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.teal,
+                                const SizedBox(height: 4),
+                                Builder(
+                                  builder: (context) {
+                                    final recipeType = _allTypes.firstWhere(
+                                      (type) => type.id == _recipe.typeId,
+                                      orElse: () => Type(
+                                        id: _recipe.typeId ?? '',
+                                        category: Category.dough,
+                                        name: '',
+                                      ),
+                                    );
+                                    final labelKey =
+                                        recipeType.category == Category.filling
+                                        ? 'filling_type'
+                                        : 'dough_type';
+
+                                    return Text(
+                                      '${AppStrings.get(labelKey, lang)}:$_typeName',
+                                      style: textTheme.bodyMedium?.copyWith(
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                      ),
+                                    );
+                                  },
+                                ),
+
+                                const SizedBox(height: 4),
+                                // Description
+                                if (_recipe.description != null &&
+                                    _recipe.description!.isNotEmpty)
+                                  Text(
+                                    _recipe.description!,
+                                    style: textTheme.bodyMedium,
+                                  ),
+
+                                if (_taskUsageCount > 0)
+                                  GestureDetector(
+                                    onTap: _openRelatedTasks,
+                                    child: Text(
+                                      AppStrings.get(
+                                        'used_in_tasks',
+                                        lang,
+                                      ).replaceAll(
+                                        '{count}',
+                                        _taskUsageCount.toString(),
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.blueGrey,
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              const SizedBox(height: 8),
-                              if (isFillingRecipe)
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: _allTypes
-                                      .where((type) => type.category == Category.dough)
-                                      .map((type) {
-                                        final selected = _selectedMatchedDoughTypes.any(
-                                          (item) => item.id == type.id,
-                                        );
-                                        return FilterChip(
-                                          label: Text(type.name),
-                                          selected: selected,
-                                          onSelected: (_) => _toggleMatchedDoughType(type),
-                                        );
-                                      })
-                                      .toList(),
-                                ),
-                              if (_taskUsageCount > 0)
-                                GestureDetector(
-                                  onTap: _openRelatedTasks,
-                                  child: Text(
-                                    AppStrings.get('used_in_tasks', lang).replaceAll(
+                                  )
+                                else
+                                  Text(
+                                    AppStrings.get(
+                                      'used_in_tasks',
+                                      lang,
+                                    ).replaceAll(
                                       '{count}',
                                       _taskUsageCount.toString(),
                                     ),
                                     style: const TextStyle(
                                       fontSize: 13,
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline,
+                                      color: Colors.blueGrey,
                                     ),
                                   ),
-                                )
-                              else
-                                Text(
-                                  AppStrings.get('used_in_tasks', lang).replaceAll(
-                                    '{count}',
-                                    _taskUsageCount.toString(),
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.blueGrey,
-                                  ),
+                                const SizedBox(height: 16),
+                                InfoChips(
+                                  qty: _recipe.quantity,
+                                  size: _recipe.size,
+                                  ratio: Helper.ratioToString(_recipe.ratio!),
                                 ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.get('moonCakeWeight', lang),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${AppStrings.get('size', lang)}: ${_recipe.size}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${AppStrings.get('quantity', lang)}: ${_recipe.quantity}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-
-                      Text(
-                        '${AppStrings.get('ratio', lang)}: $ratioString',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
 
-           
-            // Ingredients
+              // Ingredients
               const SizedBox(height: 16),
-            Text(
-              AppStrings.get('ingredients', lang),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            if (_ingredients.isEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(AppStrings.get('noIngredients', lang)),
-                ),
-              )
-            else
-             ListView.separated(
-                  shrinkWrap: true,                  
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _ingredients.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 1),
-                   
-                  itemBuilder: (context, index) {
-                    final ingredient = _ingredients[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                        
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(child: Text(ingredient.name)),
-                          Text(
-                            '${ingredient.amount} ${ingredient.unit.toMap()}',
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-           
-         // Rating
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.get('rating', lang),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: List.generate(5, (index) {
-                        final starValue = index + 1;
-                        final isSelected = _selectedRating >= starValue;
-                        return IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: Icon(
-                            isSelected ? Icons.star : Icons.star_border,
-                            color: Colors.amber,
-                            size: 32,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _selectedRating = starValue.toDouble();
-                            });
-                          },
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _selectedRating > 0
-                          ? '$_selectedRating / 5.0'
-                          : AppStrings.get('no_rating', lang),
-                      style: const TextStyle(color: Colors.black54),
-                    ),
-                  ],
+              Text(
+                AppStrings.get('ingredients', lang),
+                style: textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-
-            // Comment
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.get('comment', lang),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: TextField(
-                      controller: _commentController,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: AppStrings.get('no_comment', lang),
-                        border: InputBorder.none,
-                      ),
+              const SizedBox(height: 8),
+              if (_ingredients.isEmpty)
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(AppStrings.get('noIngredients', lang)),
                     ),
                   ),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _ingredients.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
+
+                    itemBuilder: (context, index) {
+                      final ingredient = _ingredients[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(child: Text(ingredient.name)),
+                            Text(
+                              '${ingredient.amount} ${ingredient.unit.toMap()}',
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 ),
                 const SizedBox(height: 16),
-              ],
-            ),
+              // Rating
+              Text(
+                        AppStrings.get('rating', lang),
+                        style: textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      
+                      Row(
+                        children: List.generate(5, (index) {
+                          final starValue = index + 1;
+                          final isSelected = _selectedRating >= starValue;
+                          return IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: Icon(
+                              isSelected ? Icons.star : Icons.star_border,
+                              color: Colors.amber,
+                              size: 32,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _selectedRating = starValue.toDouble();
+                              });
+                              _saveChanges();
+                            },
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _selectedRating > 0
+                            ? '$_selectedRating / 5.0'
+                            : AppStrings.get('no_rating', lang),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
 
-            // URL
-            if (_recipe.url != null && _recipe.url!.isNotEmpty)
+              // Comment
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Reference URL',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  Text(
+                    AppStrings.get('comment', lang),
+                    style: textTheme.titleMedium?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: SelectableText(
-                        _recipe.url!,
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
+                 TextField(
+                        controller: _commentController,
+                        maxLines: 4,
+                        decoration: InputDecoration(
+                          hintText: AppStrings.get('no_comment', lang),
+                           border: const OutlineInputBorder(),
+                        ),
+                      ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton.icon(
+                      onPressed: _isSaving ? null : _saveChanges,
+                      icon: _isSaving
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save),
+                      label: Text(AppStrings.get('save', lang)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+
+              // URL
+              if (_recipe.url != null && _recipe.url!.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.get('reference_url', lang),
+                      style: textTheme.titleMedium?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SelectableText(
+                          _recipe.url!,
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-          ],
+                  ],
+                ),
+            ],
+          ),
         ),
-      ),
         bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
       ),
     );
