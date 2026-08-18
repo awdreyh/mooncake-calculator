@@ -15,7 +15,7 @@ import '../../../provider/type.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../widgets/image_button.dart';
-import '../../widgets/selection_buttons.dart';
+import '../../widgets/mc_config_fields.dart';
 import '../../core/nav_bottom.dart';
 
 class AddRecipePage extends StatefulWidget {
@@ -70,6 +70,9 @@ class _AddRecipePageState extends State<AddRecipePage> {
   final TextEditingController _ratioController = TextEditingController(
     text: '4:6',
   );
+  int? _selectedQuantity;
+  int? _selectedSize;
+  String? _selectedRatio;
   final List<_IngredientInput> _ingredients = List.generate(
     3,
     (_) => _IngredientInput(),
@@ -80,6 +83,9 @@ class _AddRecipePageState extends State<AddRecipePage> {
   @override
   void initState() {
     super.initState();
+    _selectedQuantity = int.tryParse(_quantityController.text);
+    _selectedSize = int.tryParse(_sizeController.text);
+    _selectedRatio = _ratioController.text;
     _loadTypes();
   }
 
@@ -161,15 +167,24 @@ class _AddRecipePageState extends State<AddRecipePage> {
   }
 
   void _setQuantity(int value) {
-    _quantityController.text = value.toString();
+    setState(() {
+      _selectedQuantity = value;
+      _quantityController.text = value.toString();
+    });
   }
 
   void _setSize(int value) {
-    _sizeController.text = value.toString();
+    setState(() {
+      _selectedSize = value;
+      _sizeController.text = value.toString();
+    });
   }
 
   void _setRatio(String value) {
-    _ratioController.text = value;
+    setState(() {
+      _selectedRatio = value;
+      _ratioController.text = value;
+    });
   }
 
   void _addIngredient() {
@@ -355,53 +370,16 @@ class _AddRecipePageState extends State<AddRecipePage> {
               ],
               SizedBox(height: 16),
 
-              Text(AppStrings.get('qty',lang), style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty
-                    ? null
-                    : AppStrings.get('validQuantityMsg', lang),
-              ),
-              const SizedBox(height: 8),
-              OptionButtons(
-                values: [4, 8, 10, 16],
-                onSelected: _setQuantity,
-              ),
-              const SizedBox(height: 20),
-              Text(AppStrings.get('size',lang), style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _sizeController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty
-                    ? null
-                    : AppStrings.get('validSizeMsg', lang),
-              ),
-              const SizedBox(height: 8),
-              OptionButtons(
-                values: [50, 75, 100],
-                onSelected: _setSize,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                AppStrings.get('ratio', lang),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _ratioController,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                validator: (value) => value != null && value.isNotEmpty
-                    ? null
-                    : AppStrings.get('validRatioMsg', lang),
-              ),
-              const SizedBox(height: 8),
-              RatioButtons(
-                onSelected: _setRatio,
+              TaskConfigurationFields(
+                quantityController: _quantityController,
+                sizeController: _sizeController,
+                ratioController: _ratioController,
+                selectedQuantity: _selectedQuantity,
+                selectedSize: _selectedSize,
+                selectedRatio: _selectedRatio,
+                onQuantitySelected: _setQuantity,
+                onSizeSelected: _setSize,
+                onRatioSelected: _setRatio,
               ),
               const SizedBox(height: 24),
               Text(
