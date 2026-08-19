@@ -29,7 +29,7 @@ class OptionButtons extends StatelessWidget {
                       ? AppColors.sectionBg
                       : null,   
                   foregroundColor: isSelected
-                      ? AppColors.textSecondary
+                      ? AppColors.textPrimary
                       : AppColors.textSecondary,
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(                  
@@ -69,7 +69,7 @@ class RatioButtons extends StatelessWidget {
                       ? AppColors.sectionBg
                       : null,   
                   foregroundColor: isSelected
-                      ? AppColors.textSecondary
+                      ? AppColors.textPrimary
                       : AppColors.textSecondary,
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(

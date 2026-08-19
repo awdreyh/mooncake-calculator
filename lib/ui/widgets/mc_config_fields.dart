@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../utils/app_strings.dart';
+import '../utils/language_provider.dart';
+import 'package:provider/provider.dart';
 
 import 'selection_buttons.dart';
 
@@ -8,9 +11,7 @@ import 'selection_buttons.dart';
 class TaskConfigurationFields extends StatelessWidget {
   const TaskConfigurationFields({
     super.key,
-    // required this.quantityLabel,
-    // required this.sizeLabel,
-    // required this.ratioLabel,
+
     required this.quantityController,
     required this.sizeController,
     required this.ratioController,
@@ -20,10 +21,11 @@ class TaskConfigurationFields extends StatelessWidget {
     required this.onQuantitySelected,
     required this.onSizeSelected,
     required this.onRatioSelected,
+    this.quantityError,
+    this.sizeError,
+    this.ratioError,
   });
-  // final String quantityLabel;
-  // final String sizeLabel;
-  // final String ratioLabel;
+
   final TextEditingController quantityController;
   final TextEditingController sizeController;
   final TextEditingController ratioController;
@@ -33,19 +35,29 @@ class TaskConfigurationFields extends StatelessWidget {
   final ValueChanged<int> onQuantitySelected;
   final ValueChanged<int> onSizeSelected;
   final ValueChanged<String> onRatioSelected;
+  final String? quantityError;
+  final String? sizeError;
+  final String? ratioError;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+  final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: true,
+    );
+  final lang = languageProvider.languageCode;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildInputRow(
-          label: 'Quantity',
+          label: AppStrings.get('quantity', lang),
           controller: quantityController,
           keyboardType: TextInputType.number,
           labelStyle: text.titleSmall,
+          inputStyle: text.bodyMedium,
+          errorText: quantityError,
         ),
         const SizedBox(height: 8),
         OptionButtons(
@@ -55,11 +67,12 @@ class TaskConfigurationFields extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         _buildInputRow(
-          label: 'Size',
+          label: AppStrings.get('size', lang),
           controller: sizeController,
           keyboardType: TextInputType.number,
           labelStyle: text.titleSmall,
           inputStyle: text.bodyMedium,
+          errorText: sizeError,
         ),
         const SizedBox(height: 8),
         OptionButtons(
@@ -69,11 +82,12 @@ class TaskConfigurationFields extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         _buildInputRow(
-          label: 'Dough-to-Filling Ratio',
+          label: AppStrings.get('ratio', lang),
           controller: ratioController,
           keyboardType: TextInputType.text,
           labelStyle: text.titleSmall,
           inputStyle: text.bodyMedium,
+          errorText: ratioError,
         ),
         const SizedBox(height: 8),
         RatioButtons(
@@ -90,6 +104,7 @@ class TaskConfigurationFields extends StatelessWidget {
     required TextInputType keyboardType,
     required TextStyle? labelStyle,
     TextStyle? inputStyle,
+    String? errorText,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -100,7 +115,11 @@ class TaskConfigurationFields extends StatelessWidget {
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
-            decoration: const InputDecoration(),
+            decoration: InputDecoration(
+              errorText: errorText != null && errorText.isNotEmpty
+                  ? errorText
+                  : null,
+            ),
             style: inputStyle,
           ),
         ),

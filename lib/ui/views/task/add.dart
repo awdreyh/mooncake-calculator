@@ -11,7 +11,7 @@ import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../utils/helper.dart';
 import '../recipe/add.dart';
-import 'details.dart';
+import 'list.dart';
 import '../../widgets/image_button.dart';
 import '../../widgets/mc_config_fields.dart';
 import '../../core/app_theme.dart';
@@ -28,7 +28,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
   TextTheme get text => Theme.of(context).textTheme;
-  bool _isSaving = false;
+  // bool _isSaving = false;
   Type? _selectedDoughType;
   Recipe? _selectedDoughRecipe;
   Type? _selectedFillingType;
@@ -54,6 +54,9 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
   String? _doughRecipeError;
   String? _fillingTypeError;
   String? _fillingRecipeError;
+  String? _quantityError;
+  String? _sizeError;
+  String? _ratioError;
 
   @override
   void initState() {
@@ -198,6 +201,10 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
   }
 
   Map<String, String?> _validateSelections(String lang) {
+    final quantity = int.tryParse(_quantityController.text.trim());
+    final size = int.tryParse(_sizeController.text.trim());
+    final ratio = Helper.stringToRatio(_ratioController.text.trim());
+
     return {
       'doughType': _selectedDoughType == null
           ? AppStrings.get('validRecipeTypeMsg', lang)
@@ -211,6 +218,13 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       'fillingRecipe': _selectedFillingRecipe == null
           ? AppStrings.get('validFillingRecipeMsg', lang)
           : null,
+      'quantity': (quantity == null || quantity <= 0)
+          ? AppStrings.get('validQuantityMsg', lang)
+          : null,
+      'size': (size == null || size <= 0)
+          ? AppStrings.get('validSizeMsg', lang)
+          : null,
+      'ratio': (ratio <= 0) ? AppStrings.get('validRatioMsg', lang) : null,
     };
   }
 
@@ -222,11 +236,19 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       _doughRecipeError = validationErrors['doughRecipe'];
       _fillingTypeError = validationErrors['fillingType'];
       _fillingRecipeError = validationErrors['fillingRecipe'];
+      _quantityError = validationErrors['quantity'];
+      _sizeError = validationErrors['size'];
+      _ratioError = validationErrors['ratio'];
     });
 
-    if (validationErrors.values.any(
+    final firstError = validationErrors.values.firstWhere(
       (message) => message != null && message.isNotEmpty,
-    )) {
+      orElse: () => null,
+    );
+    if (firstError != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(firstError)));
       return;
     }
 
@@ -246,9 +268,9 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       await provider.insertTask(newTask);
 
       if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => TaskDetailsPage(taskId: newTask.id)),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => TaskListPage()));
     } finally {
       if (mounted) {
         setState(() => _isCalculating = false);
@@ -344,7 +366,10 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                       );
                     },
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Text(
                   AppStrings.get(
                     'noRecipesForType',
@@ -367,7 +392,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                 style: OutlinedButton.styleFrom(
                   backgroundColor: selected ? AppColors.sectionBg : null,
                   foregroundColor: selected
-                      ? AppColors.textSecondary
+                      ? AppColors.textPrimary
                       : AppColors.textSecondary,
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(
@@ -386,8 +411,9 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                 label: Text(
                   recipe.name,
                   style: TextStyle(
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w300,
                     color: selected
-                        ? AppColors.textSecondary
+                        ? AppColors.espresso
                         : AppColors.textSecondary,
                   ),
                 ),
@@ -402,106 +428,120 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>().languageCode;
 
-    return Center(
-      child: SingleChildScrollView(
-        // padding: const EdgeInsets.all(16),
-        child: Form(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTypeSelection(
-                label: AppStrings.get('lblWhichType', lang),
-                types: _doughTypes,
-                selectedType: _selectedDoughType,
-                errorText: _doughTypeError,
-                onSelected: (type) {
-                  setState(() {
-                    _doughTypeError = null;
-                    _selectedDoughType = type;
-                    _selectedDoughRecipe = _doughRecipes.firstOrNull;
-                    _selectedFillingType = null;
-                    _selectedFillingRecipe = null;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Center(
+        child: SingleChildScrollView(
+          // padding: const EdgeInsets.all(16),
+          child: Form(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTypeSelection(
+                  label: AppStrings.get('lblWhichType', lang),
+                  types: _doughTypes,
+                  selectedType: _selectedDoughType,
+                  errorText: _doughTypeError,
+                  onSelected: (type) {
+                    setState(() {
+                      _doughTypeError = null;
+                      _selectedDoughType = type;
+                      _selectedDoughRecipe = _doughRecipes.firstOrNull;
+                      _selectedFillingType = _fillingTypes.firstOrNull;
+                      _selectedFillingRecipe = _fillingRecipes.firstOrNull;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
 
-              _buildRecipeSelection(
-                label: AppStrings.get('lblwhichDoughRecipe', lang),
-                recipes: _doughRecipes,
-                selectedRecipe: _selectedDoughRecipe,
-                errorText: _doughRecipeError,
-                selectedType: _selectedDoughType,
-                onSelected: (recipe) {
-                  setState(() {
-                    _doughRecipeError = null;
-                    _selectedDoughRecipe = recipe;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildTypeSelection(
-                label: AppStrings.get('lblWhichFillingType', lang),
-                types: _fillingTypes,
-                selectedType: _selectedFillingType,
-                errorText: _fillingTypeError,
-                onSelected: (type) {
-                  setState(() {
-                    _fillingTypeError = null;
-                    _selectedFillingType = type;
-                    _selectedFillingRecipe = _fillingRecipes.firstOrNull;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildRecipeSelection(
-                label: AppStrings.get('lblwhichFillingRecipe', lang),
-                recipes: _fillingRecipes,
-                selectedRecipe: _selectedFillingRecipe,
-                errorText: _fillingRecipeError,
-                selectedType: _selectedFillingType,
-                onSelected: (recipe) {
-                  setState(() {
-                    _fillingRecipeError = null;
-                    _selectedFillingRecipe = recipe;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-              TaskConfigurationFields(
- 
-                quantityController: _quantityController,
-                sizeController: _sizeController,
-                ratioController: _ratioController,
-                selectedQuantity: _selectedQuantity,
-                selectedSize: _selectedSize,
-                selectedRatio: _selectedRatio != null
-                    ? Helper.ratioToString(_selectedRatio!)
-                    : null,
-                onQuantitySelected: _setQuantity,
-                onSizeSelected: _setSize,
-                onRatioSelected: _setRatio,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isCalculating ? null : _calculateTask,
-                  icon: _isCalculating
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.calculate),
-                  label: Text(
-                    _isCalculating
-                        ? AppStrings.get('calculating', lang)
-                        : AppStrings.get('calculateSave', lang),
+                _buildRecipeSelection(
+                  label: AppStrings.get('lblwhichDoughRecipe', lang),
+                  recipes: _doughRecipes,
+                  selectedRecipe: _selectedDoughRecipe,
+                  errorText: _doughRecipeError,
+                  selectedType: _selectedDoughType,
+                  onSelected: (recipe) {
+                    setState(() {
+                      _doughRecipeError = null;
+                      _selectedDoughRecipe = recipe;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildTypeSelection(
+                  label: AppStrings.get('lblWhichFillingType', lang),
+                  types: _fillingTypes,
+                  selectedType: _selectedFillingType,
+                  errorText: _fillingTypeError,
+                  onSelected: (type) {
+                    setState(() {
+                      _fillingTypeError = null;
+                      _selectedFillingType = type;
+                      _selectedFillingRecipe = _fillingRecipes.firstOrNull;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildRecipeSelection(
+                  label: AppStrings.get('lblwhichFillingRecipe', lang),
+                  recipes: _fillingRecipes,
+                  selectedRecipe: _selectedFillingRecipe,
+                  errorText: _fillingRecipeError,
+                  selectedType: _selectedFillingType,
+                  onSelected: (recipe) {
+                    setState(() {
+                      _fillingRecipeError = null;
+                      _selectedFillingRecipe = recipe;
+                    });
+                  },
+                ),
+                const SizedBox(height: 24),
+                TaskConfigurationFields(
+                  quantityController: _quantityController,
+                  sizeController: _sizeController,
+                  ratioController: _ratioController,
+                  quantityError: _quantityError,
+                  sizeError: _sizeError,
+                  ratioError: _ratioError,
+                  selectedQuantity: _selectedQuantity,
+                  selectedSize: _selectedSize,
+                  selectedRatio: _selectedRatio != null
+                      ? Helper.ratioToString(_selectedRatio!)
+                      : null,
+                  onQuantitySelected: (value) {
+                    _quantityError = null;
+                    _setQuantity(value);
+                  },
+                  onSizeSelected: (value) {
+                    _sizeError = null;
+                    _setSize(value);
+                  },
+                  onRatioSelected: (value) {
+                    _ratioError = null;
+                    _setRatio(value);
+                  },
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isCalculating ? null : _calculateTask,
+                    icon: _isCalculating
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.calculate),
+                    label: Text(
+                      _isCalculating
+                          ? AppStrings.get('calculating', lang)
+                          : AppStrings.get('calculateSave', lang),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

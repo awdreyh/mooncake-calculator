@@ -59,7 +59,7 @@ class StyleImageButton extends StatelessWidget {
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: colorScheme.primary.withAlpha(10),
+                      color: AppColors.accent.withAlpha(10),
                       blurRadius: 2,
                       spreadRadius: 4,
                     ),
@@ -71,7 +71,8 @@ class StyleImageButton extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
+                  top: Radius.circular(11),
+                 
                 ),
                 child: image,
               ),
@@ -83,10 +84,10 @@ class StyleImageButton extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: selected
-                        ? AppColors.accentLight
-                        : AppColors.accentLight.withValues(alpha: 0.5),
+                        ? AppColors.accent
+                        : AppColors.sectionBg,
                     borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(12),
+                      bottom: Radius.circular(11),
                     ),
                   ),
                   child: Center(
@@ -97,7 +98,7 @@ class StyleImageButton extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: text.labelLarge?.copyWith(
                         color: selected
-                            ? AppColors.textPrimary
+                            ? AppColors.cream
                             : colorScheme.onSurface,
                         fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                       ),
