@@ -5,6 +5,7 @@ import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
+import '../../core/app_theme.dart';
 import 'add.dart';
 import 'details.dart';
 
@@ -18,6 +19,8 @@ class TypeListPage extends StatefulWidget {
 class _TypeListPageState extends State<TypeListPage> {
   LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
+      TextTheme get text => Theme.of(context).textTheme;
+      
   String get lang => languageProvider.languageCode;
   bool _isLoading = true;
   String? _errorMessage;
@@ -55,38 +58,74 @@ class _TypeListPageState extends State<TypeListPage> {
     }
   }
 
-  Future<void> _deleteType(Type type) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.get('delete', lang)),
-        content: Text(
-          AppStrings.get(
-            'confirm_delete',
-            lang,
-          ).replaceFirst('{name}', type.name),
+  Widget _buildTypeCard(BuildContext context, Type type) {
+    return Card(
+      child: InkWell(
+        onTap: () async {
+          await Navigator.of(context).push<bool>(
+            MaterialPageRoute(builder: (_) => TypeDetailsPage(type: type)),
+          );
+          await _loadTypes();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            type.name,
+            style:text.bodyMedium,
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppStrings.get('cancel', lang)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              AppStrings.get('delete', lang),
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
       ),
     );
+  }
 
-    if (confirmed != true) return;
+  Widget _buildAddCard(BuildContext context, Category category) {
+    return Card(
+      child: InkWell(
+        onTap: () async {
+          await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => AddTypePage(initialCategory: category),
+            ),
+          );
+          await _loadTypes();
+        },
+        child: Container(
+          color: AppColors.sectionBg,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Icon(Icons.add, color: AppColors.espressoLight.withValues(alpha: 0.6)),
+        ),
+      ),
+    );
+  }
 
-    final typeProvider = Provider.of<TypeProvider>(context, listen: false);
-    await typeProvider.deleteType(type.id);
-    await _loadTypes();
+  Widget _buildTypeSection(
+    String title,
+    List<Type> types,
+    Category category,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final type in types) _buildTypeCard(context, type),
+              _buildAddCard(context, category),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -118,110 +157,25 @@ class _TypeListPageState extends State<TypeListPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
                   // Dough Types Section
-                  if (doughTypes.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: Text(
-                        AppStrings.get('dough_type', lang),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.brown,
-                        ),
-                      ),
-                    ),
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: doughTypes.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(height: 0),
-                      itemBuilder: (context, index) {
-                        final type = doughTypes[index];
-                        return ListTile(
-                          title: Text(type.name),
-                          subtitle: Text(type.category.toMap()),
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.redAccent,
-                            ),
-                            onPressed: () => _deleteType(type),
-                          ),
-                          onTap: () async {
-                            await Navigator.of(context).push<bool>(
-                              MaterialPageRoute(
-                                builder: (_) => TypeDetailsPage(type: type),
-                              ),
-                            );
-                            await _loadTypes();
-                          },
-                        );
-                      },
-                    ),
-                  ],
+                  _buildTypeSection(
+                    AppStrings.get('dough_type', lang),
+               
+                    doughTypes,
+                    Category.dough,
+                  ),
+                  Divider(color: AppColors.borderLight, thickness: 1, height: 32),
                   // Filling Types Section
-                  if (fillingTypes.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: Text(
-                        AppStrings.get('filling_type', lang),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ),
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: fillingTypes.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(height: 0),
-                      itemBuilder: (context, index) {
-                        final type = fillingTypes[index];
-                        return ListTile(
-                          title: Text(type.name),
-                          subtitle: Text(type.category.toMap()),
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.redAccent,
-                            ),
-                            onPressed: () => _deleteType(type),
-                          ),
-                          onTap: () async {
-                            await Navigator.of(context).push<bool>(
-                              MaterialPageRoute(
-                                builder: (_) => TypeDetailsPage(type: type),
-                              ),
-                            );
-                            await _loadTypes();
-                          },
-                        );
-                      },
-                    ),
-                  ],
+                  _buildTypeSection(
+                    AppStrings.get('filling_type', lang),
+       
+                    fillingTypes,
+                    Category.filling,
+                  ),
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.of(
-            context,
-          ).push<bool>(MaterialPageRoute(builder: (_) => const AddTypePage()));
-          await _loadTypes();
-        },
-        child: const Icon(Icons.add),
-        tooltip: AppStrings.get('addType', lang),
-      ),
+
+     
       bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );
   }

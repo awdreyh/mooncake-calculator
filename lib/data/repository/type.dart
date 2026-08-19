@@ -67,6 +67,21 @@ class TypeRepository {
     );
   }
 
+    Future<int> countRecipesUsingType(String typeId) async {
+    final database = await db.database;
+    final rows = await database.rawQuery(
+      '''
+      SELECT COUNT(*) AS count
+      FROM recipes
+      WHERE typeId= ?
+      ''',
+      [typeId],
+    );
+    final count = rows.first['count'];
+    return count is int ? count : int.tryParse(count.toString()) ?? 0;
+  }
+
+  
   Future<List<Type>> loadMatchedDoughTypes(String? recipeTypeId) async {
     if (recipeTypeId == null) {
       return [];

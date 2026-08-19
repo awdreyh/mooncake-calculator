@@ -47,5 +47,6 @@ class TaskProvider extends ChangeNotifier {
     await repository.update(task);   
     await loadTask(task.id);     
   }
+  
 
 }

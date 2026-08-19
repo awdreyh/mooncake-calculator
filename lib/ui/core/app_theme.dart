@@ -53,7 +53,7 @@ class AppColors {
 class AppTheme {
   AppTheme._();
 
-  static const double buttonRadius = 6.0;
+  static const double buttonRadius = 4;
   static final BorderRadius globalRadius = BorderRadius.circular(buttonRadius);
 
   // Serif italic display face — used for hero headlines & section titles
@@ -107,6 +107,7 @@ class AppTheme {
       // Card titles e.g. "Seared Duck Confit"
       titleLarge: _body(18, FontWeight.w700, AppColors.textPrimary),
       titleMedium: _body(15, FontWeight.w600, AppColors.textPrimary),
+      titleSmall: _body(14, FontWeight.w500, AppColors.textPrimary),
       // Body copy
       bodyLarge: _body(15, FontWeight.w400, AppColors.textPrimary),
       bodyMedium: _body(13.5, FontWeight.w400, AppColors.textSecondary),
@@ -219,7 +220,7 @@ class AppTheme {
         dividerThickness: 1,
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.borderLight, width: 1),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(4),
         ),
       ),
 
@@ -251,7 +252,7 @@ class AppTheme {
         shadowColor: Colors.black.withValues(alpha: 0.15),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(8),
           side: const BorderSide(color: AppColors.divider, width: 1),
         ),
         clipBehavior: Clip.antiAlias,

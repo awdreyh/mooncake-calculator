@@ -10,6 +10,8 @@ import '../../utils/language_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import '../../core/app_theme.dart';
+import '../recipe/list.dart';
 
 class TypeDetailsPage extends StatefulWidget {
   final Type type;
@@ -22,6 +24,7 @@ class TypeDetailsPage extends StatefulWidget {
 class _TypeDetailsPageState extends State<TypeDetailsPage> {
   late final TextEditingController _nameController;
   static const _placeholderImage = 'assets/images/types/placeholder.jpg';
+  String _typeName = '';
   Category? _category;
   String? _imagePath;
   List<Type> _doughTypes = [];
@@ -32,16 +35,19 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
+  int _recipeUsageCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.type.name);
+    _typeName = widget.type.name;
+    _nameController = TextEditingController(text: _typeName);
     _category = widget.type.category;
     _imagePath = widget.type.imagePath;
     _loadDoughTypes();
     _loadSelectedMatchedDoughTypes();
     _loadFillingTypes();
+    _loadRecipeUsageCount();
   }
 
   @override
@@ -73,11 +79,32 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     }
   }
 
+  Future<void> _loadRecipeUsageCount() async {
+    if (!mounted) return;
+    final typeProvider = context.read<TypeProvider>();
+    final count = await typeProvider.countRecipesUsingType(widget.type.id);
+    if (!mounted) return;
+    setState(() {
+      _recipeUsageCount = count;
+    });
+  }
+
+  void _openRelatedRecipes() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RecipeListPage(typeId: widget.type.id),
+      ),
+    );
+  }
+
   Future<void> _loadSelectedMatchedDoughTypes() async {
     try {
       final typeProvider = context.read<TypeProvider>();
-      final matchedTypes = await typeProvider.loadMatchedDoughTypes(widget.type.id);
-      
+      final matchedTypes = await typeProvider.loadMatchedDoughTypes(
+        widget.type.id,
+      );
+
       if (mounted) {
         setState(() {
           _selectedMatchedDoughTypes = matchedTypes;
@@ -161,7 +188,8 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
 
   Widget _buildImagePreview() {
     final imagePath = widget.type.imagePath?.trim();
-    final isLocalFile = imagePath != null &&
+    final isLocalFile =
+        imagePath != null &&
         imagePath.isNotEmpty &&
         !imagePath.startsWith('assets/');
 
@@ -169,27 +197,19 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
         ? Image.file(
             File(imagePath),
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => Image.asset(
-              _placeholderImage,
-              fit: BoxFit.cover,
-            ),
+            errorBuilder: (_, _, _) =>
+                Image.asset(_placeholderImage, fit: BoxFit.cover),
           )
         : Image.asset(
             imagePath?.isNotEmpty == true ? imagePath! : _placeholderImage,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => Image.asset(
-              _placeholderImage,
-              fit: BoxFit.cover,
-            ),
+            errorBuilder: (_, _, _) =>
+                Image.asset(_placeholderImage, fit: BoxFit.cover),
           );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: SizedBox(
-        width: double.infinity,
-        height: 180,
-        child: image,
-      ),
+      child: SizedBox(width: double.infinity, height: 180, child: image),
     );
   }
 
@@ -203,9 +223,9 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     }
 
     setState(() => _isSaving = true);
-    
-    final matchedIds = _category == Category.filling 
-        ? _selectedMatchedDoughTypes.map((type) => type.id).toList() 
+
+    final matchedIds = _category == Category.filling
+        ? _selectedMatchedDoughTypes.map((type) => type.id).toList()
         : null;
 
     final updatedType = Type(
@@ -257,7 +277,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     } catch (error, stackTrace) {
       print('Error updating type: $error');
       print('Stack trace: $stackTrace');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -275,6 +295,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(AppStrings.get('type_details_title', lang)),
@@ -301,39 +322,84 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: AppStrings.get('name', lang),
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return AppStrings.get('validRecipeNameMsg', lang);
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<Category>(
-                initialValue: _category,
-                items: Category.values.map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category.toMap()),
-                  );
-                }).toList(),
-                onChanged: (value) => setState(() => _category = value),
-                decoration: InputDecoration(
-                  labelText: AppStrings.get('type', lang),
-                  border: const OutlineInputBorder(),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: Colors.brown.shade50,
+                            child: Icon(
+                              Icons.egg_alt,
+                              size: 24,
+                              color: AppColors.accentRed,
+                            ),
+                          ),
+
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _typeName,
+                                  style: textTheme.titleLarge?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+
+                                if (_recipeUsageCount > 0)
+                                  GestureDetector(
+                                    onTap: _openRelatedRecipes,
+                                    child: Text(
+                                      AppStrings.get(
+                                        'used_in_recipes',
+                                        lang,
+                                      ).replaceAll(
+                                        '{count}',
+                                        _recipeUsageCount.toString(),
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  Text(
+                                    AppStrings.get(
+                                      'used_in_recipes',
+                                      lang,
+                                    ).replaceAll(
+                                      '{count}',
+                                      _recipeUsageCount.toString(),
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.blueGrey,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
               if (_category == Category.filling) ...[
                 Text(
                   AppStrings.get('matched_dough_types', lang),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
                 if (_doughTypes.isEmpty)
@@ -348,6 +414,12 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                       );
                       return FilterChip(
                         label: Text(type.name),
+                        selectedColor: AppColors.accent,
+                        backgroundColor: AppColors.cream,
+                         labelStyle: TextStyle(
+                          color: selected ? AppColors.cream : AppColors.textPrimary,
+                        ),
+                        checkmarkColor: AppColors.cream,
                         selected: selected,
                         onSelected: (_) => _toggleMatchedDoughType(type),
                       );
@@ -358,10 +430,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
               if (_category == Category.dough) ...[
                 Text(
                   AppStrings.get('matched_filling_types', lang),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
                 if (_fillingTypes.isEmpty)
@@ -376,6 +445,12 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                       );
                       return FilterChip(
                         label: Text(type.name),
+                        selectedColor: AppColors.accent,
+                        backgroundColor: AppColors.cream,
+                        labelStyle: TextStyle(
+                          color: selected ? AppColors.cream : AppColors.textPrimary,
+                        ),
+                        checkmarkColor: AppColors.cream,
                         selected: selected,
                         onSelected: (_) => _toggleMatchedFillingType(type),
                       );

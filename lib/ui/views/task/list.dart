@@ -44,7 +44,19 @@ class _TaskListPageState extends State<TaskListPage> {
 
     try {
       final recipeProvider = context.read<RecipeProvider>();
-      final tasks = await context.read<TaskProvider>().loadAllTasks();
+      var tasks = await context.read<TaskProvider>().loadAllTasks();
+
+      final recipeId = widget.recipeId;
+      if (recipeId != null && recipeId.isNotEmpty) {
+        tasks = tasks
+            .where(
+              (task) =>
+                  task.doughRecipeId == recipeId ||
+                  task.fillingRecipeId == recipeId,
+            )
+            .toList();
+      }
+
       tasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       final entries = await Future.wait(
@@ -102,8 +114,25 @@ class _TaskListPageState extends State<TaskListPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 12),
+                  children: [                   
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          createdDate,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        Icon(
+                          task.isCompleted == true
+                              ? Icons.check_circle
+                              : Icons.check_circle_outline,
+                          color: task.isCompleted == true
+                              ? AppColors.success
+                              : AppColors.textSecondary,
+                        ),
+                      ],
+                    ),                
+                    Divider(color: AppColors.borderLight.withValues(alpha: 0.2), height: 12),
                     SizedBox(
                       height: 48,
                       child: Text(
@@ -125,26 +154,8 @@ class _TaskListPageState extends State<TaskListPage> {
                         ratio: Helper.ratioToString(task.ratio),
                         displayRatio: false,
                       ),
-                    const SizedBox(height: 16),
-                    Divider(color: AppColors.borderLight, height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          createdDate,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        Icon(
-                          task.isCompleted == true
-                              ? Icons.check_circle
-                              : Icons.check_circle_outline,
-                          color: task.isCompleted == true
-                              ? AppColors.success
-                              : AppColors.textSecondary,
-                        ),
-                      ],
-                    ),
-                  ],
+              
+                     ],
                   
                 ),
               ),
@@ -185,7 +196,12 @@ class _TaskListPageState extends State<TaskListPage> {
                 itemBuilder: (_, index) => _buildTaskTile(_tasks[index]),
               ),
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.small(
+         backgroundColor: AppColors.accent,
+          foregroundColor: AppColors.cream,
+           shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(8), 
+           ),
         onPressed: () async {
           Navigator.of(context).popUntil((route) => route.isFirst);
           await _loadTasks();

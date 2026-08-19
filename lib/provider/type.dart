@@ -37,8 +37,7 @@ class TypeProvider extends ChangeNotifier {
     final result = await repository.loadByCategory(category);
     notifyListeners();
     return result;
-  }
- 
+  } 
 
   Future<String?> loadTypeName(String id) async {
     final type = await repository.load(id);
@@ -65,5 +64,9 @@ class TypeProvider extends ChangeNotifier {
   Future<void> deleteType(String id) async {
     await repository.delete(id);
     notifyListeners();
+  }
+
+  Future<int> countRecipesUsingType(String typeId) async {
+    return await repository.countRecipesUsingType(typeId);
   }
 }

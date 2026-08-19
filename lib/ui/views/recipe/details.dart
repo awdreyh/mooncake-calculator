@@ -164,6 +164,15 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   void _deleteRecipe() async {
+    if (_taskUsageCount > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.get('recipe_in_use_cannot_delete', lang)),
+        ),
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -225,7 +234,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               onPressed: _toggleFavorite,
             ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: Icon(
+                Icons.delete,
+                color: _taskUsageCount > 0 ? Colors.grey : Colors.red,
+              ),
               onPressed: _deleteRecipe,
             ),
             if (_isSaving)

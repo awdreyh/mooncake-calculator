@@ -43,13 +43,13 @@ class StyleImageButton extends StatelessWidget {
 
     return Material(
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: selected
                   ? AppColors.borderLight
@@ -59,7 +59,7 @@ class StyleImageButton extends StatelessWidget {
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: AppColors.accent.withAlpha(10),
+                      color: AppColors.accent.withAlpha(6),
                       blurRadius: 2,
                       spreadRadius: 4,
                     ),
@@ -71,7 +71,7 @@ class StyleImageButton extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(11),
+                  top: Radius.circular(7),
                  
                 ),
                 child: image,
@@ -87,7 +87,7 @@ class StyleImageButton extends StatelessWidget {
                         ? AppColors.accent
                         : AppColors.sectionBg,
                     borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(11),
+                      bottom: Radius.circular(7),
                     ),
                   ),
                   child: Center(

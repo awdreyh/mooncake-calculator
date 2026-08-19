@@ -13,7 +13,9 @@ import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 
 class AddTypePage extends StatefulWidget {
-  const AddTypePage({super.key});
+  final Category? initialCategory;
+
+  const AddTypePage({super.key, this.initialCategory});
 
   @override
   State<AddTypePage> createState() => _AddTypePageState();
@@ -25,7 +27,7 @@ class _AddTypePageState extends State<AddTypePage> {
   String get lang => languageProvider.languageCode;
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  Category _category = Category.dough;
+  late Category _category = widget.initialCategory ?? Category.dough;
   bool _isSaving = false;
   String? _imagePath;
   List<Type> _doughTypes = [];

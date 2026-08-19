@@ -13,7 +13,8 @@ import 'add.dart';
 import 'details.dart';
 
 class RecipeListPage extends StatefulWidget {
-  const RecipeListPage({super.key});
+  final String? typeId;
+  const RecipeListPage({super.key, this.typeId});
 
   @override
   State<RecipeListPage> createState() => _RecipeListPageState();
@@ -27,6 +28,8 @@ class _RecipeListPageState extends State<RecipeListPage> {
   String? _errorMessage;
   List<Type> _types = [];
   bool _isLoading = true;
+  // recipeId -> number of tasks using it
+  final Map<String, int> _usageCounts = {};
 
   @override
   void initState() {
@@ -43,10 +46,23 @@ class _RecipeListPageState extends State<RecipeListPage> {
     try {
       final recipes = await context.read<RecipeProvider>().loadAllRecipes();
       final types = await context.read<TypeProvider>().loadAllTypes();
+      final counts = await Future.wait(
+        recipes.map(
+          (r) => context.read<RecipeProvider>().countTasksUsingRecipe(r.id),
+        ),
+      );
       if (!mounted) return;
       setState(() {
         _recipes = recipes;
         _types = types;
+        _usageCounts
+          ..clear()
+          ..addEntries(
+            Iterable.generate(
+              recipes.length,
+              (i) => MapEntry(recipes[i].id, counts[i]),
+            ),
+          );
         _isLoading = false;
       });
     } catch (error) {
@@ -97,6 +113,16 @@ class _RecipeListPageState extends State<RecipeListPage> {
   }
 
   Future<void> _deleteRecipe(Recipe recipe) async {
+    final usage = _usageCounts[recipe.id] ?? 0;
+    if (usage > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.get('recipe_in_use_cannot_delete', lang)),
+        ),
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -152,7 +178,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 72),
       itemCount: recipes.length,
       itemBuilder: (context, index) {
         final recipe = recipes[index];
@@ -161,6 +187,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
             ? Icons.egg_alt
             : Icons.cookie;
         final typeLabel = _typeNameForRecipe(recipe);
+        final inUse = (_usageCounts[recipe.id] ?? 0) > 0;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -230,7 +257,10 @@ class _RecipeListPageState extends State<RecipeListPage> {
                           : 'Favorite',
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: inUse ? Colors.grey : Colors.red,
+                      ),
                       onPressed: () => _deleteRecipe(recipe),
                       tooltip: AppStrings.get('delete_recipe', lang),
                     ),
@@ -295,7 +325,13 @@ class _RecipeListPageState extends State<RecipeListPage> {
           ),
         ),
         body: _buildBody(lang),
-        floatingActionButton: FloatingActionButton(
+     
+        floatingActionButton: FloatingActionButton.small(
+          backgroundColor: AppColors.accent,
+          foregroundColor: AppColors.cream,
+           shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(8), // your custom radius
+  ),
           onPressed: () async {
             final result = await Navigator.push<bool>(
               context,
@@ -305,7 +341,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
               _refreshRecipes();
             }
           },
-          tooltip: AppStrings.get('addRecipe', lang),
+          tooltip: AppStrings.get('addRecipe', lang),          
           child: const Icon(Icons.add),
         ),
         bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
