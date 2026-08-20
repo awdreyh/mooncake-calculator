@@ -462,13 +462,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               alignment: Alignment.centerRight,
               child: ElevatedButton.icon(
                 onPressed: _isSaving ? null : _saveTask,
-                icon: _isSaving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.save),
+            
                 label: Text(AppStrings.get('save', lang)),
               ),
             ),

@@ -48,7 +48,7 @@ class _TaskListPageState extends State<TaskListPage> {
 
       final recipeId = widget.recipeId;
       if (recipeId != null && recipeId.isNotEmpty) {
-        tasks = tasks
+        tasks = tasks 
             .where(
               (task) =>
                   task.doughRecipeId == recipeId ||

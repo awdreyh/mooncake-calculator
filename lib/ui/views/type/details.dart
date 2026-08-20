@@ -93,7 +93,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RecipeListPage(typeId: widget.type.id),
+        builder: (context) => RecipeListPage(typeId: widget.type.id, ),
       ),
     );
   }
@@ -334,12 +334,20 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                           CircleAvatar(
                             radius: 22,
                             backgroundColor: Colors.brown.shade50,
-                            child: Icon(
-                              Icons.egg_alt,
-                              size: 24,
-                              color: AppColors.accentRed,
-                            ),
-                          ),
+                            child: _category == Category.filling
+                                ? Icon(
+                                    Icons.egg_alt,
+                                    size: 24,
+                                    color: AppColors.accentRed,
+                                  )
+                                : _category == Category.dough
+                                    ? Icon(
+                                        Icons.cookie ,
+                                        size: 24,
+                                        color: AppColors.accent,
+                                      )
+                                    : const SizedBox.shrink(),
+                          ),  
 
                           const SizedBox(width: 16),
                           Expanded(

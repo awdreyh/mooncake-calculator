@@ -33,6 +33,7 @@ class AppStrings {
       'goToList': 'Go to List',
       'recipes': 'Recipes',
       'addRecipe': 'Add Recipe',
+      'addType': 'Add Type',
       'name': 'Name',
       'style': 'Style',
       'ingredients': 'Ingredients',
@@ -86,6 +87,9 @@ class AppStrings {
       'matched_dough_types': 'Matched dough types',
       'matched_filling_types': 'Matched filling types',
       'validRecipeNameMsg': 'Please enter a valid recipe name.',
+      'validTypeNameMsg': 'Please enter a valid type name.',
+      'no_dough_types_available': 'No dough types available',
+      'no_filling_types_available': 'No filling types available',
       'validRecipeTypeMsg': 'Please select a valid dough type.',
       'validFillingTypeMsg': 'Please select a valid filling type.',
       'validDoughRecipeMsg': 'Please select a dough recipe.',
@@ -112,6 +116,7 @@ class AppStrings {
       'lblCompleted': 'Is this task completed?',
       'enter_comment': 'Enter your comment here...',
       'image_title': 'Image(s)',
+      'recipes_for_type': 'Recipes for {type}',
 
 
     },
@@ -150,6 +155,7 @@ class AppStrings {
       'goToList': '转到列表',
       'recipes': '食谱',
       'addRecipe': '添加食谱',
+      'addType': '添加类型',
       'name': '名称',
       'style': '风格',
       'ingredients': '配料',
@@ -203,6 +209,9 @@ class AppStrings {
       'matched_dough_types': '匹配的饼皮类型',
       'matched_filling_types': '匹配的馅料类型',
       'validRecipeNameMsg': '请输入食谱名称。',
+      'validTypeNameMsg': '请输入类型名称。',
+      'no_dough_types_available': '没有可用的饼皮类型',
+      'no_filling_types_available': '没有可用的馅料类型',
       'validRecipeTypeMsg': '请选择有效的饼皮类型。',
       'validFillingTypeMsg': '请选择馅料类型。',
       'validDoughRecipeMsg': '请选择饼皮食谱。',
@@ -229,6 +238,7 @@ class AppStrings {
       'lblCompleted': '此任务是否已完成？',
       'enter_comment': '在此输入备注...',
       'image_title': '图片',
+      'recipes_for_type': '适用于 {type} 的食谱',
     },
   };
 

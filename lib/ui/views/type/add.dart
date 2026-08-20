@@ -11,6 +11,8 @@ import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
+import '../../core/app_theme.dart';
+import '../../widgets/selection_categories.dart';
 
 class AddTypePage extends StatefulWidget {
   final Category? initialCategory;
@@ -57,6 +59,7 @@ class _AddTypePageState extends State<AddTypePage> {
         setState(() {
           _doughTypes = doughTypes;
           _fillingTypes = fillingTypes;
+          _preselectFirstMatchedType();
         });
       }
     } catch (e) {
@@ -99,6 +102,18 @@ class _AddTypePageState extends State<AddTypePage> {
       return destPath;
     } catch (_) {
       return null;
+    }
+  }
+
+  void _preselectFirstMatchedType() {
+    if (_category == Category.filling) {
+      if (_selectedMatchedDoughTypes.isEmpty && _doughTypes.isNotEmpty) {
+        _selectedMatchedDoughTypes = [_doughTypes.first];
+      }
+    } else {
+      if (_selectedMatchedFillingTypes.isEmpty && _fillingTypes.isNotEmpty) {
+        _selectedMatchedFillingTypes = [_fillingTypes.first];
+      }
     }
   }
 
@@ -223,6 +238,7 @@ class _AddTypePageState extends State<AddTypePage> {
 
   @override
   Widget build(BuildContext context) {
+     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: Text(AppStrings.get('addType', lang))),
       body: SingleChildScrollView(
@@ -235,51 +251,32 @@ class _AddTypePageState extends State<AddTypePage> {
               children: [
                 TextFormField(
                   controller: _nameController,
+                  maxLength: 1,
                   decoration: InputDecoration(
                     labelText: AppStrings.get('name', lang),
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return AppStrings.get('validRecipeNameMsg', lang);
+                      return AppStrings.get('validTypeNameMsg', lang);
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<Category>(
-                  initialValue: _category,
-                  items: Category.values.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(AppStrings.get(category.toMap(), lang)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _category = value);
-                    }
-                  },
-                  decoration: InputDecoration(
-                    labelText: AppStrings.get('type', lang),
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Please select a category';
-                    }
-                    return null;
-                  },
+                OptionCategory(
+                  values: Category.values,
+                  selectedValue: _category,
+                  onSelected: (value) => setState(() {
+                    _category = value;
+                    _preselectFirstMatchedType();
+                  }),
                 ),
-                const SizedBox(height: 24),
-                // Matched Dough Types for Filling
+                 const SizedBox(height: 16),
                 if (_category == Category.filling) ...[
                   Text(
                     AppStrings.get('matched_dough_types', lang),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   if (_matchedTypeError != null)
@@ -294,7 +291,7 @@ class _AddTypePageState extends State<AddTypePage> {
                       ),
                     ),
                   if (_doughTypes.isEmpty)
-                    const Text('No dough types available')
+                     Text(AppStrings.get('no_dough_types_available', lang))
                   else
                     Wrap(
                       spacing: 8,
@@ -305,6 +302,12 @@ class _AddTypePageState extends State<AddTypePage> {
                         );
                         return FilterChip(
                           label: Text(type.name),
+                          selectedColor: AppColors.accent,
+                        backgroundColor: AppColors.cream,
+                         labelStyle: TextStyle(
+                          color: selected ? AppColors.cream : AppColors.textPrimary,
+                        ),
+                        checkmarkColor: AppColors.cream,
                           selected: selected,
                           onSelected: (_) => _toggleMatchedDoughType(type),
                         );
@@ -334,7 +337,7 @@ class _AddTypePageState extends State<AddTypePage> {
                       ),
                     ),
                   if (_fillingTypes.isEmpty)
-                    const Text('No filling types available')
+                    Text(AppStrings.get('no_filling_types_available', lang))
                   else
                     Wrap(
                       spacing: 8,
@@ -345,6 +348,12 @@ class _AddTypePageState extends State<AddTypePage> {
                         );
                         return FilterChip(
                           label: Text(type.name),
+                          selectedColor: AppColors.accent,
+                        backgroundColor: AppColors.cream,
+                         labelStyle: TextStyle(
+                          color: selected ? AppColors.cream : AppColors.textPrimary,
+                        ),
+                        checkmarkColor: AppColors.cream,
                           selected: selected,
                           onSelected: (_) => _toggleMatchedFillingType(type),
                         );

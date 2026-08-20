@@ -14,6 +14,7 @@ import 'details.dart';
 
 class RecipeListPage extends StatefulWidget {
   final String? typeId;
+
   const RecipeListPage({super.key, this.typeId});
 
   @override
@@ -30,11 +31,14 @@ class _RecipeListPageState extends State<RecipeListPage> {
   bool _isLoading = true;
   // recipeId -> number of tasks using it
   final Map<String, int> _usageCounts = {};
+  Type? paraType;
+  Category? paraCategory;
 
   @override
   void initState() {
     super.initState();
     _loadRecipeData();
+    _loadParaType();
   }
 
   Future<void> _loadRecipeData() async {
@@ -76,6 +80,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
 
   void _refreshRecipes() {
     _loadRecipeData();
+
   }
 
   Recipe _recipeWithFavorite(Recipe recipe, bool isFavorite) {
@@ -161,7 +166,36 @@ class _RecipeListPageState extends State<RecipeListPage> {
     return matching.isEmpty ? Category.dough : matching.first.category;
   }
 
+  Future<void> _loadParaType() async {
+    if (widget.typeId != null) {
+      try {
+        final type = await context.read<TypeProvider>().loadType(
+          widget.typeId!,
+        );
+        if (!mounted) return;
+        setState(() {
+          paraType = type;
+          paraCategory = type.category;
+        });
+      } catch (error) {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = error.toString();
+        });
+      }
+    }
+  }
+
   List<Recipe> _recipesByCategory(Category category) {
+    if (widget.typeId != null && paraCategory == category) {
+      return _recipes
+          .where(
+            (recipe) =>
+                _categoryForRecipe(recipe) == category &&
+                recipe.typeId == widget.typeId,
+          )
+          .toList();
+    }
     return _recipes
         .where((recipe) => _categoryForRecipe(recipe) == category)
         .toList();
@@ -177,100 +211,135 @@ class _RecipeListPageState extends State<RecipeListPage> {
       return Center(child: Text(AppStrings.get('noRecipesAvailable', lang)));
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 72),
-      itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = recipes[index];
-        final recipeCategory = _categoryForRecipe(recipe);
-        final categoryIcon = recipeCategory == Category.filling
-            ? Icons.egg_alt
-            : Icons.cookie;
-        final typeLabel = _typeNameForRecipe(recipe);
-        final inUse = (_usageCounts[recipe.id] ?? 0) > 0;
+    return Column(
+      children: [
+        Expanded(
+          child: Column(
+            children: [
+              SizedBox(height: 12),
+              paraType != null && paraCategory == _categoryForRecipe(recipes.first)
+                  ? Text(
+                      AppStrings.get(
+                        'recipes_for_type',
+                        lang,
+                      ).replaceFirst('{type}', paraType!.name),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    )
+                  : SizedBox.shrink(),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 72),
+                  itemCount: recipes.length,
+                  itemBuilder: (context, index) {
+                    final recipe = recipes[index];
+                    final recipeCategory = _categoryForRecipe(recipe);
+                    final categoryIcon = recipeCategory == Category.filling
+                        ? Icons.egg_alt
+                        : Icons.cookie;
+                    final typeLabel = _typeNameForRecipe(recipe);
+                    final inUse = (_usageCounts[recipe.id] ?? 0) > 0;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Card(
-            child: InkWell(
-              onTap: () async {
-                final result = await Navigator.push<bool>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RecipeDetailsPage(recipe: recipe),
-                  ),
-                );
-                if (result == true) {
-                  _refreshRecipes();
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: recipeCategory == Category.filling
-                          ? Colors.brown.shade50
-                          : Colors.orange.shade50,
-                      child: Icon(
-                        categoryIcon,
-                        color: recipeCategory == Category.filling
-                            ? AppColors.accentRed
-                            : AppColors.accent,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            recipe.name,
-                            style: Theme.of(context).textTheme.titleMedium,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Card(
+                        child: InkWell(
+                          onTap: () async {
+                            final result = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    RecipeDetailsPage(recipe: recipe),
+                              ),
+                            );
+                            if (result == true) {
+                              _refreshRecipes();
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor:
+                                      recipeCategory == Category.filling
+                                      ? Colors.brown.shade50
+                                      : Colors.orange.shade50,
+                                  child: Icon(
+                                    categoryIcon,
+                                    color: recipeCategory == Category.filling
+                                        ? AppColors.accentRed
+                                        : AppColors.accent,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        recipe.name,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${AppStrings.get('type', lang)}: $typeLabel\n'
+                                        '${AppStrings.get('quantity', lang)}: ${recipe.quantity}, ${AppStrings.get('size', lang)}: ${recipe.size}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    recipe.isFavorite == true
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: recipe.isFavorite == true
+                                        ? Colors.red
+                                        : Colors.grey,
+                                  ),
+                                  onPressed: () => _toggleFavorite(recipe),
+                                  tooltip: recipe.isFavorite == true
+                                      ? 'Unfavorite'
+                                      : 'Favorite',
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color: inUse ? Colors.grey : Colors.red,
+                                  ),
+                                  onPressed: () => _deleteRecipe(recipe),
+                                  tooltip: AppStrings.get(
+                                    'delete_recipe',
+                                    lang,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${AppStrings.get('type', lang)}: $typeLabel\n'
-                            '${AppStrings.get('quantity', lang)}: ${recipe.quantity}, ${AppStrings.get('size', lang)}: ${recipe.size}',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        recipe.isFavorite == true
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: recipe.isFavorite == true
-                            ? Colors.red
-                            : Colors.grey,
-                      ),
-                      onPressed: () => _toggleFavorite(recipe),
-                      tooltip: recipe.isFavorite == true
-                          ? 'Unfavorite'
-                          : 'Favorite',
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: inUse ? Colors.grey : Colors.red,
-                      ),
-                      onPressed: () => _deleteRecipe(recipe),
-                      tooltip: AppStrings.get('delete_recipe', lang),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -325,13 +394,13 @@ class _RecipeListPageState extends State<RecipeListPage> {
           ),
         ),
         body: _buildBody(lang),
-     
+
         floatingActionButton: FloatingActionButton.small(
           backgroundColor: AppColors.accent,
           foregroundColor: AppColors.cream,
-           shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(8), // your custom radius
-  ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8), // your custom radius
+          ),
           onPressed: () async {
             final result = await Navigator.push<bool>(
               context,
@@ -341,7 +410,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
               _refreshRecipes();
             }
           },
-          tooltip: AppStrings.get('addRecipe', lang),          
+          tooltip: AppStrings.get('addRecipe', lang),
           child: const Icon(Icons.add),
         ),
         bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),

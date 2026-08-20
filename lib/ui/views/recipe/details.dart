@@ -501,13 +501,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                     alignment: Alignment.centerRight,
                     child: ElevatedButton.icon(
                       onPressed: _isSaving ? null : _saveChanges,
-                      icon: _isSaving
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.save),
+                     
                       label: Text(AppStrings.get('save', lang)),
                     ),
                   ),

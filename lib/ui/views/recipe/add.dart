@@ -17,6 +17,7 @@ import '../../utils/language_provider.dart';
 import '../../widgets/image_button.dart';
 import '../../widgets/mc_config_fields.dart';
 import '../../core/nav_bottom.dart';
+import '../../widgets/selection_categories.dart';
 
 class AddRecipePage extends StatefulWidget {
   const AddRecipePage({super.key, this.initialType});
@@ -315,37 +316,17 @@ class _AddRecipePageState extends State<AddRecipePage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              Text(
-                AppStrings.get('type', lang),
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+           
+          
               const SizedBox(height: 8),
-              Row(
-                children: _categoryOptions(lang).map((option) {
-                  final isSelected = _recipeCategory == option.category;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey[300],
-                        ),
-                        onPressed: () => _selectCategory(option.category),
-                        child: Text(
-                          option.label,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+              OptionCategory(
+                values: Category.values,
+                selectedValue: _recipeCategory,
+                onSelected: (value) => setState(() {
+                  _recipeCategory = value;
+                }),
               ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
               ...[
                 StyleTypeSelectionSection(

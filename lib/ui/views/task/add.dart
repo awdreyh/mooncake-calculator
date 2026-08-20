@@ -120,6 +120,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       }
     }
   }
+  
 
   @override
   void dispose() {
@@ -306,6 +307,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
             scrollDirection: Axis.horizontal,
+            
             itemCount: types.length,
             itemBuilder: (context, index) {
               final type = types[index];
