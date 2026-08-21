@@ -71,7 +71,7 @@ class _TypeListPageState extends State<TypeListPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text(
             type.name,
-            style:text.bodyMedium,
+            style:text.bodyLarge,
           ),
         ),
       ),
@@ -90,9 +90,9 @@ class _TypeListPageState extends State<TypeListPage> {
           await _loadTypes();
         },
         child: Container(
-          color: AppColors.sectionBg,
+          color: AppColors.info,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Icon(Icons.add, color: AppColors.espressoLight.withValues(alpha: 0.6)),
+          child: Icon(Icons.add, color: AppColors.cream),
         ),
       ),
     );

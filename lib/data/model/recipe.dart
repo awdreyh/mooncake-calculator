@@ -39,7 +39,7 @@ class Recipe {
 
 
 
-  Recipe copyWith({bool? isFavorite}) {
+  Recipe copyWith({bool? isFavorite, double? rating, String? url, String? comment, List<Direction>? directions, required DateTime updatedAt}) {
     return Recipe(
       id: id,
       name: name,
@@ -67,7 +67,8 @@ class Recipe {
     'size': size,
     'ratio': ratio,
     'description': description,
-    'is_favorite': isFavorite,
+    // sqflite does not support bool values; store as 1/0.
+    'is_favorite': (isFavorite ?? false) ? 1 : 0,
     'rating': rating,
     'url': url,
     'comment': comment,

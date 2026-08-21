@@ -45,7 +45,9 @@ class Task {
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt.toIso8601String(),
     'comment': comment,
-    'is_completed': isCompleted,
+    'rating': rating,
+    // sqflite does not support bool values; store as 1/0.
+    'is_completed': (isCompleted ?? false) ? 1 : 0,
   };
 
   factory Task.fromMap(Map<String, dynamic> map) => Task(

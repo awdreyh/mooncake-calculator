@@ -31,7 +31,6 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   late Recipe _recipe;
   List<Ingredient> _ingredients = [];
-
   RecipeProvider get receipeProvider => context.read<RecipeProvider>();
   TypeProvider get typeProvider => context.read<TypeProvider>();
   IngredientProvider get ingredientProvider =>
@@ -114,21 +113,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     if (_isSaving) return;
     final updatedRating = _selectedRating;
     final updatedComment = _commentController.text.trim();
-    final updatedRecipe = Recipe(
-      id: _recipe.id,
-      name: _recipe.name,
-      typeId: _recipe.typeId,
-      quantity: _recipe.quantity,
-      size: _recipe.size,
-      ratio: _recipe.ratio,
-      description: _recipe.description,
-      ingredients: _recipe.ingredients,
+    final updatedRecipe = _recipe.copyWith(
       isFavorite: _isFavorite,
       rating: updatedRating > 0 ? updatedRating : null,
       url: _recipe.url,
       comment: updatedComment.isEmpty ? null : updatedComment,
       directions: _recipe.directions,
-      createdAt: _recipe.createdAt,
       updatedAt: _recipe.updatedAt,
     );
 
@@ -522,7 +512,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Card(
+                    Card( 
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: SelectableText(

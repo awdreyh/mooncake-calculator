@@ -351,7 +351,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
               ],
               SizedBox(height: 16),
 
-              TaskConfigurationFields(
+              McConfigurationFields(
                 quantityController: _quantityController,
                 sizeController: _sizeController,
                 ratioController: _ratioController,

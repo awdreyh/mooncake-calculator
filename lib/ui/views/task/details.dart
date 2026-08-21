@@ -45,6 +45,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
   String _title = '';
   late TextEditingController _commentController;
   bool _isCompleted = false;
+  double _selectedRating = 0;
 
   @override
   void initState() {
@@ -108,6 +109,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
         _fillingRecipe = fillingRecipe;
         _title = title;
         _isCompleted = task?.isCompleted ?? false;
+        _selectedRating = task?.rating ?? 0;
         _commentController.text = task?.comment ?? '';
         _isLoading = false;
       });
@@ -174,6 +176,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
   }
 
   Future<void> _saveTask() async {
+    final updatedRating = _selectedRating;
     if (_task == null) return;
     setState(() => _isSaving = true);
 
@@ -183,6 +186,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           : _commentController.text.trim(),
       isCompleted: _isCompleted,
       updatedAt: DateTime.now(),
+      rating: updatedRating > 0 ? updatedRating : null,
     );
 
     try {
@@ -213,7 +217,10 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.get('delete_task', lang), style: const TextStyle(fontSize: 18),),
+        title: Text(
+          AppStrings.get('delete_task', lang),
+          style: const TextStyle(fontSize: 18),
+        ),
         content: Text(AppStrings.get('confirm_delete_task', lang)),
         actions: [
           TextButton(
@@ -247,7 +254,11 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     }
   }
 
-  Widget _buildIngredientSection(String title, Recipe recipe, List<Ingredient> ingredients) {
+  Widget _buildIngredientSection(
+    String title,
+    Recipe recipe,
+    List<Ingredient> ingredients,
+  ) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
@@ -258,20 +269,25 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           children: [
             Text(
               title,
-              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
-            ActionChip(label: Text(recipe.name),onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RecipeDetailsPage(recipe: recipe),
-                ),
-              );
-            },)
+            ActionChip(
+              label: Text(recipe.name),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RecipeDetailsPage(recipe: recipe),
+                  ),
+                );
+              },
+            ),
           ],
         ),
-        
+
         const SizedBox(height: 4),
         if (ingredients.isEmpty)
           Text(AppStrings.get('noIngredients', lang))
@@ -304,7 +320,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       return const Scaffold(body: Center(child: Text('Task not found')));
     }
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -314,8 +329,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
             icon: const Icon(Icons.delete, color: AppColors.textSecondary),
             onPressed: _deleteTask,
           ),
-             
-            
         ],
       ),
       body: SingleChildScrollView(
@@ -439,12 +452,60 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               ),
             ),
             const SizedBox(height: 16),
+                          // Rating
+              Text(
+                        AppStrings.get('satisfaction', lang),
+                        style: textTheme.titleSmall?.copyWith(                          
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      
+                      Row(
+                        children: List.generate(5, (index) {
+                          final starValue = index + 1;
+                          final isSelected = _selectedRating >= starValue;
+                          return IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: Icon(
+                              isSelected ? Icons.sentiment_satisfied_rounded : Icons.sentiment_satisfied_outlined,
+                              color: isSelected ? Colors.amber : Colors.grey,
+                              size: 32,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _selectedRating = starValue.toDouble();
+                              });
+                              _saveTask();
+                            },
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _selectedRating > 0
+                            ? '$_selectedRating / 5.0'
+                            : AppStrings.get('no_rating', lang),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
 
             Divider(color: AppColors.borderLight, thickness: 0.5),
             const SizedBox(height: 16),
             Text(
               AppStrings.get('comment', lang),
-              style: textTheme.bodyMedium?.copyWith(
+              style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -462,7 +523,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               alignment: Alignment.centerRight,
               child: ElevatedButton.icon(
                 onPressed: _isSaving ? null : _saveTask,
-            
+
                 label: Text(AppStrings.get('save', lang)),
               ),
             ),
@@ -473,8 +534,8 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
- if (_imagePaths.isEmpty)
-               Text(AppStrings.get('no_image_uploaded', lang))
+            if (_imagePaths.isEmpty)
+              Text(AppStrings.get('no_image_uploaded', lang))
             else
               GridView.builder(
                 shrinkWrap: true,
@@ -494,7 +555,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                   );
                 },
               ),
-            
+
             const SizedBox(height: 16),
             Row(
               children: [
@@ -509,8 +570,8 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                 ),
               ],
             ),
-           
-            const SizedBox(height: 16),            
+
+            const SizedBox(height: 16),
           ],
         ),
       ),

@@ -498,7 +498,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                   },
                 ),
                 const SizedBox(height: 24),
-                TaskConfigurationFields(
+                McConfigurationFields(
                   quantityController: _quantityController,
                   sizeController: _sizeController,
                   ratioController: _ratioController,

@@ -8,8 +8,8 @@ import 'selection_buttons.dart';
 /// The quantity, size, and dough-to-filling ratio inputs used when configuring
 /// a task. The owning page supplies the controllers and selection state so it
 /// can use the values when creating a task.
-class TaskConfigurationFields extends StatelessWidget {
-  const TaskConfigurationFields({
+class McConfigurationFields extends StatelessWidget {
+  const McConfigurationFields({
     super.key,
 
     required this.quantityController,
