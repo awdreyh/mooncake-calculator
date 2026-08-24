@@ -1,4 +1,4 @@
-# moon_cake_app2
+# moon_cake_app
 
 A new Flutter project.
 

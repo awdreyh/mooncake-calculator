@@ -52,8 +52,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-
     final languageProvider = Provider.of<LanguageProvider>(
       context,
       listen: true,
@@ -86,15 +84,25 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _sizeController.dispose();
     super.dispose();
-  }
+  }  
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final lang = languageProvider.languageCode;
 
-    return Scaffold(
+    return   Container(
+      // 1. Add decoration to the wrapping Container
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/bg.png'), // Use NetworkImage('') for URLs
+          fit: BoxFit.cover, // Ensures image fills the screen
+        ),
+      ),
+      child:
+      Scaffold(
       extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent, // Make Scaffold background transparent
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -181,6 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: AppBottomNavigationBar(
         currentIndex: _currentNavIndex,
       ),
+    ),
     );
   }
 }
+

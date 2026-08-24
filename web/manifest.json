@@ -1,6 +1,6 @@
 {
-    "name": "moon_cake_app2",
-    "short_name": "moon_cake_app2",
+    "name": "moon_cake_app",
+    "short_name": "moon_cake_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

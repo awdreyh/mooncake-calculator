@@ -90,7 +90,7 @@ class _TypeListPageState extends State<TypeListPage> {
           await _loadTypes();
         },
         child: Container(
-          color: AppColors.info,
+          color: AppColors.accentRed,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Icon(Icons.add, color: AppColors.cream),
         ),

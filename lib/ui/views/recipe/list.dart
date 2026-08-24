@@ -353,7 +353,13 @@ class _RecipeListPageState extends State<RecipeListPage> {
     }
 
     return Container(
-      color: AppColors.sectionBg,
+     // color: AppColors.sectionBg,
+         decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/bg.png'), // Use NetworkImage('') for URLs
+          fit: BoxFit.cover, // Ensures image fills the screen
+        ),
+      ),
       child: TabBarView(
         children: [
           _buildRecipeList(_recipesByCategory(Category.dough), lang),
