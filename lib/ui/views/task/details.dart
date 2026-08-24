@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -11,20 +10,18 @@ import '../../utils/language_provider.dart';
 import '../../utils/app_strings.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/helper.dart';
-
 import '../../../data/model/task.dart';
 import '../../../data/model/recipe.dart';
 import '../../../data/model/ingredient.dart';
-
 import '../../../provider/recipe.dart';
 import '../../../provider/task.dart';
 import '../../core/app_theme.dart';
 import '../../widgets/info_chips.dart';
 import '../recipe/details.dart';
+import '../../widgets/full_image.dart';
 
 class TaskDetailsPage extends StatefulWidget {
   final String taskId;
-
   const TaskDetailsPage({super.key, required this.taskId});
 
   @override
@@ -143,7 +140,12 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
 
   Future<void> _pickImages() async {
     final picker = ImagePicker();
-    final pickedFiles = await picker.pickMultiImage();
+
+    final pickedFiles = await picker.pickMultiImage(
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
     if (pickedFiles.isEmpty) {
       return;
     }
@@ -331,19 +333,19 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           fit: BoxFit.cover,
         ),
       ),
-      child: Scaffold(        
-        appBar: AppBar(          
+      child: Scaffold(
+        appBar: AppBar(
           backgroundColor: Colors.transparent,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 32,
-        systemOverlayStyle: SystemUiOverlayStyle(
-          // background of the top bar
-          statusBarIconBrightness: Brightness.dark, // icons become white
-          systemNavigationBarColor: AppColors.espressoLight,
-          systemNavigationBarIconBrightness: Brightness.light,
-        ),
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 32,
+          systemOverlayStyle: SystemUiOverlayStyle(
+            // background of the top bar
+            statusBarIconBrightness: Brightness.dark, // icons become white
+            systemNavigationBarColor: AppColors.espressoLight,
+            systemNavigationBarIconBrightness: Brightness.light,
+          ),
           title: Text(AppStrings.get('task_details_title', lang)),
           actions: [
             IconButton(
@@ -353,7 +355,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           ],
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),  
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -547,7 +549,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                 alignment: Alignment.centerRight,
                 child: ElevatedButton.icon(
                   onPressed: _isSaving ? null : _saveTask,
-
                   label: Text(AppStrings.get('save', lang)),
                 ),
               ),
@@ -555,7 +556,9 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               const SizedBox(height: 16),
               Text(
                 AppStrings.get('image_title', lang),
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               if (_imagePaths.isEmpty)
@@ -573,9 +576,55 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                   itemCount: _imagePaths.length,
                   itemBuilder: (context, index) {
                     final path = _imagePaths[index];
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(File(path), fit: BoxFit.cover),
+
+                    return Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FullImageView(imagePath: path),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(
+                              File(path),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            ),
+                          ),
+                        ),
+
+                        // Delete button
+                        Positioned(
+                          top: 6,
+                          right: 6,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _imagePaths.removeAt(index);
+                                _saveTask(); // Save the task after removing the image
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.delete,
+                                color: Colors.white.withValues(alpha: 0.4),
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),

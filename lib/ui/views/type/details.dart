@@ -12,6 +12,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../../core/app_theme.dart';
 import '../recipe/list.dart';
+import '../../widgets/full_image.dart';
 
 class TypeDetailsPage extends StatefulWidget {
   final Type type;
@@ -93,7 +94,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RecipeListPage(typeId: widget.type.id, ),
+        builder: (context) => RecipeListPage(typeId: widget.type.id),
       ),
     );
   }
@@ -142,7 +143,13 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    final pickedFile =await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
     if (pickedFile == null) return;
 
     final savedPath = await _copySelectedImage(pickedFile.path);
@@ -187,7 +194,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   }
 
   Widget _buildImagePreview() {
-    final imagePath = widget.type.imagePath?.trim();
+    final imagePath = _imagePath ?? widget.type.imagePath?.trim();
     final isLocalFile =
         imagePath != null &&
         imagePath.isNotEmpty &&
@@ -207,9 +214,19 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                 Image.asset(_placeholderImage, fit: BoxFit.cover),
           );
 
-    return ClipRRect(
+    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => FullImageView(imagePath: imagePath!),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: SizedBox(width: double.infinity, height: 180, child: image),
+    ),
     );
   }
 
@@ -341,13 +358,13 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                                     color: AppColors.accentRed,
                                   )
                                 : _category == Category.dough
-                                    ? Icon(
-                                        Icons.cookie ,
-                                        size: 24,
-                                        color: AppColors.accent,
-                                      )
-                                    : const SizedBox.shrink(),
-                          ),  
+                                ? Icon(
+                                    Icons.cookie,
+                                    size: 24,
+                                    color: AppColors.accent,
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
 
                           const SizedBox(width: 16),
                           Expanded(
@@ -424,8 +441,10 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         label: Text(type.name),
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
-                         labelStyle: TextStyle(
-                          color: selected ? AppColors.cream : AppColors.textPrimary,
+                        labelStyle: TextStyle(
+                          color: selected
+                              ? AppColors.cream
+                              : AppColors.textPrimary,
                         ),
                         checkmarkColor: AppColors.cream,
                         selected: selected,
@@ -456,7 +475,9 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                         labelStyle: TextStyle(
-                          color: selected ? AppColors.cream : AppColors.textPrimary,
+                          color: selected
+                              ? AppColors.cream
+                              : AppColors.textPrimary,
                         ),
                         checkmarkColor: AppColors.cream,
                         selected: selected,

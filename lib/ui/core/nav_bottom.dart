@@ -32,10 +32,12 @@ class AppBottomNavigationBar extends StatelessWidget {
 
       if (!foundTaskList) {
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const TaskListPage(),
-            settings: const RouteSettings(name: 'task/list'),
-          ),
+          PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const TaskListPage(),
+        settings: const RouteSettings(name: 'task/list'),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
         );
       }
       return;
@@ -53,10 +55,12 @@ class AppBottomNavigationBar extends StatelessWidget {
 
       if (!foundRecipeList) {
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const RecipeListPage(),
-            settings: const RouteSettings(name: 'recipe/list'),
-          ),
+         PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const RecipeListPage(),
+        settings: const RouteSettings(name: 'recipe/list'),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
         );
       }
       return;
@@ -74,10 +78,13 @@ class AppBottomNavigationBar extends StatelessWidget {
 
       if (!foundTypeList) {
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const TypeListPage(),
-            settings: const RouteSettings(name: 'type/list'),
-          ),
+          PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const TypeListPage(),
+        settings: const RouteSettings(name: 'type/list'),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+         
         );
       }
       return;
