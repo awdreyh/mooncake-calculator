@@ -327,7 +327,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
               ...[
                 StyleTypeSelectionSection(
                   title: isDoughtTypeSelected
-                      ? AppStrings.get('type', lang)
+                      ? AppStrings.get('doughType', lang)
                       : AppStrings.get('fillingType', lang),
                   types: isDoughtTypeSelected ? _doughTypes : _fillingTypes,
                   selectedType: _selectedType,
@@ -336,13 +336,13 @@ class _AddRecipePageState extends State<AddRecipePage> {
                       _selectedType = type;
                     });
                   },
-                  showMatchedDoughTypes: isDoughtTypeSelected ? false : true,
-                  matchedDoughLabel: isDoughtTypeSelected
-                      ? ''
-                      : AppStrings.get('matched_dough_types', lang),
-                  doughTypes: _doughTypes,
-                  selectedMatchedDoughTypes: _selectedMatchedDoughTypes,
-                  onMatchedDoughTypeToggled: _toggleMatchedDoughType,
+                  // showMatchedDoughTypes: isDoughtTypeSelected ? false : true,
+                  // matchedDoughLabel: isDoughtTypeSelected
+                  //     ? ''
+                  //     : AppStrings.get('matched_dough_types', lang),
+                 // doughTypes: _doughTypes,
+                  // selectedMatchedDoughTypes: _selectedMatchedDoughTypes,
+                  // onMatchedDoughTypeToggled: _toggleMatchedDoughType,
                 ),
               ],
               SizedBox(height: 16),

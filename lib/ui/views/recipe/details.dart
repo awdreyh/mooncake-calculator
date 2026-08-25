@@ -296,7 +296,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                         : 'dough_type';
 
                                     return Text(
-                                      '${AppStrings.get(labelKey, lang)}:${_typeName.isNotEmpty ? _typeName : SeedsStrings.get(_typeName, lang)}',
+                                      '${AppStrings.get(labelKey, lang)}:${_typeName.isNotEmpty ?  (SeedsStrings.get(_typeName, lang).isNotEmpty ? SeedsStrings.get(_typeName, lang) : _typeName) : AppStrings.get('unknown', lang)}',
                                       style: textTheme.bodyMedium?.copyWith(
                                         fontSize: 14,
                                         color: Colors.black54,
@@ -310,7 +310,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                 if (_recipe.description != null &&
                                     _recipe.description!.isNotEmpty)
                                   Text(
-                                    _recipe.description!,
+                                    SeedsStrings.get(_recipe.description!, lang).isNotEmpty ? SeedsStrings.get(_recipe.description!, lang) : _recipe.description!,
                                     style: textTheme.bodyMedium,
                                   ),
 
@@ -501,33 +501,33 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               ),
 
               // URL
-              if (_recipe.url != null && _recipe.url!.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.get('reference_url', lang),
-                      style: textTheme.titleMedium?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Card( 
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: SelectableText(
-                          _recipe.url!,
-                          style: const TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-            ],
+            //   if (_recipe.url != null && _recipe.url!.isNotEmpty)
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           AppStrings.get('reference_url', lang),
+            //           style: textTheme.titleMedium?.copyWith(
+            //             fontSize: 16,
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //         ),
+            //         const SizedBox(height: 8),
+            //         Card( 
+            //           child: Padding(
+            //             padding: const EdgeInsets.all(12),
+            //             child: SelectableText(
+            //               _recipe.url!,
+            //               style: const TextStyle(
+            //                 color: Colors.blue,
+            //                 decoration: TextDecoration.underline,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+             ],
           ),
         ),
         bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),

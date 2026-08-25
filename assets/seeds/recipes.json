@@ -55,7 +55,7 @@
       },
       {
         "id": "a19f2e3d-4c6b-48d2-9e1f-2a3b4c5d6e07",
-        "name": "tapioca_flour",
+        "name": "gluten_free_flour",
         "amount": 26.0,
         "unit": "g"
       },
@@ -94,7 +94,7 @@
     "ingredients": [
       {
         "id": "a1b2c3d4-e5f6-4g7h-8i9j-0k1l2m3n4o5p",
-        "name": "lotus_seeds_dry",
+        "name": "lotus_seed_dry",
         "amount": 168.0,
         "unit": "g"
       },
@@ -172,13 +172,13 @@
     "ingredients": [
       {
         "id": "41a3b5c7-d8e9-4f2a-b3c1-2d4e5f6a7b08",
-        "name": "mix_nuts",
+        "name": "mixed_nuts",
         "amount": 233.0,
         "unit": "g"
       },
       {
         "id": "52b4c6d8-e9f0-4a1b-c2d3-4e5f6a7b8c09",
-        "name": "dry_fruit",
+        "name": "dry_fruits",
         "amount": 83.0,
         "unit": "g"
       },

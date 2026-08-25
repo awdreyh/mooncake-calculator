@@ -92,7 +92,9 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
             recipeProvider.loadType(task.doughRecipeId),
             recipeProvider.loadType(task.fillingRecipeId),
           ]);
-          title = '${typeNames[0]} + ${typeNames[1]}';
+        var titleDough = SeedsStrings.get(typeNames[0], lang)?.isNotEmpty == true ? SeedsStrings.get(typeNames[0], lang) : typeNames[0];
+        var titleFilling = SeedsStrings.get(typeNames[1], lang)?.isNotEmpty == true ? SeedsStrings.get(typeNames[1], lang) : typeNames[1];
+          title = '$titleDough + $titleFilling ';
         } catch (error, stackTrace) {
           debugPrint(
             'Failed to load type names for task ${task.id}: $error\n$stackTrace',

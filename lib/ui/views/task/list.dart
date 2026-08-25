@@ -269,7 +269,7 @@ class _TaskListPageState extends State<TaskListPage> {
                   InfoChips(
                     qty: task.quantity,
                     size: task.size,
-                    ratio: Helper.ratioToString(task.ratio),
+                   // ratio: Helper.ratioToString(task.ratio),
                  
                   ),
 

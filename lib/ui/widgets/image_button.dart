@@ -131,11 +131,11 @@ class StyleTypeSelectionSection extends StatelessWidget {
   final List<Type> types;
   final Type? selectedType;
   final ValueChanged<Type> onTypeSelected;
-  final bool showMatchedDoughTypes;
-  final String matchedDoughLabel;
-  final List<Type> doughTypes;
-  final List<Type> selectedMatchedDoughTypes;
-  final ValueChanged<Type> onMatchedDoughTypeToggled;
+  // final bool showMatchedDoughTypes;
+  // final String matchedDoughLabel;
+  // final List<Type> doughTypes;
+  // final List<Type> selectedMatchedDoughTypes;
+  // final ValueChanged<Type> onMatchedDoughTypeToggled;
 
   const StyleTypeSelectionSection({
     super.key,
@@ -143,11 +143,11 @@ class StyleTypeSelectionSection extends StatelessWidget {
     required this.types,
     required this.selectedType,
     required this.onTypeSelected,
-    required this.showMatchedDoughTypes,
-    required this.matchedDoughLabel,
-    required this.doughTypes,
-    required this.selectedMatchedDoughTypes,
-    required this.onMatchedDoughTypeToggled,
+    // required this.showMatchedDoughTypes,
+    // required this.matchedDoughLabel,
+    // required this.doughTypes,
+    // required this.selectedMatchedDoughTypes,
+    // required this.onMatchedDoughTypeToggled,
   });
 
   @override
@@ -183,28 +183,28 @@ class StyleTypeSelectionSection extends StatelessWidget {
             },
           ),
         ),
-        if (showMatchedDoughTypes) ...[
-          const SizedBox(height: 16),
-          Text(
-            matchedDoughLabel,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: doughTypes.map((type) {
-              final selected = selectedMatchedDoughTypes.any(
-                (item) => item.id == type.id,
-              );
-              return FilterChip(
-                label: Text(type.name),
-                selected: selected,
-                onSelected: (_) => onMatchedDoughTypeToggled(type),
-              );
-            }).toList(),
-          ),
-        ],
+        // if (showMatchedDoughTypes) ...[
+        //   const SizedBox(height: 16),
+        //   Text(
+        //     matchedDoughLabel,
+        //     style: Theme.of(context).textTheme.titleLarge,
+        //   ),
+        //   const SizedBox(height: 8),
+        //   Wrap(
+        //     spacing: 8,
+        //     runSpacing: 8,
+        //     children: doughTypes.map((type) {
+        //       final selected = selectedMatchedDoughTypes.any(
+        //         (item) => item.id == type.id,
+        //       );
+        //       return FilterChip(
+        //         label: Text(type.name),
+        //         selected: selected,
+        //         onSelected: (_) => onMatchedDoughTypeToggled(type),
+        //       );
+        //     }).toList(),
+        //   ),
+        // ],
       ],
     );
   }

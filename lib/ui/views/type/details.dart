@@ -191,7 +191,6 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
       }
     });
   }
-
   Widget _buildImagePreview() {
     final imagePath = _imagePath ?? widget.type.imagePath?.trim();
     final isLocalFile =
@@ -212,13 +211,18 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
             errorBuilder: (_, _, _) =>
                 Image.asset(_placeholderImage, fit: BoxFit.cover),
           );
+         
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => FullImageView(imagePath: imagePath!),
+            builder: (_) => FullImageView(
+              imagePath: imagePath?.isNotEmpty == true
+                  ? imagePath!
+                  : _placeholderImage,
+            ),
           ),
         );
       },
@@ -420,7 +424,11 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         (item) => item.id == type.id,
                       );
                       return FilterChip(
-                        label: Text(SeedsStrings.get(type.name, lang).isNotEmpty? SeedsStrings.get(type.name, lang) : type.name),
+                        label: Text(
+                          SeedsStrings.get(type.name, lang).isNotEmpty
+                              ? SeedsStrings.get(type.name, lang)
+                              : type.name,
+                        ),
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                         labelStyle: TextStyle(
@@ -452,7 +460,11 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         (item) => item.id == type.id,
                       );
                       return FilterChip(
-                        label: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name),
+                        label: Text(
+                          SeedsStrings.get(type.name, lang).isNotEmpty
+                              ? SeedsStrings.get(type.name, lang)
+                              : type.name,
+                        ),
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                         labelStyle: TextStyle(

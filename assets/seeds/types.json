@@ -15,12 +15,12 @@
     "id": "d2e3f4a5-6b7c-8d9e-0f1a-2b3c4d5e6f7g",
     "category": "dough",
     "name": "sushi_dough",
-    "image_path": "assets/images/types/sushi.png"
+    "image_path": "assets/images/types/sushi.jpg"
   },
   {
     "id": "f7a5d8b9-2c1f-4f3d-a8bd-2a4e7d5c9e1f",
     "category": "filling",
-    "name": "red_bean_paste",
+    "name": "red_bean_filling",
     "image_path": "assets/images/types/redBean.jpg",
     "matched_dough_type_ids": [
       "7a91f6c1-4c5d-482e-a15a-7d9e7b3c0f89",
@@ -31,7 +31,7 @@
   {
     "id": "b3c4d5e6-7f8g-9h0i-1j2k-3l4m5n6o7p8q",
     "category": "filling",
-    "name": "lotus_seed_paste",
+    "name": "lotus_seed_filling",
     "image_path": "assets/images/types/lotusSeed.jpg",
     "matched_dough_type_ids": [
       "7a91f6c1-4c5d-482e-a15a-7d9e7b3c0f89",

@@ -13,7 +13,7 @@ final List<Map<String, dynamic>> recipesSeed = [
       { 'id': '3ad16c7d-16c1-4baf-8a83-7b4f5d3c2e01',  'name': 'flour', 'amount': 162.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },     
       { 'id': 'b6f8e2f4-6139-46c0-8b58-4d9f2c7e5d03',  'name': 'invert_syrup', 'amount': 114.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'd4e5f6a7-3b2c-4d1e-9f8a-1b2c3d4e5f60',  'name': 'vegetable_oil', 'amount': 44.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
-      { 'id': 'f1a2b3c4-5d6e-7f89-0a1b-2c3d4e5f6078',  'name': 'alkaline_water', 'amount': 1.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name }
+      { 'id': 'f1a2b3c4-5d6e-7f89-0a1b-2c3d4e5f6078',  'name': 'lye_water', 'amount': 3.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name }
     ],
     'isFavorite': false,
     'rating': 0,
@@ -30,7 +30,7 @@ final List<Map<String, dynamic>> recipesSeed = [
     'description': 'recipe_snow_skin_dough_description',
     'ingredients': [
       { 'id': 'eb4c35b7-a69f-4c3a-bd91-8f7d6e5c4b02',  'name': 'glutinous_rice_flour', 'amount': 41.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
-      { 'id': 'a19f2e3d-4c6b-48d2-9e1f-2a3b4c5d6e07',  'name': 'tapioca_flour', 'amount': 26.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
+      { 'id': 'a19f2e3d-4c6b-48d2-9e1f-2a3b4c5d6e07',  'name': 'gluten_free_flour', 'amount': 26.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'c8f7e6d5-b4a3-4c2d-9e1f-0a1b2c3d4e05',  'name': 'rice_flour', 'amount': 34.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'f2d1c3b4-a5e6-4d7c-9f8a-0b1c2d3e4f06',  'name': 'milk', 'amount': 172.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'b3c4d5e6-f7a8-4b9c-8d0e-1f2a3b4c5d07',  'name': 'vegetable_oil', 'amount': 25.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name }
@@ -68,7 +68,7 @@ final List<Map<String, dynamic>> recipesSeed = [
     'typeId': 'b3c4d5e6-7f8g-9h0i-1j2k-3l4m5n6o7p8q',
     'description': 'recipe_lotus_seed_filling_description',
     'ingredients': [
-      { 'id': 'a1b2c3d4-e5f6-4g7h-8i9j-0k1l2m3n4o5p',  'name': 'lotus_seeds_dry', 'amount': 168.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name  },
+      { 'id': 'a1b2c3d4-e5f6-4g7h-8i9j-0k1l2m3n4o5p',  'name': 'lotus_seed_dry', 'amount': 168.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name  },
       { 'id': 'b2c3d4e5-f6g7-4h8i-9j0k-1l2m3n4o5p6q',  'name': 'invert_syrup', 'amount': 76.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'c3d4e5f6-g7h8-4i9j-0k1l-2m3n4o5p6q7r',  'name': 'sugar', 'amount': 33.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'd4e5f6g7-h8i9-4j0k-1l2m-3n4o5p6q7r8s',  'name': 'vegetable_oil', 'amount': 33.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name }
@@ -88,8 +88,8 @@ final List<Map<String, dynamic>> recipesSeed = [
     'typeId': 'a6d5f8c9-3b2c-4e1a-b9f7-6d8e4c7b5f3a',
     'description': 'recipe_five_nuts_description',
     'ingredients': [
-      { 'id': '41a3b5c7-d8e9-4f2a-b3c1-2d4e5f6a7b08',  'name': 'mix_nuts', 'amount': 233.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name  },
-      { 'id': '52b4c6d8-e9f0-4a1b-c2d3-4e5f6a7b8c09',  'name': 'dry_fruit', 'amount': 83.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
+      { 'id': '41a3b5c7-d8e9-4f2a-b3c1-2d4e5f6a7b08',  'name': 'mixed_nuts', 'amount': 233.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name  },
+      { 'id': '52b4c6d8-e9f0-4a1b-c2d3-4e5f6a7b8c09',  'name': 'dry_fruits', 'amount': 83.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': '63c5d7e9-f0a1-4b2c-d3e4-5f6a7b8c9d01',  'name': 'cooked_flour', 'amount': 66.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': '74d6e8f0-a1b2-4c3d-e4f5-6a7b8c9d0e12',  'name': 'invert_syrup', 'amount': 70.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': '85e7f9g1-h2i3-4j5k-6l7m-8n9o0p1q2r3s',  'name': 'vegetable_oil', 'amount': 40.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name }
