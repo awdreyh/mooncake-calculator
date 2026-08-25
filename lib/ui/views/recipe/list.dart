@@ -8,7 +8,10 @@ import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../core/app_theme.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/seeds_strings.dart';
 import '../../utils/language_provider.dart';
+import '../../utils/helper.dart';
+import '../../widgets/info_chips.dart';
 import 'add.dart';
 import 'details.dart';
 
@@ -80,11 +83,10 @@ class _RecipeListPageState extends State<RecipeListPage> {
 
   void _refreshRecipes() {
     _loadRecipeData();
-
   }
 
   Recipe _recipeWithFavorite(Recipe recipe, bool isFavorite) {
-    return recipe.copyWith(isFavorite: isFavorite, updatedAt: recipe.updatedAt,);
+    return recipe.copyWith(isFavorite: isFavorite, updatedAt: recipe.updatedAt);
   }
 
   Future<void> _toggleFavorite(Recipe recipe) async {
@@ -136,7 +138,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
           AppStrings.get(
             'confirm_delete_recipe',
             lang,
-          ).replaceFirst('{recipe_name}', recipe.name),
+          ).replaceFirst('{recipe_name}', SeedsStrings.get(recipe.name, lang)),
         ),
         actions: [
           TextButton(
@@ -217,12 +219,13 @@ class _RecipeListPageState extends State<RecipeListPage> {
           child: Column(
             children: [
               SizedBox(height: 12),
-              paraType != null && paraCategory == _categoryForRecipe(recipes.first)
+              paraType != null &&
+                      paraCategory == _categoryForRecipe(recipes.first)
                   ? Text(
-                      AppStrings.get(
-                        'recipes_for_type',
-                        lang,
-                      ).replaceFirst('{type}', paraType!.name),
+                      AppStrings.get('recipes_for_type', lang).replaceFirst(
+                        '{type}',
+                        SeedsStrings.get(paraType!.name, lang),
+                      ),
                       style: Theme.of(context).textTheme.bodyMedium,
                     )
                   : SizedBox.shrink(),
@@ -236,7 +239,10 @@ class _RecipeListPageState extends State<RecipeListPage> {
                     final categoryIcon = recipeCategory == Category.filling
                         ? Icons.egg_alt
                         : Icons.cookie;
-                    final typeLabel = _typeNameForRecipe(recipe);
+                    final typeLabel = SeedsStrings.get(
+                      _typeNameForRecipe(recipe),
+                      lang,
+                    );
                     final inUse = (_usageCounts[recipe.id] ?? 0) > 0;
 
                     return Padding(
@@ -282,7 +288,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        recipe.name,
+                                        SeedsStrings.get(recipe.name, lang),
                                         style: Theme.of(
                                           context,
                                         ).textTheme.titleMedium,
@@ -290,14 +296,10 @@ class _RecipeListPageState extends State<RecipeListPage> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
-                                        '${AppStrings.get('type', lang)}: $typeLabel\n'
-                                        '${AppStrings.get('quantity', lang)}: ${recipe.quantity}, ${AppStrings.get('size', lang)}: ${recipe.size}',
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
+                                      InfoChips(
+                                        qty: recipe.quantity,
+                                        size: recipe.size,
+                                        ratio: Helper.ratioToString(recipe.ratio!),
                                       ),
                                     ],
                                   ),
@@ -353,10 +355,12 @@ class _RecipeListPageState extends State<RecipeListPage> {
     }
 
     return Container(
-     // color: AppColors.sectionBg,
-         decoration: const BoxDecoration(
+      // color: AppColors.sectionBg,
+      decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/bg.png'), // Use NetworkImage('') for URLs
+          image: AssetImage(
+            'assets/images/bg.png',
+          ), // Use NetworkImage('') for URLs
           fit: BoxFit.cover, // Ensures image fills the screen
         ),
       ),

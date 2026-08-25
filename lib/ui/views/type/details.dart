@@ -6,6 +6,7 @@ import '../../../data/model/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/seeds_strings.dart';
 import '../../utils/language_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
@@ -32,11 +33,12 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   List<Type> _fillingTypes = [];
   List<Type> _selectedMatchedDoughTypes = [];
   List<Type> _selectedMatchedFillingTypes = [];
-  bool _isSaving = false;
+
   LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
   int _recipeUsageCount = 0;
+  String? _matchedTypeError;
 
   @override
   void initState() {
@@ -144,7 +146,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
 
-    final pickedFile =await picker.pickImage(
+    final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 1024,
       maxHeight: 1024,
@@ -215,18 +217,18 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
           );
 
     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => FullImageView(imagePath: imagePath!),
-                          ),
-                        );
-                      },
-                      child: ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: SizedBox(width: double.infinity, height: 180, child: image),
-    ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => FullImageView(imagePath: imagePath!),
+          ),
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(width: double.infinity, height: 180, child: image),
+      ),
     );
   }
 
@@ -238,8 +240,26 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
       );
       return;
     }
-
-    setState(() => _isSaving = true);
+     if (_category == Category.filling &&
+              _selectedMatchedDoughTypes.isEmpty) {
+            setState(() {
+              _matchedTypeError = AppStrings.get(
+                'validMatchedDoughTypesMsg',
+                lang,
+              );
+            });
+            return;
+          }
+          if (_category == Category.dough &&
+              _selectedMatchedFillingTypes.isEmpty) {
+            setState(() {
+              _matchedTypeError = AppStrings.get(
+                'validMatchedFillingTypesMsg',
+                lang,
+              );
+            });
+            return;
+          }
 
     final matchedIds = _category == Category.filling
         ? _selectedMatchedDoughTypes.map((type) => type.id).toList()
@@ -267,6 +287,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
             (item) => item.id == filling.id,
           );
           if (wasSelected == isSelected) continue;
+         
 
           final ids = List<String>.from(filling.matchedDoughTypeIds ?? []);
           if (isSelected) {
@@ -303,36 +324,14 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
           ),
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
-    }
+    } 
   }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppStrings.get('type_details_title', lang)),
-        actions: [
-          if (!_isSaving)
-            IconButton(
-              icon: const Icon(Icons.save, color: Colors.green),
-              onPressed: _saveType,
-            )
-          else
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-        ],
-      ),
+      appBar: AppBar(title: Text(AppStrings.get('type_details_title', lang))),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -379,7 +378,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-
+                             
                                 if (_recipeUsageCount > 0)
                                   GestureDetector(
                                     onTap: _openRelatedRecipes,
@@ -438,7 +437,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         (item) => item.id == type.id,
                       );
                       return FilterChip(
-                        label: Text(type.name),
+                        label: Text(SeedsStrings.get(type.name, lang)),
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                         labelStyle: TextStyle(
@@ -452,7 +451,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                       );
                     }).toList(),
                   ),
-                const SizedBox(height: 24),
+            
               ],
               if (_category == Category.dough) ...[
                 Text(
@@ -471,7 +470,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         (item) => item.id == type.id,
                       );
                       return FilterChip(
-                        label: Text(type.name),
+                        label: Text(SeedsStrings.get(type.name, lang)),
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                         labelStyle: TextStyle(
@@ -484,7 +483,16 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         onSelected: (_) => _toggleMatchedFillingType(type),
                       );
                     }).toList(),
+                  ),             
+              ],
+              if (_matchedTypeError != null) ...[
+                Text(
+                  _matchedTypeError!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 12,
                   ),
+                ),
                 const SizedBox(height: 24),
               ],
               _buildImagePreview(),
@@ -497,11 +505,10 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveType,
+                  onPressed:  _saveType,
                   child: Text(
-                    _isSaving
-                        ? AppStrings.get('saving', lang)
-                        : AppStrings.get('save', lang),
+                   
+                        AppStrings.get('save', lang),
                   ),
                 ),
               ),

@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../utils/language_provider.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/seeds_strings.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/helper.dart';
 import '../../../data/model/task.dart';
@@ -278,7 +279,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
             ),
 
             ActionChip(
-              label: Text(recipe.name),
+              label: Text(SeedsStrings.get(recipe.name, lang)),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -301,7 +302,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(child: Text(ingredient.name)),
+                  Expanded(child: Text(SeedsStrings.get(ingredient.name, lang))),
                   Text(
                     '${ingredient.amount.toStringAsFixed(2)} ${ingredient.unit.toMap()}',
                   ),
@@ -637,7 +638,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                       onPressed: _isSavingImages ? null : _pickImages,
                       icon: const Icon(Icons.photo_library),
                       label: Text(
-                        _isSavingImages ? 'Uploading...' : 'Upload Images',
+                        _isSavingImages ? AppStrings.get('uploading', lang) : AppStrings.get('selectImage', lang),
                       ),
                     ),
                   ),

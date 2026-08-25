@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../data/model/type.dart';
 import '../../ui/core/app_theme.dart';
+import '../utils/seeds_strings.dart';
+import '../../ui/utils/language_provider.dart';
+import 'package:provider/provider.dart';
 
 class StyleImageButton extends StatelessWidget {
   final String title;
@@ -19,11 +22,17 @@ class StyleImageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final lang = languageProvider.languageCode;
     final text = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     const placeholderImage = 'assets/images/types/placeholder.jpg';
     final imagePath = type.imagePath?.trim();
-    final isLocalFile = imagePath != null &&
+    final isLocalFile =
+        imagePath != null &&
         imagePath.isNotEmpty &&
         !imagePath.startsWith('assets/');
 
@@ -51,9 +60,7 @@ class StyleImageButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: selected
-                  ? AppColors.borderLight
-                  : colorScheme.outline,
+              color: selected ? AppColors.borderLight : colorScheme.outline,
               width: 1,
             ),
             boxShadow: selected
@@ -72,7 +79,6 @@ class StyleImageButton extends StatelessWidget {
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(7),
-                 
                 ),
                 child: image,
               ),
@@ -83,16 +89,14 @@ class StyleImageButton extends StatelessWidget {
                     horizontal: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: selected
-                        ? AppColors.accent
-                        : AppColors.sectionBg,
+                    color: selected ? AppColors.accent : AppColors.sectionBg,
                     borderRadius: const BorderRadius.vertical(
                       bottom: Radius.circular(7),
                     ),
                   ),
                   child: Center(
-                    child: Text(
-                      title,
+                    child: Text(SeedsStrings.get(type.name, lang),
+                      
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -100,7 +104,9 @@ class StyleImageButton extends StatelessWidget {
                         color: selected
                             ? AppColors.cream
                             : colorScheme.onSurface,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -117,10 +123,7 @@ class StyleImageButton extends StatelessWidget {
 Widget _placeholder() => Container(
   height: 100,
   color: AppColors.espresso,
-  child: Icon(
-    Icons.image_not_supported,
-    color: AppColors.espressoLight,
-  ),
+  child: Icon(Icons.image_not_supported, color: AppColors.espressoLight),
 );
 
 class StyleTypeSelectionSection extends StatelessWidget {
@@ -152,10 +155,7 @@ class StyleTypeSelectionSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         SizedBox(
           height: 150,

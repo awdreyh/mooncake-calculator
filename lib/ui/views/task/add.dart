@@ -12,6 +12,7 @@ import '../../utils/language_provider.dart';
 import '../../utils/helper.dart';
 import '../recipe/add.dart';
 import 'list.dart';
+import '../../utils/seeds_strings.dart';
 import '../../widgets/image_button.dart';
 import '../../widgets/mc_config_fields.dart';
 import '../../core/app_theme.dart';
@@ -317,7 +318,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width / 3 - 8,
                   child: StyleImageButton(
-                    title: type.name,
+                    title: SeedsStrings.get(type.name, lang),
                     type: type,
                     selected: selected,
                     onTap: () => onSelected(type),
@@ -411,7 +412,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                   size: 20,
                 ),
                 label: Text(
-                  recipe.name,
+                  SeedsStrings.get(recipe.name, lang),
                   style: TextStyle(
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w300,
                     color: selected

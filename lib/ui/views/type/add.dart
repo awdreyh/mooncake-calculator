@@ -10,6 +10,7 @@ import '../../../data/model/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/seeds_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../core/app_theme.dart';
 import '../../widgets/selection_categories.dart';
@@ -301,7 +302,7 @@ class _AddTypePageState extends State<AddTypePage> {
                           (item) => item.id == type.id,
                         );
                         return FilterChip(
-                          label: Text(type.name),
+                          label: Text(SeedsStrings.get(type.name, lang)),
                           selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                          labelStyle: TextStyle(
@@ -347,7 +348,7 @@ class _AddTypePageState extends State<AddTypePage> {
                           (item) => item.id == type.id,
                         );
                         return FilterChip(
-                          label: Text(type.name),
+                          label: Text(SeedsStrings.get(type.name, lang)),
                           selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                          labelStyle: TextStyle(

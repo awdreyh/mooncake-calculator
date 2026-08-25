@@ -4,6 +4,7 @@ import '../../../data/model/type.dart';
 import '../../../provider/type.dart';
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/seeds_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../core/app_theme.dart';
 import 'add.dart';
@@ -70,8 +71,8 @@ class _TypeListPageState extends State<TypeListPage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text(
-            type.name,
-            style:text.bodyLarge,
+            SeedsStrings.get(type.name, lang),
+            style: text.bodyLarge,
           ),
         ),
       ),

@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
-
 import '../../../data/database/db_helper.dart';
 import '../../../data/model/recipe.dart';
 import '../../../data/model/type.dart';
 import '../../../data/model/ingredient.dart';
-
-
 import '../../../data/repository/recipe.dart';
 import '../../../provider/recipe.dart';
 import '../../../provider/type.dart';
-
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../widgets/image_button.dart';

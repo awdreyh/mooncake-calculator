@@ -8,12 +8,14 @@ import '../../../provider/recipe.dart';
 import '../../../provider/type.dart';
 import '../../../provider/ingredient.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/seeds_strings.dart';
 import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
 import "../../core/nav_bottom.dart";
 import '../task/list.dart';
 import '../../core/app_theme.dart';
 import '../../widgets/info_chips.dart';
+
 
 class RecipeDetailsPage extends StatefulWidget {
   final Recipe recipe;
@@ -171,7 +173,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           AppStrings.get(
             'confirm_delete_recipe',
             lang,
-          ).replaceAll('{recipe_name}', _recipe.name),
+          ).replaceAll('{recipe_name}', SeedsStrings.get(_recipe.name, lang)),
         ),
         actions: [
           TextButton(
@@ -271,8 +273,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _recipe.name,
+                                Text(SeedsStrings.get(_recipe.name, lang),
                                   style: textTheme.titleLarge?.copyWith(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -400,7 +401,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                         ),
                         child: Row(
                           children: [
-                            Expanded(child: Text(ingredient.name)),
+                            Expanded(child: Text(SeedsStrings.get(ingredient.name, lang))),
                             Text(
                               '${ingredient.amount} ${ingredient.unit.toMap()}',
                               style: const TextStyle(

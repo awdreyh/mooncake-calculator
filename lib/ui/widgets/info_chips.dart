@@ -6,15 +6,14 @@ class InfoChips extends StatelessWidget {
   final int qty;
   final int size;
   final String ratio;
-  final bool displayRatio;
+
 
 
   const InfoChips({
     super.key,
     required this.qty,
     required this.size,
-    required this.ratio,
-    this.displayRatio = true,
+     this.ratio='',
 
   });
 
@@ -39,7 +38,7 @@ class InfoChips extends StatelessWidget {
             backgroundColor: AppColors.sectionBg,
           ),
         ),
-        if (displayRatio)
+        if (ratio.isNotEmpty)
           Flexible(
             child: Chip(
               visualDensity: VisualDensity.compact,

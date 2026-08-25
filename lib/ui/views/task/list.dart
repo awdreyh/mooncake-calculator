@@ -9,6 +9,7 @@ import '../../../data/model/type.dart' as mc;
 
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
+import '../../utils/seeds_strings.dart';
 import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
 import '../../core/app_theme.dart';
@@ -92,7 +93,8 @@ class _TaskListPageState extends State<TaskListPage> {
           fillingTypeIds[task.id] = fillingType?.id;
           return MapEntry(
             task.id,
-            '${doughType?.name ?? ''} + ${fillingType?.name ?? ''}',
+            '${SeedsStrings.get(doughType?.name ?? '', lang)} + ${SeedsStrings.get(fillingType?.name ?? '', lang)}',  
+           // '${doughType?.name ?? ''} + ${fillingType?.name ?? ''}',
           );
         }),
       );
@@ -159,7 +161,7 @@ class _TaskListPageState extends State<TaskListPage> {
         ...types.map(
           (type) => DropdownMenuItem<String?>(
             value: type.id,
-            child: Text(type.name, overflow: TextOverflow.ellipsis),
+            child: Text(SeedsStrings.get(type.name, lang), overflow: TextOverflow.ellipsis),
           ),
         ),
       ],
@@ -268,7 +270,7 @@ class _TaskListPageState extends State<TaskListPage> {
                     qty: task.quantity,
                     size: task.size,
                     ratio: Helper.ratioToString(task.ratio),
-                    displayRatio: false,
+                 
                   ),
 
                   Divider(
