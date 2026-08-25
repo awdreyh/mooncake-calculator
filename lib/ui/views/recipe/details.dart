@@ -173,7 +173,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           AppStrings.get(
             'confirm_delete_recipe',
             lang,
-          ).replaceAll('{recipe_name}', SeedsStrings.get(_recipe.name, lang)),
+          ).replaceAll('{recipe_name}', SeedsStrings.get(_recipe.name, lang).isNotEmpty ? SeedsStrings.get(_recipe.name, lang) : _recipe.name),
         ),
         actions: [
           TextButton(
@@ -273,7 +273,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(SeedsStrings.get(_recipe.name, lang),
+                                Text(SeedsStrings.get(_recipe.name, lang).isNotEmpty ? SeedsStrings.get(_recipe.name, lang) : _recipe.name,
                                   style: textTheme.titleLarge?.copyWith(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -296,7 +296,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                         : 'dough_type';
 
                                     return Text(
-                                      '${AppStrings.get(labelKey, lang)}:$_typeName',
+                                      '${AppStrings.get(labelKey, lang)}:${_typeName.isNotEmpty ? _typeName : SeedsStrings.get(_typeName, lang)}',
                                       style: textTheme.bodyMedium?.copyWith(
                                         fontSize: 14,
                                         color: Colors.black54,
@@ -401,7 +401,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                         ),
                         child: Row(
                           children: [
-                            Expanded(child: Text(SeedsStrings.get(ingredient.name, lang))),
+                            Expanded(child: Text(SeedsStrings.get(ingredient.name, lang).isNotEmpty ? SeedsStrings.get(ingredient.name, lang) : ingredient.name)),
                             Text(
                               '${ingredient.amount} ${ingredient.unit.toMap()}',
                               style: const TextStyle(

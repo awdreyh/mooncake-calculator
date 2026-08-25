@@ -138,7 +138,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
           AppStrings.get(
             'confirm_delete_recipe',
             lang,
-          ).replaceFirst('{recipe_name}', SeedsStrings.get(recipe.name, lang)),
+          ).replaceFirst('{recipe_name}', SeedsStrings.get(recipe.name, lang).isNotEmpty ? SeedsStrings.get(recipe.name, lang) : recipe.name),
         ),
         actions: [
           TextButton(
@@ -224,7 +224,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
                   ? Text(
                       AppStrings.get('recipes_for_type', lang).replaceFirst(
                         '{type}',
-                        SeedsStrings.get(paraType!.name, lang),
+                        SeedsStrings.get(paraType!.name, lang).isNotEmpty? SeedsStrings.get(paraType!.name, lang) : paraType!.name  
                       ),
                       style: Theme.of(context).textTheme.bodyMedium,
                     )
@@ -239,10 +239,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
                     final categoryIcon = recipeCategory == Category.filling
                         ? Icons.egg_alt
                         : Icons.cookie;
-                    final typeLabel = SeedsStrings.get(
-                      _typeNameForRecipe(recipe),
-                      lang,
-                    );
+                    final typeLabel = SeedsStrings.get(_typeNameForRecipe(recipe), lang).isNotEmpty ? SeedsStrings.get(_typeNameForRecipe(recipe), lang) : _typeNameForRecipe(recipe);
                     final inUse = (_usageCounts[recipe.id] ?? 0) > 0;
 
                     return Padding(
@@ -288,7 +285,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        SeedsStrings.get(recipe.name, lang),
+                                        SeedsStrings.get(recipe.name, lang).isNotEmpty ? SeedsStrings.get(recipe.name, lang) : recipe.name,
                                         style: Theme.of(
                                           context,
                                         ).textTheme.titleMedium,

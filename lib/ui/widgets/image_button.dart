@@ -95,7 +95,7 @@ class StyleImageButton extends StatelessWidget {
                     ),
                   ),
                   child: Center(
-                    child: Text(SeedsStrings.get(type.name, lang),
+                    child: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name,
                       
                       textAlign: TextAlign.center,
                       maxLines: 1,

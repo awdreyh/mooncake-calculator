@@ -93,7 +93,7 @@ class _TaskListPageState extends State<TaskListPage> {
           fillingTypeIds[task.id] = fillingType?.id;
           return MapEntry(
             task.id,
-            '${SeedsStrings.get(doughType?.name ?? '', lang)} + ${SeedsStrings.get(fillingType?.name ?? '', lang)}',  
+            '${SeedsStrings.get(doughType?.name ?? '', lang).isNotEmpty ? SeedsStrings.get(doughType?.name ?? '', lang) : doughType?.name ?? ''} + ${SeedsStrings.get(fillingType?.name ?? '', lang).isNotEmpty ? SeedsStrings.get(fillingType?.name ?? '', lang) : fillingType?.name ?? ''}',
            // '${doughType?.name ?? ''} + ${fillingType?.name ?? ''}',
           );
         }),
@@ -161,7 +161,7 @@ class _TaskListPageState extends State<TaskListPage> {
         ...types.map(
           (type) => DropdownMenuItem<String?>(
             value: type.id,
-            child: Text(SeedsStrings.get(type.name, lang), overflow: TextOverflow.ellipsis),
+            child: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name, overflow: TextOverflow.ellipsis),
           ),
         ),
       ],

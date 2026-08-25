@@ -71,7 +71,7 @@ class _TypeListPageState extends State<TypeListPage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text(
-            SeedsStrings.get(type.name, lang),
+            SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name,
             style: text.bodyLarge,
           ),
         ),

@@ -252,9 +252,9 @@ class _AddTypePageState extends State<AddTypePage> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  maxLength: 1,
+                  maxLength: 20,
                   decoration: InputDecoration(
-                    labelText: AppStrings.get('name', lang),
+                    labelText: SeedsStrings.get('name', lang).isNotEmpty ? SeedsStrings.get('name', lang) : 'Name',
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
@@ -302,7 +302,7 @@ class _AddTypePageState extends State<AddTypePage> {
                           (item) => item.id == type.id,
                         );
                         return FilterChip(
-                          label: Text(SeedsStrings.get(type.name, lang)),
+                          label: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name),
                           selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                          labelStyle: TextStyle(
@@ -348,7 +348,7 @@ class _AddTypePageState extends State<AddTypePage> {
                           (item) => item.id == type.id,
                         );
                         return FilterChip(
-                          label: Text(SeedsStrings.get(type.name, lang)),
+                          label: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name),
                           selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                          labelStyle: TextStyle(

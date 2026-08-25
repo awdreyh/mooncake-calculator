@@ -24,7 +24,6 @@ class TypeDetailsPage extends StatefulWidget {
 }
 
 class _TypeDetailsPageState extends State<TypeDetailsPage> {
-  late final TextEditingController _nameController;
   static const _placeholderImage = 'assets/images/types/placeholder.jpg';
   String _typeName = '';
   Category? _category;
@@ -44,7 +43,6 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   void initState() {
     super.initState();
     _typeName = widget.type.name;
-    _nameController = TextEditingController(text: _typeName);
     _category = widget.type.category;
     _imagePath = widget.type.imagePath;
     _loadDoughTypes();
@@ -55,7 +53,6 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     super.dispose();
   }
 
@@ -233,33 +230,18 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
   }
 
   Future<void> _saveType() async {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.get('validRecipeNameMsg', lang))),
-      );
+    if (_category == Category.filling && _selectedMatchedDoughTypes.isEmpty) {
+      setState(() {
+        _matchedTypeError = AppStrings.get('validMatchedDoughTypesMsg', lang);
+      });
       return;
     }
-     if (_category == Category.filling &&
-              _selectedMatchedDoughTypes.isEmpty) {
-            setState(() {
-              _matchedTypeError = AppStrings.get(
-                'validMatchedDoughTypesMsg',
-                lang,
-              );
-            });
-            return;
-          }
-          if (_category == Category.dough &&
-              _selectedMatchedFillingTypes.isEmpty) {
-            setState(() {
-              _matchedTypeError = AppStrings.get(
-                'validMatchedFillingTypesMsg',
-                lang,
-              );
-            });
-            return;
-          }
+    if (_category == Category.dough && _selectedMatchedFillingTypes.isEmpty) {
+      setState(() {
+        _matchedTypeError = AppStrings.get('validMatchedFillingTypesMsg', lang);
+      });
+      return;
+    }
 
     final matchedIds = _category == Category.filling
         ? _selectedMatchedDoughTypes.map((type) => type.id).toList()
@@ -268,7 +250,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
     final updatedType = Type(
       id: widget.type.id,
       category: _category ?? Category.dough,
-      name: name,
+      name: _typeName,
       imagePath: _imagePath,
       matchedDoughTypeIds: matchedIds,
     );
@@ -287,7 +269,6 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
             (item) => item.id == filling.id,
           );
           if (wasSelected == isSelected) continue;
-         
 
           final ids = List<String>.from(filling.matchedDoughTypeIds ?? []);
           if (isSelected) {
@@ -324,7 +305,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
           ),
         );
       }
-    } 
+    }
   }
 
   @override
@@ -371,14 +352,16 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _typeName,
+                                  SeedsStrings.get(_typeName, lang).isNotEmpty
+                                      ? SeedsStrings.get(_typeName, lang)
+                                      : _typeName,
                                   style: textTheme.titleLarge?.copyWith(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                             
+
                                 if (_recipeUsageCount > 0)
                                   GestureDetector(
                                     onTap: _openRelatedRecipes,
@@ -437,7 +420,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         (item) => item.id == type.id,
                       );
                       return FilterChip(
-                        label: Text(SeedsStrings.get(type.name, lang)),
+                        label: Text(SeedsStrings.get(type.name, lang).isNotEmpty? SeedsStrings.get(type.name, lang) : type.name),
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                         labelStyle: TextStyle(
@@ -451,7 +434,6 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                       );
                     }).toList(),
                   ),
-            
               ],
               if (_category == Category.dough) ...[
                 Text(
@@ -470,7 +452,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         (item) => item.id == type.id,
                       );
                       return FilterChip(
-                        label: Text(SeedsStrings.get(type.name, lang)),
+                        label: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name),
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.cream,
                         labelStyle: TextStyle(
@@ -483,7 +465,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
                         onSelected: (_) => _toggleMatchedFillingType(type),
                       );
                     }).toList(),
-                  ),             
+                  ),
               ],
               if (_matchedTypeError != null) ...[
                 Text(
@@ -505,11 +487,8 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:  _saveType,
-                  child: Text(
-                   
-                        AppStrings.get('save', lang),
-                  ),
+                  onPressed: _saveType,
+                  child: Text(AppStrings.get('save', lang)),
                 ),
               ),
             ],

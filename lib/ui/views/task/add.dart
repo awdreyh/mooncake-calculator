@@ -377,7 +377,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                   AppStrings.get(
                     'noRecipesForType',
                     lang,
-                  ).replaceAll('{type}', selectedType?.name ?? ''),
+                  ).replaceAll('{type}', SeedsStrings.get(selectedType?.name ?? '', lang).isNotEmpty ? SeedsStrings.get(selectedType?.name ?? '', lang) : selectedType?.name ?? ''),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     //decoration: TextDecoration.underline,
@@ -412,7 +412,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                   size: 20,
                 ),
                 label: Text(
-                  SeedsStrings.get(recipe.name, lang),
+                  SeedsStrings.get(recipe.name, lang).isNotEmpty ? SeedsStrings.get(recipe.name, lang) : recipe.name,
                   style: TextStyle(
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w300,
                     color: selected

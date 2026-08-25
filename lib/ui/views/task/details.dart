@@ -279,7 +279,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
             ),
 
             ActionChip(
-              label: Text(SeedsStrings.get(recipe.name, lang)),
+              label: Text(SeedsStrings.get(recipe.name, lang).isNotEmpty ? SeedsStrings.get(recipe.name, lang) : recipe.name),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -302,7 +302,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(child: Text(SeedsStrings.get(ingredient.name, lang))),
+                  Expanded(child: Text(SeedsStrings.get(ingredient.name, lang).isNotEmpty ? SeedsStrings.get(ingredient.name, lang) : ingredient.name)),
                   Text(
                     '${ingredient.amount.toStringAsFixed(2)} ${ingredient.unit.toMap()}',
                   ),
