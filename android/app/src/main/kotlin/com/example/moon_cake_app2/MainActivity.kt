@@ -1,4 +1,4 @@
-package com.example.moon_cake_app
+package moon.cake.calculator.app
 
 import io.flutter.embedding.android.FlutterActivity
 
