@@ -56,17 +56,15 @@ class OptionCategory extends StatelessWidget {
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        AppStrings.get(category.toMap(), lang),
-                        style: TextStyle(
-                          color: category == Category.filling ? AppColors.accentRed : AppColors.accent,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      AppStrings.get(category.toMap(), lang),
+                      style: TextStyle(
+                        color: category == Category.filling ? AppColors.accentRed : AppColors.accent,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

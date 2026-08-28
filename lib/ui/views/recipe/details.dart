@@ -4,18 +4,20 @@ import 'package:provider/provider.dart';
 import '../../../data/model/recipe.dart';
 import '../../../data/model/type.dart';
 import '../../../data/model/ingredient.dart';
+import '../../../data/model/direction.dart';
 import '../../../provider/recipe.dart';
 import '../../../provider/type.dart';
-import '../../../provider/ingredient.dart';
+
 import '../../utils/app_strings.dart';
 import '../../utils/seeds_strings.dart';
 import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
 import "../../core/nav_bottom.dart";
 import '../task/list.dart';
+import '../direction/list.dart';
+import '../direction/add.dart';
 import '../../core/app_theme.dart';
 import '../../widgets/info_chips.dart';
-
 
 class RecipeDetailsPage extends StatefulWidget {
   final Recipe recipe;
@@ -33,10 +35,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   late Recipe _recipe;
   List<Ingredient> _ingredients = [];
+  List<Direction> _directions = [];
   RecipeProvider get receipeProvider => context.read<RecipeProvider>();
   TypeProvider get typeProvider => context.read<TypeProvider>();
-  IngredientProvider get ingredientProvider =>
-      context.read<IngredientProvider>();
+  // IngredientProvider get ingredientProvider =>
+  //     context.read<IngredientProvider>();
+  //DirectionProvider get directionProvider => context.read<DirectionProvider>();
 
   List<Type> _allTypes = [];
   bool _changed = false;
@@ -52,6 +56,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     super.initState();
     _recipe = widget.recipe;
     _ingredients = _recipe.ingredients;
+    _directions = _recipe.directions ?? [];
     _typeName = '';
     _commentController.text = _recipe.comment ?? '';
     _selectedRating = _recipe.rating ?? 0;
@@ -99,6 +104,48 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         builder: (context) => TaskListPage(recipeId: _recipe.id),
       ),
     );
+  }
+
+  void _openRelatedDirections() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RecipeDirectionsPage(recipeId: _recipe.id),
+      ),
+    ).then( (value) {
+      if (value == true) {
+        _loadRecipeDirections();
+      }
+    });
+  }
+
+  Future<void> _loadRecipeDirections() async {
+    try {
+      final recipe = await receipeProvider.loadRecipe(_recipe.id);
+      final directions = recipe?.directions ?? [];      
+      if (!mounted) return;
+      setState(() {
+        _directions = directions;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load directions: $e')),
+      );
+    }
+  }
+
+  void _openAddDirectionPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddDirectionPage(recipeId: _recipe.id),
+      ),
+    ).then((value) {
+      if (value == true) {
+        _loadRecipeDirections();
+      }
+    });
   }
 
   void _toggleFavorite() {
@@ -170,10 +217,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       builder: (context) => AlertDialog(
         title: Text(AppStrings.get('delete_recipe', lang)),
         content: Text(
-          AppStrings.get(
-            'confirm_delete_recipe',
-            lang,
-          ).replaceAll('{recipe_name}', SeedsStrings.get(_recipe.name, lang).isNotEmpty ? SeedsStrings.get(_recipe.name, lang) : _recipe.name),
+          AppStrings.get('confirm_delete_recipe', lang).replaceAll(
+            '{recipe_name}',
+            SeedsStrings.get(_recipe.name, lang).isNotEmpty
+                ? SeedsStrings.get(_recipe.name, lang)
+                : _recipe.name,
+          ),
         ),
         actions: [
           TextButton(
@@ -201,7 +250,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;   
+    final textTheme = Theme.of(context).textTheme;
 
     return PopScope<bool>(
       canPop: false,
@@ -273,7 +322,13 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(SeedsStrings.get(_recipe.name, lang).isNotEmpty ? SeedsStrings.get(_recipe.name, lang) : _recipe.name,
+                                Text(
+                                  SeedsStrings.get(
+                                        _recipe.name,
+                                        lang,
+                                      ).isNotEmpty
+                                      ? SeedsStrings.get(_recipe.name, lang)
+                                      : _recipe.name,
                                   style: textTheme.titleLarge?.copyWith(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -296,7 +351,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                         : 'dough_type';
 
                                     return Text(
-                                      '${AppStrings.get(labelKey, lang)}:${_typeName.isNotEmpty ?  (SeedsStrings.get(_typeName, lang).isNotEmpty ? SeedsStrings.get(_typeName, lang) : _typeName) : AppStrings.get('unknown', lang)}',
+                                      '${AppStrings.get(labelKey, lang)}:${_typeName.isNotEmpty ? (SeedsStrings.get(_typeName, lang).isNotEmpty ? SeedsStrings.get(_typeName, lang) : _typeName) : AppStrings.get('unknown', lang)}',
                                       style: textTheme.bodyMedium?.copyWith(
                                         fontSize: 14,
                                         color: Colors.black54,
@@ -310,7 +365,15 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                 if (_recipe.description != null &&
                                     _recipe.description!.isNotEmpty)
                                   Text(
-                                    SeedsStrings.get(_recipe.description!, lang).isNotEmpty ? SeedsStrings.get(_recipe.description!, lang) : _recipe.description!,
+                                    SeedsStrings.get(
+                                          _recipe.description!,
+                                          lang,
+                                        ).isNotEmpty
+                                        ? SeedsStrings.get(
+                                            _recipe.description!,
+                                            lang,
+                                          )
+                                        : _recipe.description!,
                                     style: textTheme.bodyMedium,
                                   ),
 
@@ -351,6 +414,30 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                   size: _recipe.size,
                                   ratio: Helper.ratioToString(_recipe.ratio!),
                                 ),
+                                 SizedBox(height: 16),
+                                if (_directions.isNotEmpty)
+                                  GestureDetector(
+                                    onTap: _openRelatedDirections,
+                                    child: Text(
+                                      AppStrings.get('view_directions', lang),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  )
+                                else
+                               
+                                  GestureDetector(
+                                    onTap: _openAddDirectionPage,
+                                    child: Text(
+                                      AppStrings.get('add_directions', lang),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  )
                               ],
                             ),
                           ),
@@ -386,53 +473,61 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                   width: double.infinity,
                   child: Card(
                     child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _ingredients.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(height: 1),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _ingredients.length,
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
 
-                    itemBuilder: (context, index) {
-                      final ingredient = _ingredients[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(child: Text(SeedsStrings.get(ingredient.name, lang).isNotEmpty ? SeedsStrings.get(ingredient.name, lang) : ingredient.name)),
-                            Text(
-                              '${ingredient.amount} ${ingredient.unit.toMap()}',
-                              style: const TextStyle(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
+                      itemBuilder: (context, index) {
+                        final ingredient = _ingredients[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  SeedsStrings.get(
+                                        ingredient.name,
+                                        lang,
+                                      ).isNotEmpty
+                                      ? SeedsStrings.get(ingredient.name, lang)
+                                      : ingredient.name,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                              Text(
+                                '${ingredient.amount} ${ingredient.unit.toMap()}',
+                                style: const TextStyle(
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-                ),
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
               // Rating
               Text(
-                        AppStrings.get('rating', lang),
-                        style: textTheme.titleMedium?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
+                AppStrings.get('rating', lang),
+                style: textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      
                       Row(
                         children: List.generate(5, (index) {
                           final starValue = index + 1;
@@ -479,20 +574,20 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                 TextField(
-                        controller: _commentController,
-                        maxLines: 4,
-                        decoration: InputDecoration(
-                          hintText: AppStrings.get('no_comment', lang),
-                           border: const OutlineInputBorder(),
-                        ),
-                      ),
+                  TextField(
+                    controller: _commentController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: AppStrings.get('no_comment', lang),
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton.icon(
                       onPressed: _isSaving ? null : _saveChanges,
-                     
+
                       label: Text(AppStrings.get('save', lang)),
                     ),
                   ),
@@ -501,33 +596,33 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               ),
 
               // URL
-            //   if (_recipe.url != null && _recipe.url!.isNotEmpty)
-            //     Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         Text(
-            //           AppStrings.get('reference_url', lang),
-            //           style: textTheme.titleMedium?.copyWith(
-            //             fontSize: 16,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //         const SizedBox(height: 8),
-            //         Card( 
-            //           child: Padding(
-            //             padding: const EdgeInsets.all(12),
-            //             child: SelectableText(
-            //               _recipe.url!,
-            //               style: const TextStyle(
-            //                 color: Colors.blue,
-            //                 decoration: TextDecoration.underline,
-            //               ),
-            //             ),
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-             ],
+              //   if (_recipe.url != null && _recipe.url!.isNotEmpty)
+              //     Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Text(
+              //           AppStrings.get('reference_url', lang),
+              //           style: textTheme.titleMedium?.copyWith(
+              //             fontSize: 16,
+              //             fontWeight: FontWeight.bold,
+              //           ),
+              //         ),
+              //         const SizedBox(height: 8),
+              //         Card(
+              //           child: Padding(
+              //             padding: const EdgeInsets.all(12),
+              //             child: SelectableText(
+              //               _recipe.url!,
+              //               style: const TextStyle(
+              //                 color: Colors.blue,
+              //                 decoration: TextDecoration.underline,
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+            ],
           ),
         ),
         bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),

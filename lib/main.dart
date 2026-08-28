@@ -8,15 +8,18 @@ import 'ui/utils/language_provider.dart';
 import 'provider/type.dart';
 import 'provider/task.dart';
 import 'provider/recipe.dart';
+import 'provider/direction.dart';
 
 import 'data/repository/type.dart';
 import 'data/repository/recipe.dart';
 import 'data/repository/task.dart';
+import 'data/repository/direction.dart';
 import 'data/database/db_helper.dart';
 
 import 'ui/utils/helper.dart';
 import 'package:flutter/services.dart';
 import 'ui/views/task/add.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +41,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => RecipeProvider(RecipeRepository(MCDatabase.instance)),
+        ),
+                ChangeNotifierProvider(
+          create: (_) => DirectionProvider(DirectionRepository(MCDatabase.instance)),
         ),
       ],
 
@@ -165,7 +171,6 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 56),
-
               Text(
                 Helper.greeting(context),
                 style: GoogleFonts.poppins(

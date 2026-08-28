@@ -11,7 +11,7 @@ class IngredientRepository {
     return await database.insert('ingredient', ingredient.toMap());  
   }
 
-  Future<Ingredient?> load(String id) async {
+  Future<Ingredient?> load(String id) async { 
     final database = await db.database;
     final rows = await database.query(
       'ingredients',

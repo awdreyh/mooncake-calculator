@@ -63,7 +63,7 @@ class SeedsStrings {
       'gluten_free_flour': '澄粉',
       'rice_flour': '粘米粉',
       'milk': '牛奶',
-      'red_bean_dry': ' 红豆(干)',
+      'red_bean_dry': '红豆(干)',
       'lotus_seed_dry': '莲子(干)',
       'mixed_nuts': '五仁',
       'dry_fruits': '干果',

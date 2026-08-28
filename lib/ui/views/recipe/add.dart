@@ -39,11 +39,11 @@ class _IngredientInput {
   }
 }
 
-class _CategoryOption {
-  final Category category;
-  final String label;
-  const _CategoryOption({required this.category, required this.label});
-}
+// class _CategoryOption {
+//   final Category category;
+//   final String label;
+//   const _CategoryOption({required this.category, required this.label});
+// }
 
 class _AddRecipePageState extends State<AddRecipePage> {
   final _formKey = GlobalKey<FormState>();
@@ -51,7 +51,7 @@ class _AddRecipePageState extends State<AddRecipePage> {
 
   Category _recipeCategory = Category.dough;
   Type? _selectedType;
-  List<Type> _selectedMatchedDoughTypes = [];
+  // List<Type> _selectedMatchedDoughTypes = [];
   List<Type> _allTypes = [];
   final bool _isFavorite = false;
   final double _rating = 0.0;
@@ -131,37 +131,6 @@ class _AddRecipePageState extends State<AddRecipePage> {
 
   List<Type> get _fillingTypes =>
       _allTypes.where((type) => type.category == Category.filling).toList();
-
-  List<_CategoryOption> _categoryOptions(String lang) => Category.values
-      .map(
-        (category) => _CategoryOption(
-          category: category,
-          label: category == Category.dough
-              ? AppStrings.get('dough', lang)
-              : AppStrings.get('filling', lang),
-        ),
-      )
-      .toList();
-
-  void _selectCategory(Category category) {
-    setState(() {
-      _recipeCategory = category;
-      _selectedType = _getDefaultType(category);
-      if (category == Category.dough) {
-        _selectedMatchedDoughTypes = [];
-      }
-    });
-  }
-
-  void _toggleMatchedDoughType(Type type) {
-    setState(() {
-      if (_selectedMatchedDoughTypes.any((item) => item.id == type.id)) {
-        _selectedMatchedDoughTypes.removeWhere((item) => item.id == type.id);
-      } else {
-        _selectedMatchedDoughTypes.add(type);
-      }
-    });
-  }
 
   void _setQuantity(int value) {
     setState(() {

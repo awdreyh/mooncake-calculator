@@ -3,7 +3,6 @@ import '../database/db_helper.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
 import '../model/direction.dart';
-import '../model/type.dart';
 import 'type.dart' as type_repo;
 
 class RecipeRepository {
@@ -108,7 +107,7 @@ class RecipeRepository {
             'step_index': direction.stepIndex,
             'step_title': direction.stepTitle,
             'step_description': direction.stepDescription,
-            'step_image': direction.stepImage,
+            'step_image_path': direction.stepImagePath,
           });
         }
       }
@@ -143,6 +142,32 @@ class RecipeRepository {
   Future<int> delete(String id) async {
     final database = await db.database;
     return await database.delete('recipes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> saveDirections(List<Map<String, dynamic>> directions) async {
+    final database = await db.database;
+    await database.transaction((txn) async {
+      for (final direction in directions) {
+        final existingDirection = await txn.query(
+          'directions',
+          where: 'id = ?',
+          whereArgs: [direction['id']],
+        );
+
+        if (existingDirection.isNotEmpty) {
+          // Update existing direction
+          await txn.update(
+            'directions',
+            direction,
+            where: 'id = ?',
+            whereArgs: [direction['id']],
+          );
+        } else {
+          // Insert new direction
+          await txn.insert('directions', direction);
+        }
+      }
+    });
   }
 
   Future<int> countTasksUsingRecipe(String recipeId) async {

@@ -46,7 +46,7 @@ class MCDatabase {
             step_index TEXT NOT NULL,
             step_title TEXT NOT NULL,
             step_description TEXT NOT NULL,        
-            step_image TEXT,
+            step_image_path TEXT,
             FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
           )
         ''');

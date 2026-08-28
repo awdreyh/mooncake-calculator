@@ -1,27 +1,35 @@
 class Direction {
+    final String id;
   final String stepIndex; // eg: '步骤1'
   final String stepTitle;
   final String stepDescription;
-  final String? stepImage; // Optional image for this step
+  final String? stepImagePath; // Optional image for this step
+  final String recipeId;
 
   Direction({
+    required this.id,
     required this.stepIndex,
     required this.stepTitle,
     required this.stepDescription,
-    this.stepImage,
+    this.stepImagePath,
+    required this.recipeId,
+    
   });
 
   Map<String, dynamic> toMap() => {
-        'stepIndex': stepIndex,
-        'stepTitle': stepTitle,
-        'stepDescription': stepDescription,
-        'stepImage': stepImage,
+        'recipe_id': recipeId,
+        'step_index': stepIndex,
+        'step_title': stepTitle,
+        'step_description': stepDescription,
+        'step_image_path': stepImagePath,
       };
 
   factory Direction.fromMap(Map<String, dynamic> map) => Direction(
+        id: map['id']?.toString() ?? '',
         stepIndex: map['step_index'] as String? ?? map['stepIndex'] as String,
         stepTitle: map['step_title'] as String? ?? map['stepTitle'] as String,
         stepDescription: map['step_description'] as String? ?? map['stepDescription'] as String,
-        stepImage: map['step_image'] as String? ?? map['stepImage'] as String?,
+        stepImagePath: map['step_image_path'] as String? ?? map['stepImagePath'] as String?,
+        recipeId: map['recipe_id'] as String? ?? map['recipeId'] as String,
       );
 }
