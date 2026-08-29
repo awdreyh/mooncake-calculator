@@ -17,7 +17,6 @@ import 'details.dart';
 
 class RecipeListPage extends StatefulWidget {
   final String? typeId;
-
   const RecipeListPage({super.key, this.typeId});
 
   @override
@@ -203,11 +202,6 @@ class _RecipeListPageState extends State<RecipeListPage> {
         .toList();
   }
 
-  String _typeNameForRecipe(Recipe recipe) {
-    final matching = _types.where((type) => type.id == recipe.typeId);
-    return matching.isEmpty ? '' : matching.first.name;
-  }
-
   Widget _buildRecipeList(List<Recipe> recipes, String lang) {
     if (recipes.isEmpty) {
       return Center(child: Text(AppStrings.get('noRecipesAvailable', lang)));
@@ -239,7 +233,7 @@ class _RecipeListPageState extends State<RecipeListPage> {
                     final categoryIcon = recipeCategory == Category.filling
                         ? Icons.egg_alt
                         : Icons.cookie;
-                    final typeLabel = SeedsStrings.get(_typeNameForRecipe(recipe), lang).isNotEmpty ? SeedsStrings.get(_typeNameForRecipe(recipe), lang) : _typeNameForRecipe(recipe);
+                   // final typeLabel = SeedsStrings.get(_typeNameForRecipe(recipe), lang).isNotEmpty ? SeedsStrings.get(_typeNameForRecipe(recipe), lang) : _typeNameForRecipe(recipe);
                     final inUse = (_usageCounts[recipe.id] ?? 0) > 0;
 
                     return Padding(
@@ -381,25 +375,37 @@ class _RecipeListPageState extends State<RecipeListPage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context),
           ),
-          bottom: TabBar(
-            tabs: [
-              Tab(
-                icon: const Icon(Icons.cookie, color: AppColors.accent),
-                child: Text(
-                  AppStrings.get('dough', lang),
-                  style: TextStyle(color: AppColors.accent),
-                ),
-              ),
-              Tab(
-                icon: const Icon(Icons.egg_alt, color: AppColors.accentRed),
-                child: Text(
-                  AppStrings.get('filling', lang),
-                  style: TextStyle(color: AppColors.accentRed),
-                ),
-              ),
-            ],
+        bottom: TabBar(
+  tabs: [
+    Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.cookie, color: AppColors.accent),
+          const SizedBox(width: 6),
+          Text(
+            AppStrings.get('dough', lang),
+            style: TextStyle(color: AppColors.accent),
           ),
-        ),
+        ],
+      ),
+    ),
+    Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.egg_alt, color: AppColors.accentRed),
+          const SizedBox(width: 6),
+          Text(
+            AppStrings.get('filling', lang),
+            style: TextStyle(color: AppColors.accentRed),
+          ),
+        ],
+      ),
+    ),
+  ],
+),
+),
         body: _buildBody(lang),
 
         floatingActionButton: FloatingActionButton.small(

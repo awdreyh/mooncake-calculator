@@ -20,8 +20,8 @@ class TypeListPage extends StatefulWidget {
 class _TypeListPageState extends State<TypeListPage> {
   LanguageProvider get languageProvider =>
       Provider.of<LanguageProvider>(context, listen: false);
-      TextTheme get text => Theme.of(context).textTheme;
-      
+  TextTheme get text => Theme.of(context).textTheme;
+
   String get lang => languageProvider.languageCode;
   bool _isLoading = true;
   String? _errorMessage;
@@ -71,7 +71,9 @@ class _TypeListPageState extends State<TypeListPage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text(
-            SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name,
+            SeedsStrings.get(type.name, lang).isNotEmpty
+                ? SeedsStrings.get(type.name, lang)
+                : type.name,
             style: text.bodyLarge,
           ),
         ),
@@ -99,20 +101,13 @@ class _TypeListPageState extends State<TypeListPage> {
     );
   }
 
-  Widget _buildTypeSection(
-    String title,
-    List<Type> types,
-    Category category,
-  ) {
+  Widget _buildTypeSection(String title, List<Type> types, Category category) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -138,46 +133,62 @@ class _TypeListPageState extends State<TypeListPage> {
         .where((type) => type.category == Category.filling)
         .toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppStrings.get('type_list_title', lang)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+    return Container(
+      // 1. Add decoration to the wrapping Container
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(
+            'assets/images/bg.png',
+          ), // Use NetworkImage('') for URLs
+          fit: BoxFit.cover, // Ensures image fills the screen
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? Center(child: Text(_errorMessage!))
-          : _types.isEmpty
-          ? Center(child: Text(AppStrings.get('noTypes', lang)))
-          : RefreshIndicator(
-              onRefresh: _loadTypes,
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
-                  // Dough Types Section
-                  _buildTypeSection(
-                    AppStrings.get('dough_type', lang),
-               
-                    doughTypes,
-                    Category.dough,
-                  ),
-                  Divider(color: AppColors.borderLight, thickness: 1, height: 32),
-                  // Filling Types Section
-                  _buildTypeSection(
-                    AppStrings.get('filling_type', lang),
-       
-                    fillingTypes,
-                    Category.filling,
-                  ),
-                ],
-              ),
-            ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // Make Scaffold background transparent
+        appBar: AppBar(
+          title: Text(AppStrings.get('type_list_title', lang)),
+          backgroundColor: Colors.transparent, // Make Scaffold background transparent
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+            ? Center(child: Text(_errorMessage!))
+            : _types.isEmpty
+            ? Center(child: Text(AppStrings.get('noTypes', lang)))
+            : RefreshIndicator(
+                onRefresh: _loadTypes,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    // Dough Types Section
+                    _buildTypeSection(
+                      AppStrings.get('dough_type', lang),
 
-     
-      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
+                      doughTypes,
+                      Category.dough,
+                    ),
+                    Divider(
+                      color: AppColors.borderLight,
+                      thickness: 1,
+                      height: 32,
+                    ),
+                    // Filling Types Section
+                    _buildTypeSection(
+                      AppStrings.get('filling_type', lang),
+
+                      fillingTypes,
+                      Category.filling,
+                    ),
+                  ],
+                ),
+              ),
+
+        bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
+      ),
     );
   }
 }

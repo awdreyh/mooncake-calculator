@@ -43,7 +43,7 @@ class MCDatabase {
           CREATE TABLE directions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             recipe_id TEXT NOT NULL,
-            step_index TEXT NOT NULL,
+            step_index INTEGER NOT NULL,
             step_title TEXT NOT NULL,
             step_description TEXT NOT NULL,        
             step_image_path TEXT,

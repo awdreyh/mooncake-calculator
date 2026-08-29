@@ -33,11 +33,11 @@ class AppBottomNavigationBar extends StatelessWidget {
       if (!foundTaskList) {
         Navigator.of(context).push(
           PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const TaskListPage(),
-        settings: const RouteSettings(name: 'task/list'),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
+            pageBuilder: (_, _, _) => const TaskListPage(),
+            settings: const RouteSettings(name: 'task/list'),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
       }
       return;
@@ -55,12 +55,12 @@ class AppBottomNavigationBar extends StatelessWidget {
 
       if (!foundRecipeList) {
         Navigator.of(context).push(
-         PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const RecipeListPage(),
-        settings: const RouteSettings(name: 'recipe/list'),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
+          PageRouteBuilder(
+            pageBuilder: (_, _, _) => const RecipeListPage(),
+            settings: const RouteSettings(name: 'recipe/list'),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
       }
       return;
@@ -79,12 +79,11 @@ class AppBottomNavigationBar extends StatelessWidget {
       if (!foundTypeList) {
         Navigator.of(context).push(
           PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const TypeListPage(),
-        settings: const RouteSettings(name: 'type/list'),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-         
+            pageBuilder: (_, _, _) => const TypeListPage(),
+            settings: const RouteSettings(name: 'type/list'),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
       }
       return;
@@ -106,7 +105,6 @@ class AppBottomNavigationBar extends StatelessWidget {
       (icon: Icons.task_alt, label: AppStrings.get('tasks', lang)),
       (icon: Icons.restaurant, label: AppStrings.get('recipes', lang)),
       (icon: Icons.category, label: AppStrings.get('type', lang)),
-      
     ];
 
     return Container(
@@ -114,13 +112,13 @@ class AppBottomNavigationBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height:48,
+          height: 48,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < items.length; i++)
                 Expanded(
-                  child: InkWell(                   
+                  child: InkWell(
                     onTap: () => _onTap(context, i),
                     child: Container(
                       color: i == currentIndex
@@ -133,15 +131,21 @@ class AppBottomNavigationBar extends StatelessWidget {
                             items[i].icon,
                             size: i == currentIndex ? 20 : 16,
                             color: i == currentIndex
-                                ?  AppColors.cream
+                                ? AppColors.cream
                                 : Colors.white,
                           ),
                           const SizedBox(height: 1),
                           Text(
-                            items[i].label,                        
+                            items[i].label,
                             style: i == currentIndex
-                                ? const TextStyle(fontSize: 11, color: AppColors.cream)
-                                : const TextStyle(fontSize: 11, color: AppColors.cream)
+                                ? const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.cream,
+                                  )
+                                : const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.cream,
+                                  ),
                           ),
                         ],
                       ),

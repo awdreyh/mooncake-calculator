@@ -22,7 +22,7 @@ class AddDirectionPage extends StatefulWidget {
 class _DirectionInput {
   final TextEditingController titleController;
   final TextEditingController descriptionController;
-  final String stepIndex;
+  final int stepIndex;
   String? _imagePath;
 
   _DirectionInput({
@@ -48,7 +48,7 @@ class _AddDirectionPageState extends State<AddDirectionPage> {
   ColorScheme get color => Theme.of(context).colorScheme;
   final List<_DirectionInput> _directions = List.generate(
     1,
-    (index) => _DirectionInput(stepIndex: "${index + 1}"),
+    (index) => _DirectionInput(stepIndex: index + 1),
   );
 
   @override
@@ -84,10 +84,10 @@ class _AddDirectionPageState extends State<AddDirectionPage> {
       setState(() => step._imagePath = savedPath);
     }
   }
-
+  
   void _addStep() {
     setState(() {
-      _directions.add(_DirectionInput(stepIndex: "${_directions.length + 1}"));
+      _directions.add(_DirectionInput(stepIndex: _directions.length + 1));
     });
   }
 
@@ -102,7 +102,7 @@ class _AddDirectionPageState extends State<AddDirectionPage> {
           title: _directions[i].titleController.text,
           description: _directions[i].descriptionController.text,
           imagePath: _directions[i]._imagePath,
-          stepIndex: "${i + 1}",
+          stepIndex: i + 1,
         );
       }
     });
@@ -120,7 +120,7 @@ class _AddDirectionPageState extends State<AddDirectionPage> {
           title: _directions[i].titleController.text,
           description: _directions[i].descriptionController.text,
           imagePath: _directions[i]._imagePath,
-          stepIndex: "${i + 1}",
+          stepIndex: i + 1,
         );
       }
     });
@@ -171,137 +171,136 @@ class _AddDirectionPageState extends State<AddDirectionPage> {
         //   child: const Icon(Icons.add),
         // ),
         body: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height - 200,
-                      ),
-                      child: ReorderableListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _directions.length + 1, // +1 for the Add Step button
-                onReorderItem: _reorderSteps,
-                itemBuilder: (context, index) {
-                  // If last item → show Add Step button
-                  if (index == _directions.length) {
+          key: _formKey,
+          child: Column(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height - 200,
+                ),
+                child: ReorderableListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount:
+                      _directions.length + 1, // +1 for the Add Step button
+                  onReorderItem: _reorderSteps,
+                  itemBuilder: (context, index) {
+                    // If last item → show Add Step button
+                    if (index == _directions.length) {
+                      return Card(
+                        color: AppColors.sectionBg,
+                        key: ValueKey(AppStrings.get('add_step', lang)),
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: Text(AppStrings.get('add_step', lang)),
+                          onPressed: _addStep,
+                        ),
+                      );
+                    }
+
+                    // Otherwise → show normal step card
+                    final step = _directions[index];
+
                     return Card(
-                      color: AppColors.sectionBg,
-                      key: ValueKey(AppStrings.get('add_step', lang)),
-                      child: TextButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: Text(AppStrings.get('add_step', lang)),
-                        onPressed: _addStep,
-                      ),
-                    );
-                  }
-
-                  // Otherwise → show normal step card
-                  final step = _directions[index];
-
-                  return Card(
-                    key: ValueKey(step.stepIndex),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: AppColors.sectionBg,
-                                foregroundColor: AppColors.textPrimary,
-                                radius: 14,
-                                child: FittedBox(
-                                  child: Text(
-                                    step.stepIndex,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                      key: ValueKey(step.stepIndex),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: AppColors.sectionBg,
+                                  foregroundColor: AppColors.textPrimary,
+                                  radius: 14,
+                                  child: FittedBox(
+                                    child: Text(
+                                      step.stepIndex.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(Icons.close),
-                                onPressed: () => _removeStep(index),
-                              ),
-                              const Icon(Icons.drag_indicator),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
+                                const Spacer(),
+                                IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () => _removeStep(index),
+                                ),
+                                const Icon(Icons.drag_indicator),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
 
-                          TextField(
-                            controller: step.titleController,
-                            maxLength: 50,
-                            decoration: InputDecoration(
-                              labelText: AppStrings.get('step_title', lang),
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.always,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: step.descriptionController,
-                            decoration: InputDecoration(
-                              labelText: AppStrings.get(
-                                'step_description',
-                                lang,
+                            TextField(
+                              controller: step.titleController,
+                              maxLength: 50,
+                              decoration: InputDecoration(
+                                labelText: AppStrings.get('step_title', lang),
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
                               ),
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.always,
                             ),
-                            maxLength: 500,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return AppStrings.get(
-                                  'validStepDescriptionMsg',
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: step.descriptionController,
+                              decoration: InputDecoration(
+                                labelText: AppStrings.get(
+                                  'step_description',
                                   lang,
-                                );
-                              }
-                              return null;
-                            },
-                            maxLines: 5,
-                          ),
-                          
-                          const SizedBox(height: 12),
-                          if (step._imagePath != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(step._imagePath!),
-                                height: 150,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
+                                ),
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
                               ),
+                              maxLength: 500,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return AppStrings.get(
+                                    'validStepDescriptionMsg',
+                                    lang,
+                                  );
+                                }
+                                return null;
+                              },
+                              maxLines: 5,
                             ),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.photo),
-                            label: Text(AppStrings.get('selectImage', lang)),
-                            onPressed: () => _pickImage(step),
-                          ),
-                        ],
+
+                            const SizedBox(height: 12),
+                            if (step._imagePath != null)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  File(step._imagePath!),
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.photo),
+                              label: Text(AppStrings.get('selectImage', lang)),
+                              onPressed: () => _pickImage(step),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _saveDirectionsToRecipe,
-                child: Text(AppStrings.get('save', lang)),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _saveDirectionsToRecipe,
+                  child: Text(AppStrings.get('save', lang)),
+                ),
               ),
-            ),
-            const SizedBox(height: 46),
-          ],
+            ],
+          ),
         ),
-      ),
-    
       ),
     );
   }

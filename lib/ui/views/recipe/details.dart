@@ -15,6 +15,7 @@ import '../../utils/language_provider.dart';
 import "../../core/nav_bottom.dart";
 import '../task/list.dart';
 import '../direction/list.dart';
+import '../recipe/list.dart';
 import '../direction/add.dart';
 import '../../core/app_theme.dart';
 import '../../widgets/info_chips.dart';
@@ -46,7 +47,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   bool _changed = false;
   String _typeName = '';
   int _taskUsageCount = 0;
-  bool _isSaving = false;
+
   double _selectedRating = 0;
   bool _isFavorite = false;
   final TextEditingController _commentController = TextEditingController();
@@ -129,6 +130,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       });
     } catch (e) {
       if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load directions: $e')),
       );
@@ -149,7 +151,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   void _toggleFavorite() {
-    if (_isSaving) return;
+
 
     final newStatus = !_isFavorite;
     setState(() {
@@ -159,7 +161,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   Future<void> _saveChanges() async {
-    if (_isSaving) return;
+
     final updatedRating = _selectedRating;
     final updatedComment = _commentController.text.trim();
     final updatedRecipe = _recipe.copyWith(
@@ -171,10 +173,6 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       updatedAt: _recipe.updatedAt,
     );
 
-    setState(() {
-      _isSaving = true;
-    });
-
     try {
       await receipeProvider.updateRecipe(updatedRecipe);
 
@@ -182,16 +180,15 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       setState(() {
         _recipe = updatedRecipe;
         _changed = true;
-        _isSaving = false;
+   
       });
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppStrings.get('changes_saved', lang))),
       );
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isSaving = false;
-      });
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -204,6 +201,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   void _deleteRecipe() async {
     if (_taskUsageCount > 0) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.get('recipe_in_use_cannot_delete', lang)),
@@ -264,7 +262,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           title: Text(AppStrings.get('viewDetails', lang)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context, _changed),
+            onPressed: () {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => RecipeListPage()),
+  );
+}
           ),
           actions: [
             IconButton(
@@ -281,15 +284,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               ),
               onPressed: _deleteRecipe,
             ),
-            if (_isSaving)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
+         
           ],
         ),
         body: SingleChildScrollView(
@@ -376,7 +371,14 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                         : _recipe.description!,
                                     style: textTheme.bodyMedium,
                                   ),
+const SizedBox(height: 8),
 
+                                InfoChips(
+                                  qty: _recipe.quantity,
+                                  size: _recipe.size,
+                                  ratio: Helper.ratioToString(_recipe.ratio!),
+                                ),
+                                const SizedBox(height: 16),
                                 if (_taskUsageCount > 0)
                                   GestureDetector(
                                     onTap: _openRelatedTasks,
@@ -408,21 +410,21 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                       color: Colors.blueGrey,
                                     ),
                                   ),
-                                const SizedBox(height: 16),
-                                InfoChips(
-                                  qty: _recipe.quantity,
-                                  size: _recipe.size,
-                                  ratio: Helper.ratioToString(_recipe.ratio!),
-                                ),
-                                 SizedBox(height: 16),
+                                const SizedBox(height: 8),
+                               
+                                
                                 if (_directions.isNotEmpty)
                                   GestureDetector(
                                     onTap: _openRelatedDirections,
-                                    child: Text(
-                                      AppStrings.get('view_directions', lang),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.blueGrey,
+                                    child: ElevatedButton.icon(
+                                      onPressed: _openRelatedDirections,
+                                      icon: const Icon(Icons.remove_red_eye),
+                                      label: Text(
+                                        AppStrings.get('view_directions', lang),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   )
@@ -430,11 +432,16 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                                
                                   GestureDetector(
                                     onTap: _openAddDirectionPage,
-                                    child: Text(
-                                      AppStrings.get('add_directions', lang),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.blueGrey,
+                                    child: ElevatedButton.icon(
+                                      onPressed: _openAddDirectionPage,
+                                      icon: const Icon(Icons.add),
+                                      label: Text(
+                                        AppStrings.get('add_directions', lang),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   )
@@ -586,7 +593,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton.icon(
-                      onPressed: _isSaving ? null : _saveChanges,
+                      onPressed:  _saveChanges,
 
                       label: Text(AppStrings.get('save', lang)),
                     ),
@@ -595,33 +602,6 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 ],
               ),
 
-              // URL
-              //   if (_recipe.url != null && _recipe.url!.isNotEmpty)
-              //     Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         Text(
-              //           AppStrings.get('reference_url', lang),
-              //           style: textTheme.titleMedium?.copyWith(
-              //             fontSize: 16,
-              //             fontWeight: FontWeight.bold,
-              //           ),
-              //         ),
-              //         const SizedBox(height: 8),
-              //         Card(
-              //           child: Padding(
-              //             padding: const EdgeInsets.all(12),
-              //             child: SelectableText(
-              //               _recipe.url!,
-              //               style: const TextStyle(
-              //                 color: Colors.blue,
-              //                 decoration: TextDecoration.underline,
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     ),
             ],
           ),
         ),

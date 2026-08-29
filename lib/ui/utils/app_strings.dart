@@ -127,7 +127,7 @@ class AppStrings {
       'image_title': 'Image(s)',
       'recipes_for_type': 'Recipes for {type}',
       'view_directions': 'View Directions',
-      'add_directions': 'Add Direction',
+      'add_directions': 'Add Directions',
       'step': 'Step',
       'step_index': 'Step Index',
       'step_title': 'Step Title',
