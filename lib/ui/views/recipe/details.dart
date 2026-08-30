@@ -151,8 +151,6 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   void _toggleFavorite() {
-
-
     final newStatus = !_isFavorite;
     setState(() {
       _isFavorite = newStatus;

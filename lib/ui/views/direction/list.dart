@@ -7,6 +7,7 @@ import '../../utils/language_provider.dart';
 import 'package:provider/provider.dart';
 import '../recipe/details.dart';
 import '../../../provider/recipe.dart';
+import 'edit.dart';
 
 class RecipeDirectionsPage extends StatefulWidget {
   final String recipeId;
@@ -110,6 +111,21 @@ class _RecipeDirectionsPageState extends State<RecipeDirectionsPage> {
       appBar: AppBar(
         title: Text(AppStrings.get('view_directions', lang)),
         actions: [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () async {
+            final updated = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    EditDirectionPage(recipeId: widget.recipeId),
+              ),
+            );
+            if (updated == true) {
+              await _loadRecipeDirectionsData();
+            }
+          },
+        ),
         IconButton(
           icon: const Icon(Icons.delete),
           onPressed: () async {

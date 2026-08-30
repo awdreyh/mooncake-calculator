@@ -26,6 +26,13 @@ class DirectionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateDirections(List<Direction> directions) async {
+    for (var direction in directions) {
+      await repository.updateDirection(direction);
+    }
+    notifyListeners();
+  }
+
   Future saveDirections(String recipeId, List<Direction> directions) async {
     await repository.saveDirections(recipeId, directions);
     notifyListeners();
