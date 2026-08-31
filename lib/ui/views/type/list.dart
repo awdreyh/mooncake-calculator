@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../data/model/type.dart';
 import '../../../provider/type.dart';
-import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/seeds_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../core/app_theme.dart';
+import '../../core/app_page.dart';
 import 'add.dart';
 import 'details.dart';
+
 
 class TypeListPage extends StatefulWidget {
   const TypeListPage({super.key});
@@ -134,7 +135,6 @@ class _TypeListPageState extends State<TypeListPage> {
         .toList();
 
     return Container(
-      // 1. Add decoration to the wrapping Container
       decoration: const BoxDecoration(
         image: DecorationImage(
           image: AssetImage(
@@ -143,17 +143,10 @@ class _TypeListPageState extends State<TypeListPage> {
           fit: BoxFit.cover, // Ensures image fills the screen
         ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent, // Make Scaffold background transparent
-        appBar: AppBar(
-          title: Text(AppStrings.get('type_list_title', lang)),
-          backgroundColor: Colors.transparent, // Make Scaffold background transparent
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        body: _isLoading
+      child: AppPage(
+        title: AppStrings.get('type_list_title', lang),
+        currentNavIndex: 3,
+        child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _errorMessage != null
             ? Center(child: Text(_errorMessage!))
@@ -187,7 +180,7 @@ class _TypeListPageState extends State<TypeListPage> {
                 ),
               ),
 
-        bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
+      
       ),
     );
   }

@@ -70,7 +70,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
         });
       }
     } catch (e) {
-      print('Error loading dough types: $e');
+     
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load dough types: $e')),
@@ -111,7 +111,11 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
         });
       }
     } catch (e) {
-      print('Error loading selected matched dough types: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load selected matched dough types: $e')),
+        );
+      }
     }
   }
 
@@ -136,7 +140,11 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
         });
       }
     } catch (e) {
-      print('Error loading filling types: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load filling types: $e')),
+        );
+      }
     }
   }
 
@@ -298,8 +306,7 @@ class _TypeDetailsPageState extends State<TypeDetailsPage> {
       );
       Navigator.of(context).pop(true);
     } catch (error, stackTrace) {
-      print('Error updating type: $error');
-      print('Stack trace: $stackTrace');
+     
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

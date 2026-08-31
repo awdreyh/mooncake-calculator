@@ -26,7 +26,7 @@ class AddTypePage extends StatefulWidget {
 
 class _AddTypePageState extends State<AddTypePage> {
   LanguageProvider get languageProvider =>
-  Provider.of<LanguageProvider>(context, listen: false);
+      Provider.of<LanguageProvider>(context, listen: false);
   String get lang => languageProvider.languageCode;
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -64,7 +64,6 @@ class _AddTypePageState extends State<AddTypePage> {
         });
       }
     } catch (e) {
-      print('Error loading dough types: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load dough types: $e')),
@@ -87,7 +86,6 @@ class _AddTypePageState extends State<AddTypePage> {
     final savedPath = await _copySelectedImage(pickedFile.path);
     if (savedPath != null) {
       setState(() => _imagePath = savedPath);
-  
     }
   }
 
@@ -218,10 +216,7 @@ class _AddTypePageState extends State<AddTypePage> {
       if (mounted) {
         Navigator.of(context).pop(true);
       }
-    } catch (error, stackTrace) {
-      print('Error saving type: $error');
-      print('Stack trace: $stackTrace');
-
+    } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -239,7 +234,7 @@ class _AddTypePageState extends State<AddTypePage> {
 
   @override
   Widget build(BuildContext context) {
-     final textTheme = Theme.of(context).textTheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: Text(AppStrings.get('addType', lang))),
       body: SingleChildScrollView(
@@ -254,7 +249,9 @@ class _AddTypePageState extends State<AddTypePage> {
                   controller: _nameController,
                   maxLength: 20,
                   decoration: InputDecoration(
-                    labelText: SeedsStrings.get('name', lang).isNotEmpty ? SeedsStrings.get('name', lang) : 'Name',
+                    labelText: SeedsStrings.get('name', lang).isNotEmpty
+                        ? SeedsStrings.get('name', lang)
+                        : 'Name',
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
@@ -273,11 +270,13 @@ class _AddTypePageState extends State<AddTypePage> {
                     _preselectFirstMatchedType();
                   }),
                 ),
-                 const SizedBox(height: 16),
+                const SizedBox(height: 16),
                 if (_category == Category.filling) ...[
                   Text(
                     AppStrings.get('matched_dough_types', lang),
-                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   if (_matchedTypeError != null)
@@ -292,7 +291,7 @@ class _AddTypePageState extends State<AddTypePage> {
                       ),
                     ),
                   if (_doughTypes.isEmpty)
-                     Text(AppStrings.get('no_dough_types_available', lang))
+                    Text(AppStrings.get('no_dough_types_available', lang))
                   else
                     Wrap(
                       spacing: 8,
@@ -302,13 +301,19 @@ class _AddTypePageState extends State<AddTypePage> {
                           (item) => item.id == type.id,
                         );
                         return FilterChip(
-                          label: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name),
+                          label: Text(
+                            SeedsStrings.get(type.name, lang).isNotEmpty
+                                ? SeedsStrings.get(type.name, lang)
+                                : type.name,
+                          ),
                           selectedColor: AppColors.accent,
-                        backgroundColor: AppColors.cream,
-                         labelStyle: TextStyle(
-                          color: selected ? AppColors.cream : AppColors.textPrimary,
-                        ),
-                        checkmarkColor: AppColors.cream,
+                          backgroundColor: AppColors.cream,
+                          labelStyle: TextStyle(
+                            color: selected
+                                ? AppColors.cream
+                                : AppColors.textPrimary,
+                          ),
+                          checkmarkColor: AppColors.cream,
                           selected: selected,
                           onSelected: (_) => _toggleMatchedDoughType(type),
                         );
@@ -348,13 +353,19 @@ class _AddTypePageState extends State<AddTypePage> {
                           (item) => item.id == type.id,
                         );
                         return FilterChip(
-                          label: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name),
+                          label: Text(
+                            SeedsStrings.get(type.name, lang).isNotEmpty
+                                ? SeedsStrings.get(type.name, lang)
+                                : type.name,
+                          ),
                           selectedColor: AppColors.accent,
-                        backgroundColor: AppColors.cream,
-                         labelStyle: TextStyle(
-                          color: selected ? AppColors.cream : AppColors.textPrimary,
-                        ),
-                        checkmarkColor: AppColors.cream,
+                          backgroundColor: AppColors.cream,
+                          labelStyle: TextStyle(
+                            color: selected
+                                ? AppColors.cream
+                                : AppColors.textPrimary,
+                          ),
+                          checkmarkColor: AppColors.cream,
                           selected: selected,
                           onSelected: (_) => _toggleMatchedFillingType(type),
                         );

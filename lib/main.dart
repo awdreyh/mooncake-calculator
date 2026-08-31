@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'ui/core/app_theme.dart';
-import 'ui/core/nav_bottom.dart';
-import 'ui/utils/app_strings.dart';
+import 'ui/core/app_page.dart';
 import 'ui/utils/language_provider.dart';
 import 'provider/type.dart';
 import 'provider/task.dart';
@@ -20,15 +19,14 @@ import 'ui/utils/helper.dart';
 import 'package:flutter/services.dart';
 import 'ui/views/task/add.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   runApp(
     MultiProvider(
       providers: [
@@ -42,8 +40,9 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => RecipeProvider(RecipeRepository(MCDatabase.instance)),
         ),
-                ChangeNotifierProvider(
-          create: (_) => DirectionProvider(DirectionRepository(MCDatabase.instance)),
+        ChangeNotifierProvider(
+          create: (_) =>
+              DirectionProvider(DirectionRepository(MCDatabase.instance)),
         ),
       ],
 
@@ -51,6 +50,7 @@ void main() async {
     ),
   );
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -76,123 +76,56 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  //int _counter = 0;
-  final int _currentNavIndex = 0;
 
-  final TextEditingController _sizeController = TextEditingController(
-    text: '100',
-  );
 
   @override
   void dispose() {
-    _sizeController.dispose();
     super.dispose();
-  }  
+  }
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
 
-    return   Container(
+    return Container(
       // 1. Add decoration to the wrapping Container
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/bg.png'), // Use NetworkImage('') for URLs
+          image: AssetImage(
+            'assets/images/bg.png',
+          ), // Use NetworkImage('') for URLs
           fit: BoxFit.cover, // Ensures image fills the screen
         ),
       ),
-      child:
-      Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent, // Make Scaffold background transparent
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 32,
-        systemOverlayStyle: SystemUiOverlayStyle(
-          // background of the top bar
-          statusBarIconBrightness: Brightness.dark, // icons become white
-          systemNavigationBarColor: AppColors.espressoLight,
-          systemNavigationBarIconBrightness: Brightness.light,
-        ),
-
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.language),
-            onSelected: (String value) {
-              languageProvider.setLanguage(value);
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'en',
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'en',
-                      groupValue: lang,
-                      onChanged: (value) {
-                        Navigator.pop(context);
-                        languageProvider.setLanguage(value!);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    Text(AppStrings.get('english', lang)),
-                  ],
+      child: AppPage(    
+        title: '',
+        currentNavIndex: 0,
+        extendBodyBehindAppBar: true,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 56),
+                Text(
+                  Helper.greeting(context),
+                  style: GoogleFonts.poppins(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                    color: Theme.of(context).textTheme.headlineLarge?.color,
+                  ),
                 ),
-              ),
-              PopupMenuItem<String>(
-                value: 'zh',
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'zh',
-                      groupValue: lang,
-                      onChanged: (value) {
-                        Navigator.pop(context);
-                        languageProvider.setLanguage(value!);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    Text(AppStrings.get('chinese', lang)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 56),
-              Text(
-                Helper.greeting(context),
-                style: GoogleFonts.poppins(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                  color: Theme.of(context).textTheme.headlineLarge?.color,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const AddTaskPage(),
-              const SizedBox(height: 8),
-            ],
+                const SizedBox(height: 20),
+                const AddTaskPage(),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         ),
-      ),
 
-      bottomNavigationBar: AppBottomNavigationBar(
-        currentIndex: _currentNavIndex,
+        
       ),
-    ),
     );
   }
 }
-

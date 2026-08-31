@@ -152,7 +152,11 @@ class _AddDirectionPageState extends State<AddDirectionPage> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      print('Error saving directions: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save directions: $e')),
+        );
+      }
     }
   }
 

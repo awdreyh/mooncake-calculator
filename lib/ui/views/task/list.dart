@@ -10,7 +10,6 @@ import '../../../data/model/type.dart' as mc;
 import '../../core/nav_bottom.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/seeds_strings.dart';
-import '../../utils/helper.dart';
 import '../../utils/language_provider.dart';
 import '../../core/app_theme.dart';
 import 'details.dart';

@@ -62,11 +62,11 @@ class AppTheme {
     FontWeight weight,
     Color color, {
     bool italic = false,
-  }) => GoogleFonts.playfairDisplay(
+  }) => GoogleFonts.inter(
     fontSize: size,
     fontWeight: weight,
     fontStyle: italic ? FontStyle.italic : FontStyle.normal,
-    color: color,
+    color: Colors.black,
     height: 1.15,
   );
 
@@ -93,7 +93,7 @@ class AppTheme {
         44,
         FontWeight.w600,
         AppColors.textOnDark,
-        italic: true,
+        
       ),
       displayMedium: _display(34, FontWeight.w600, AppColors.textPrimary),
       // Section titles e.g. "Tonight's featured plates"
