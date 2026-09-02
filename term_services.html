@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #fafafa;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+    }
+    h1 {
+        font-size: 28px;
+        color: #4b3621; /* espresso */
+    }
+    h2 {
+        font-size: 22px;
+        margin-top: 30px;
+        color: #4b3621;
+    }
+    p {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    .italic {
+        font-style: italic;
+        font-size: 14px;
+    }
+</style>
+
+<script>
+    function getLang() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("lang") || "en";
+    }
+
+    function switchLanguage() {
+        const lang = getLang();
+        document.getElementById("en").style.display = lang === "en" ? "block" : "none";
+        document.getElementById("zh").style.display = lang === "zh" ? "block" : "none";
+    }
+
+    window.onload = switchLanguage;
+</script>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- English Content -->
+    <div id="en">
+        <h1>Terms of Service</h1>
+        <p class="italic">Last Updated: August 2026</p>
+
+        <p>
+            These Terms of Service govern your use of Moon Cake Calendar App.
+            By using the App, you agree to these Terms.
+        </p>
+
+        <h2>1. Use of the App</h2>
+        <p>
+            You may use the App for personal, non-commercial purposes.
+            You agree not to misuse or interfere with the App.
+        </p>
+
+        <h2>2. No Data Collection</h2>
+        <p>
+            This App does not collect, store, transmit, or share any personal data.
+            All data remains on your device.
+        </p>
+
+        <h2>3. Local Storage Responsibility</h2>
+        <p>
+            You are responsible for managing and backing up your own data.
+            Uninstalling the App may delete all locally stored data.
+        </p>
+
+        <h2>4. Intellectual Property</h2>
+        <p>
+            All content and functionality of the App are owned by [Your Company Name].
+            You may not copy, modify, or reverse-engineer the App.
+        </p>
+
+        <h2>5. Third-Party Services</h2>
+        <p>
+            The App does not use third-party analytics, advertising, or cloud services.
+        </p>
+
+        <h2>6. Disclaimer of Warranty</h2>
+        <p>
+            The App is provided "as is" without warranties of any kind.
+        </p>
+
+        <h2>7. Limitation of Liability</h2>
+        <p>
+            [Your Company Name] is not liable for damages arising from use of the App.
+        </p>
+
+        <h2>8. Changes to These Terms</h2>
+        <p>
+            We may update these Terms. Continued use of the App means you accept them.
+        </p>
+
+        <h2>9. Contact Us</h2>
+        <p>
+            If you have questions, contact us at:<br>
+            <strong>mc.cal.app@gmail.com</strong>
+        </p>
+    </div>
+
+    <!-- Chinese Content -->
+    <div id="zh" style="display:none;">
+        <h1>服务条款</h1>
+        <p class="italic">最后更新日期: 2026年8月</p>
+
+        <p>
+            本服务条款规范您对 Moon Cake Calendar App 的使用。
+            使用本应用即表示您同意这些条款。
+        </p>
+
+        <h2>1. 应用的使用</h2>
+        <p>
+            您可以将本应用用于个人、非商业用途。您同意不滥用本应用，也不干扰其正常运行。
+        </p>
+
+        <h2>2. 无数据收集</h2>
+        <p>
+            本应用不会收集、存储、传输或共享任何个人数据。所有数据均保存在您的设备本地。
+        </p>
+
+        <h2>3. 本地存储责任</h2>
+        <p>
+            您负责管理、备份或删除自己的数据。卸载应用可能会导致所有本地数据被永久删除。
+        </p>
+
+        <h2>4. 知识产权</h2>
+        <p>
+            本应用的所有内容、设计和功能均由 [Your Company Name] 所有。
+            您不得复制、修改、分发或反向工程本应用。
+        </p>
+
+        <h2>5. 第三方服务</h2>
+        <p>
+            本应用不使用任何第三方分析、广告或云服务。
+        </p>
+
+        <h2>6. 免责声明</h2>
+        <p>
+            本应用按“原样”提供，不提供任何形式的保证。
+        </p>
+
+        <h2>7. 责任限制</h2>
+        <p>
+            在法律允许的最大范围内，[Your Company Name] 对因使用本应用而产生的任何损害不承担责任。
+        </p>
+
+        <h2>8. 条款变更</h2>
+        <p>
+            我们可能会更新这些条款。继续使用本应用即表示您接受更新后的条款。
+        </p>
+
+        <h2>9. 联系我们</h2>
+        <p>
+            如有任何问题，请通过以下方式联系我们：<br>
+            <strong>mc.cal.app@gmail.com</strong>
+        </p>
+    </div>
+
+</div>
+</body>
+</html>
