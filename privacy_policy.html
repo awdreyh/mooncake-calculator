@@ -1,1 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #fafafa;
+        color: #333;
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+    }
+    h1 {
+        font-size: 28px;
+        color: #4b3621; /* espresso */
+    }
+    h2 {
+        font-size: 22px;
+        margin-top: 30px;
+        color: #4b3621;
+    }
+    p, li {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    .italic {
+        font-style: italic;
+        font-size: 14px;
+    }
+</style>
+<script>
+    // Language detection via URL: ?lang=zh or ?lang=en
+    function getLang() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("lang") || "en";
+    }
 
+    function switchLanguage() {
+        const lang = getLang();
+        document.getElementById("en").style.display = lang === "en" ? "block" : "none";
+        document.getElementById("zh").style.display = lang === "zh" ? "block" : "none";
+    }
+
+    window.onload = switchLanguage;
+</script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- English Content -->
+    <div id="en">
+        <h1>Privacy Policy</h1>
+        <p class="italic">Last Updated: August 2026</p>
+
+        <p>
+            This Privacy Policy explains how Moon Cake Calendar App handles your information.
+            This is a simple app that does not collect, store, or transmit any personal data.
+            All data created within the app is saved locally on your device and never shared
+            with us or any third parties.
+        </p>
+
+        <h2>1. Information We Do Not Collect</h2>
+        <p>
+            • We do not collect personal information.<br>
+            • We do not collect usage data.<br>
+            • We do not use cookies or tracking technologies.<br>
+            • We do not access your contacts, location, photos, or files unless required for
+              core app functionality and only with your permission.
+        </p>
+
+        <h2>2. Local Data Storage</h2>
+        <p>
+            All data you create or save within the app remains stored locally on your device.
+            We do not have access to this data.
+        </p>
+
+        <h2>3. Third-Party Services</h2>
+        <p>
+            This app does not use any third‑party analytics, advertising, or data‑collection services.
+        </p>
+
+        <h2>4. Children's Privacy</h2>
+        <p>
+            Since we do not collect any data, the app is safe for users of all ages.
+        </p>
+
+        <h2>5. Changes to This Policy</h2>
+        <p>
+            If we make changes to this Privacy Policy, we will update the date above.
+            Any future versions will continue to respect your privacy.
+        </p>
+
+        <h2>6. Contact Us</h2>
+        <p>
+            If you have any questions, you can contact us at:<br>
+          <strong><a href="mailto:mc.cal.app@gmail.com">mc.cal.app@gmail.com</a></strong>
+        </p>
+    </div>
+
+    <!-- Chinese Content -->
+    <div id="zh" style="display:none;">
+        <h1>隐私政策</h1>
+        <p class="italic">最后更新日期: 2026年8月</p>
+
+        <p>
+            本隐私政策说明 Moon Cake Calendar App 如何处理您的信息。
+            本应用为简单的离线应用，不会收集、存储或传输任何个人数据。
+            所有在应用中创建的数据都保存在您的设备本地，不会与我们或任何第三方共享。
+        </p>
+
+        <h2>1. 我们不收集的信息</h2>
+        <p>
+            • 我们不收集个人信息。<br>
+            • 我们不收集使用数据。<br>
+            • 我们不使用 Cookies 或任何追踪技术。<br>
+            • 除非核心功能需要且获得您的许可，我们不会访问您的联系人、位置、照片或文件。
+        </p>
+
+        <h2>2. 本地数据存储</h2>
+        <p>
+            您在应用中创建或保存的所有数据都存储在您的设备本地。我们无法访问这些数据。
+        </p>
+
+        <h2>3. 第三方服务</h2>
+        <p>
+            本应用不使用任何第三方分析、广告或数据收集服务。
+        </p>
+
+        <h2>4. 儿童隐私</h2>
+        <p>
+            由于我们不收集任何数据，本应用适用于所有年龄段的用户。
+        </p>
+
+        <h2>5. 政策变更</h2>
+        <p>
+            如果我们更新隐私政策，我们会修改上方日期。未来版本仍将尊重您的隐私。
+        </p>
+
+        <h2>6. 联系我们</h2>
+        <p>
+            如有任何问题，请通过以下方式联系我们：<br>
+            <strong><a href="mailto:mc.cal.app@gmail.com">mc.cal.app@gmail.com</a></strong>
+        </p>
+    </div>
+
+</div>
+
+</body>
+</html>
