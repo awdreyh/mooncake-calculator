@@ -1,5 +1,5 @@
-name: moon_cake_app2
-description: "A new Flutter project."
+name: moon_cake_app
+description: "A moon cake app helping you to manage your collection of moon cake types,recipes, tasks, and directions."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -41,6 +41,10 @@ dependencies:
   google_fonts: ^8.2.0
   provider: ^6.1.0
   uuid: 4.6.0
+  image_picker: ^1.0.0
+  url_launcher: ^6.3.2
+  shared_preferences: ^2.5.5
+  
 
 dev_dependencies:
   flutter_test:
@@ -54,13 +58,13 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3 # Use the latest version
   sqflite_common_ffi: ^2.4.2
-
+  
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/logo-foreground.png"
-  adaptive_icon_background: "assets/logo-background.png" # Or path to a background image: "assets/icons/background.png"
-  adaptive_icon_foreground: "assets/logo-foreground.png"
+  image_path: "assets/images/logo-foreground.png"
+  adaptive_icon_background: "assets/images/logo-background.png" # Or path to a background image: "assets/icons/background.png"
+  adaptive_icon_foreground: "assets/images/logo-foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -105,3 +109,8 @@ flutter:
   # see https://flutter.dev/to/font-from-package
   assets:
     - assets/
+    - assets/images/
+    - assets/images/types/  
+
+
+

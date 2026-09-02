@@ -1,0 +1,148 @@
+import 'dart:convert';
+import 'package:sqflite/sqflite.dart';
+import '../database/db_helper.dart';
+import '../model/type.dart';
+
+class TypeRepository {
+  final MCDatabase db;
+  TypeRepository(this.db);
+
+  Future<List<Type>> loadAll() async {
+    final database = await db.database;
+    final rows = await database.query('types');
+    return rows.map(_fromRow).toList();
+  }
+
+  Future<List<Type>> loadByCategory(Category category) async {
+    final database = await db.database;
+    final rows = await database.query(
+      'types',
+      where: 'category = ?',
+      whereArgs: [category.toMap()],
+    );
+    return rows.map(_fromRow).toList();
+  }
+
+  Future<Type?> load(String id) async {
+    final database = await db.database;
+    final rows = await database.query(
+      'types',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (rows.isEmpty) {
+      return null;
+    }
+
+    return _fromRow(rows.first);
+  }
+
+  Future<int> insert(Type type) async {
+    final database = await db.database;
+    return await database.insert(
+      'types',
+      _toRow(type),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> update(Type type) async {
+    final database = await db.database;
+    return await database.update(
+      'types',
+      _toRow(type),
+      where: 'id = ?',
+      whereArgs: [type.id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> delete(String id) async {
+    final database = await db.database;
+    return await database.delete(
+      'types',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+    Future<int> countRecipesUsingType(String typeId) async {
+    final database = await db.database;
+    final rows = await database.rawQuery(
+      '''
+      SELECT COUNT(*) AS count
+      FROM recipes
+      WHERE typeId= ?
+      ''',
+      [typeId],
+    );
+    final count = rows.first['count'];
+    return count is int ? count : int.tryParse(count.toString()) ?? 0;
+  }
+
+  
+  Future<List<Type>> loadMatchedDoughTypes(String? recipeTypeId) async {
+    if (recipeTypeId == null) {
+      return [];
+    }
+
+    final allTypes = await loadAll();
+    final recipeType = allTypes.firstWhere(
+      (type) => type.id == recipeTypeId,
+      orElse: () => Type(
+        id: recipeTypeId,
+        category: Category.dough,
+        name: '',
+        matchedDoughTypeIds: <String>[],
+      ),
+    );
+
+    if (recipeType.category != Category.filling) {
+      return [];
+    }
+
+    final matchedDoughTypeIds = recipeType.matchedDoughTypeIds ?? [];
+    return allTypes
+        .where((type) =>
+            type.category == Category.dough && matchedDoughTypeIds.contains(type.id))
+        .toList();
+  }
+
+  Type _fromRow(Map<String, dynamic> row) {
+    final matchedDoughTypeValue = row['matched_dough_type_ids'];
+    final categoryString = row['category']?.toString();
+    final category = categoryString != null
+        ? Category.fromMap(categoryString)
+        : Category.dough;
+
+    List<String>? matchedDoughTypeIds;
+    if (matchedDoughTypeValue == null) {
+      matchedDoughTypeIds = category == Category.filling ? <String>[] : null;
+    } else {
+      matchedDoughTypeIds = (jsonDecode(matchedDoughTypeValue as String) as List<dynamic>)
+          .map((item) => item.toString())
+          .toList();
+    }
+
+    return Type.fromMap({
+      'id': row['id']?.toString(),
+      'category': category.toMap(),
+      'name': row['name']?.toString(),
+      'image_path': row['image_path']?.toString(),
+      'matched_dough_type_ids': matchedDoughTypeIds,
+    });
+  }
+
+  Map<String, dynamic> _toRow(Type type) {
+    return {
+      'id': type.id,
+      'category': type.category.toMap(),
+      'name': type.name,
+      'image_path': type.imagePath,
+      'matched_dough_type_ids': type.matchedDoughTypeIds == null
+          ? null
+          : jsonEncode(type.matchedDoughTypeIds),
+    };
+  }
+}

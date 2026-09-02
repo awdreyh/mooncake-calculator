@@ -1,25 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'ui/core/nav_bottom.dart';
-import 'ui/utils/app_strings.dart';
+import 'ui/core/app_theme.dart';
+import 'ui/core/app_page.dart';
 import 'ui/utils/language_provider.dart';
+import 'provider/type.dart';
+import 'provider/task.dart';
+import 'provider/recipe.dart';
+import 'provider/direction.dart';
+
+import 'data/repository/type.dart';
+import 'data/repository/recipe.dart';
+import 'data/repository/task.dart';
+import 'data/repository/direction.dart';
+import 'data/database/db_helper.dart';
 
 import 'ui/utils/helper.dart';
 import 'package:flutter/services.dart';
-import 'ui/utils/app_theme.dart';
 import 'ui/views/task/add.dart';
 
 void main() async {
-  //   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
-  // await SystemChrome.setPreferredOrientations([
-  //   DeviceOrientation.portraitUp,
-  //   DeviceOrientation.portraitDown,
-  // ]);
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => LanguageProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(
+          create: (_) => TypeProvider(TypeRepository(MCDatabase.instance)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => TaskProvider(TaskRepository(MCDatabase.instance)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => RecipeProvider(RecipeRepository(MCDatabase.instance)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              DirectionProvider(DirectionRepository(MCDatabase.instance)),
+        ),
+      ],
+
       child: const MyApp(),
     ),
   );
@@ -27,20 +53,20 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: true,
+    );
     return MaterialApp(
       title: 'Moon Cake Calculator',
-      // theme: AppTheme.lightTheme,
-      locale: languageProvider.locale, 
+      theme: AppTheme.light,
+      locale: languageProvider.locale,
       home: const MyHomePage(title: 'Moon Cake Calculator'),
     );
   }
 }
-
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -50,131 +76,56 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  //int _counter = 0;
-  final int _currentNavIndex = 0;
-  String? _selectedType = 'Cantonese-style';
-  String? _selectedRecipeId;
-  final TextEditingController _sizeController = TextEditingController(
-    text: '100',
-  );
 
 
   @override
   void dispose() {
-    _sizeController.dispose();
     super.dispose();
   }
 
- 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final lang = languageProvider.languageCode;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        //title: Text(widget.title),
-        toolbarHeight: 32,
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: const Color.fromARGB(
-            255,
-            158,
-            10,
-            10,
-          ), // background of the top bar
-          statusBarIconBrightness: Brightness.dark, // icons become white
-        ),
-
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.language),
-            onSelected: (String value) {
-              languageProvider.setLanguage(value);
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'en',
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'en',
-                      groupValue: lang,
-                      onChanged: (value) {
-                        Navigator.pop(context);
-                        languageProvider.setLanguage(value!);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    Text(AppStrings.get('english', lang)),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'zh',
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'zh',
-                      groupValue: lang,
-                      onChanged: (value) {
-                        Navigator.pop(context);
-                        languageProvider.setLanguage(value!);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    Text(AppStrings.get('chinese', lang)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 56),
-
-              Text(
-                Helper.greeting(context),
-                style: GoogleFonts.poppins(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                  color: Theme.of(context).textTheme.headlineLarge?.color,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                AppStrings.get('addNewTask', lang),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Text(AppStrings.get('type', lang)),
-              const SizedBox(height: 8),
-             
-       
-             ],
-          ),
+    return Container(
+      // 1. Add decoration to the wrapping Container
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(
+            'assets/images/bg.png',
+          ), // Use NetworkImage('') for URLs
+          fit: BoxFit.cover, // Ensures image fills the screen
         ),
       ),
+      child: AppPage(    
+        title: '',
+        currentNavIndex: 0,
+        extendBodyBehindAppBar: true,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 56),
+                Text(
+                  Helper.greeting(context),
+                  style: GoogleFonts.poppins(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                    color: Theme.of(context).textTheme.headlineLarge?.color,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const AddTaskPage(),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
 
-      bottomNavigationBar: AppBottomNavigationBar(
-        currentIndex: _currentNavIndex,
+        
       ),
     );
   }
-
-
- }
+}

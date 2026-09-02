@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.moon_cake_app2"
+    namespace = "moon.cake.calculator.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.moon_cake_app2"
+        applicationId = "moon.cake.calculator.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -38,6 +38,12 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
+    dependencies {
+    // ...
+        implementation("com.google.android.material:material:1.12.0")
+    // ...
+}
+
 }
 
 flutter {

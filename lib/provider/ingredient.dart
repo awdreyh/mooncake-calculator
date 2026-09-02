@@ -1,0 +1,20 @@
+import 'package:flutter/material.dart';
+import '../data/model/ingredient.dart';
+import '../data/repository/ingredient.dart';
+
+
+class IngredientProvider extends ChangeNotifier {
+  final IngredientRepository repository;
+  IngredientProvider(this.repository);
+
+  Future<Ingredient?> loadIngredient(String id) async {   
+    return await repository.load(id);   
+  }
+  Future<String> insertIngredient(Ingredient ingredient) async {
+    await repository.insert(ingredient);
+    notifyListeners();
+    return ingredient.id;
+  }
+  
+
+}
