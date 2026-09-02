@@ -103,7 +103,7 @@ class AppPage extends StatelessWidget {
               Divider(color: AppColors.borderLight, thickness: 1, height: 32),
               ListTile(
                 leading: Icon(Icons.privacy_tip),
-                title: Text("Privacy Policy"),
+                title: Text(AppStrings.get('privacy_policy', lang)),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -115,7 +115,7 @@ class AppPage extends StatelessWidget {
               ),
               ListTile(
                 leading: Icon(Icons.description),
-                title: Text("Terms of Service"),
+                title: Text(AppStrings.get('terms_of_service', lang)),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -127,7 +127,7 @@ class AppPage extends StatelessWidget {
               ),
               ListTile(
                 leading: Icon(Icons.feedback),
-                title: Text("Feedback"),
+                title: Text(AppStrings.get('feedback', lang)),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -138,7 +138,7 @@ class AppPage extends StatelessWidget {
 
               ListTile(
                 leading: const Icon(Icons.star_rate),
-                title: const Text("Rate this App"),
+                title: Text(AppStrings.get('rate_this_app', lang)),
                 onTap: openRatingPage,
               ),
             ],

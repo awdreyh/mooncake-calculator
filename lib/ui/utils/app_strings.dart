@@ -139,6 +139,10 @@ class AppStrings {
       'validStepDescriptionMsg': 'Please enter a valid step description.',
       'no_directions_available': 'No directions available for this recipe.',
       'language_select': 'Select Language',
+      'privacy_policy': 'Privacy Policy',
+      'terms_of_service': 'Terms of Service',
+      'feedback': 'Feedback',
+      'rate_this_app': 'Rate this App',
     },
     'zh': {
       'moonCakeCalculator': '月饼计算器',
@@ -277,6 +281,10 @@ class AppStrings {
       'validStepDescriptionMsg': '请输入步骤描述。',
       'no_directions_available': '找不到制作步骤。',
       'language_select': '选择语言',
+      'privacy_policy': '隐私政策',
+      'terms_of_service': '服务条款',
+      'feedback': '联系与反馈',
+      'rate_this_app': '给此应用评分',
     },
   };
 

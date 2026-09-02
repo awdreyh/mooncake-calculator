@@ -93,7 +93,7 @@ class _TaskListPageState extends State<TaskListPage> {
           return MapEntry(
             task.id,
             '${SeedsStrings.get(doughType?.name ?? '', lang).isNotEmpty ? SeedsStrings.get(doughType?.name ?? '', lang) : doughType?.name ?? ''} + ${SeedsStrings.get(fillingType?.name ?? '', lang).isNotEmpty ? SeedsStrings.get(fillingType?.name ?? '', lang) : fillingType?.name ?? ''}',
-           // '${doughType?.name ?? ''} + ${fillingType?.name ?? ''}',
+            // '${doughType?.name ?? ''} + ${fillingType?.name ?? ''}',
           );
         }),
       );
@@ -144,6 +144,7 @@ class _TaskListPageState extends State<TaskListPage> {
     return DropdownButtonFormField<String?>(
       initialValue: selectedTypeId,
       isExpanded: true,
+      dropdownColor: AppColors.sectionBg,
       style: Theme.of(context).textTheme.bodySmall,
       decoration: InputDecoration(
         isDense: true,
@@ -160,7 +161,12 @@ class _TaskListPageState extends State<TaskListPage> {
         ...types.map(
           (type) => DropdownMenuItem<String?>(
             value: type.id,
-            child: Text(SeedsStrings.get(type.name, lang).isNotEmpty ? SeedsStrings.get(type.name, lang) : type.name, overflow: TextOverflow.ellipsis),
+            child: Text(
+              SeedsStrings.get(type.name, lang).isNotEmpty
+                  ? SeedsStrings.get(type.name, lang)
+                  : type.name,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ],
@@ -268,8 +274,8 @@ class _TaskListPageState extends State<TaskListPage> {
                   InfoChips(
                     qty: task.quantity,
                     size: task.size,
-                   // ratio: Helper.ratioToString(task.ratio),
-                 
+
+                    // ratio: Helper.ratioToString(task.ratio),
                   ),
 
                   Divider(
@@ -322,49 +328,46 @@ class _TaskListPageState extends State<TaskListPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? Center(child: Text(_errorMessage!))
-          : _tasks.isEmpty
-          ? Center(child: Text(AppStrings.get('noTasks', lang)))
-          : Column(
+      body: Column(
+        children: [
+          _buildFilterBar(),
+          SizedBox(height: 8),
+          Divider(color: AppColors.borderLight, height: 1),
+          Expanded(
+            child: Stack(
               children: [
-                _buildFilterBar(),
-                SizedBox(height: 8),
-                Divider(color: AppColors.borderLight, height: 1),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Image.asset(
-                          'assets/images/bg.png',
-                          fit: BoxFit.cover,
+                Positioned.fill(
+                  child: Image.asset('assets/images/bg.png', fit: BoxFit.cover),
+                ),
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
+                    ? Center(child: Text(_errorMessage!))
+                    : _tasks.isEmpty
+                    ? Center(child: Text(AppStrings.get('noTasks', lang)))
+                    : _filteredTasks.isEmpty
+                    ? Center(child: Text(AppStrings.get('noTasks', lang)))
+                    : RefreshIndicator(
+                        onRefresh: _loadTasks,
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(12),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 0.9,
+                              ),
+                          itemCount: _filteredTasks.length,
+                          itemBuilder: (_, index) =>
+                              _buildTaskTile(_filteredTasks[index]),
                         ),
                       ),
-                      _filteredTasks.isEmpty
-                          ? Center(child: Text(AppStrings.get('noTasks', lang)))
-                          : RefreshIndicator(
-                              onRefresh: _loadTasks,
-                              child: GridView.builder(
-                                padding: const EdgeInsets.all(12),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 12,
-                                      crossAxisSpacing: 12,
-                                      childAspectRatio: 0.9,
-                                    ),
-                                itemCount: _filteredTasks.length,
-                                itemBuilder: (_, index) =>
-                                    _buildTaskTile(_filteredTasks[index]),
-                              ),
-                            ),
-                    ],
-                  ),
-                ),
               ],
             ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.small(
         backgroundColor: AppColors.accent,
         foregroundColor: AppColors.cream,
