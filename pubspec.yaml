@@ -65,6 +65,7 @@ flutter_icons:
   image_path: "assets/images/logo-foreground.png"
   adaptive_icon_background: "assets/images/logo-background.png" # Or path to a background image: "assets/icons/background.png"
   adaptive_icon_foreground: "assets/images/logo-foreground.png"
+  remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
