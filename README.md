@@ -4,8 +4,7 @@ A tool for mooncake lover to calculate their ingredients based on the recipe, ke
 
 ## Tech stack
 
-Flutter
-Sqlite
+Flutter & Sqlite
 
 
 
