@@ -7,9 +7,7 @@ class RecipesSeeder {
 
   Future<void> seed() async {
     final batch = db.batch();
-
-    for (final recipe in recipesSeed) {
-      
+    for (final recipe in recipesSeed) {      
       final recipeData = {
         'id': recipe['id'],
         'name': recipe['name'],
