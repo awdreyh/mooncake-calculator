@@ -92,8 +92,8 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
             recipeProvider.loadType(task.doughRecipeId),
             recipeProvider.loadType(task.fillingRecipeId),
           ]);
-        var titleDough = SeedsStrings.get(typeNames[0], lang)?.isNotEmpty == true ? SeedsStrings.get(typeNames[0], lang) : typeNames[0];
-        var titleFilling = SeedsStrings.get(typeNames[1], lang)?.isNotEmpty == true ? SeedsStrings.get(typeNames[1], lang) : typeNames[1];
+        var titleDough = SeedsStrings.get(typeNames[0], lang).isNotEmpty == true ? SeedsStrings.get(typeNames[0], lang) : typeNames[0];
+        var titleFilling = SeedsStrings.get(typeNames[1], lang).isNotEmpty == true ? SeedsStrings.get(typeNames[1], lang) : typeNames[1];
           title = '$titleDough + $titleFilling ';
         } catch (error, stackTrace) {
           debugPrint(
@@ -266,7 +266,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     List<Ingredient> ingredients,
   ) {
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -9,12 +9,12 @@ import '../../../provider/type.dart';
 import '../../../provider/task.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
-import '../../utils/helper.dart';
+
 import '../recipe/add.dart';
 import 'list.dart';
 import '../../utils/seeds_strings.dart';
 import '../../widgets/image_button.dart';
-import '../../widgets/mc_config_fields.dart';
+import '../../widgets/mc_config.dart';
 import '../../core/app_theme.dart';
 
 class AddTaskPage extends StatefulWidget {
@@ -38,16 +38,6 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
   int? _selectedSize;
   double? _selectedRatio;
 
-  final TextEditingController _quantityController = TextEditingController(
-    text: '8',
-  );
-  final TextEditingController _sizeController = TextEditingController(
-    text: '100',
-  );
-  final TextEditingController _ratioController = TextEditingController(
-    text: '4:6',
-  );
-
   bool _isCalculating = false;
   List<Recipe> _allRecipes = [];
   List<Type> _allTypes = [];
@@ -55,17 +45,14 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
   String? _doughRecipeError;
   String? _fillingTypeError;
   String? _fillingRecipeError;
-  String? _quantityError;
-  String? _sizeError;
-  String? _ratioError;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _selectedQuantity = int.tryParse(_quantityController.text);
-    _selectedSize = int.tryParse(_sizeController.text);
-    _selectedRatio = Helper.stringToRatio(_ratioController.text);
+    _selectedQuantity = 8;
+    _selectedSize = 100;
+    _selectedRatio = 0.4;
     _loadData();
   }
 
@@ -121,14 +108,11 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       }
     }
   }
-  
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _quantityController.dispose();
-    _sizeController.dispose();
-    _ratioController.dispose();
+
     super.dispose();
   }
 
@@ -181,31 +165,30 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
         .toList();
   }
 
-  void _setQuantity(int value) {
+  void _setQuantity(int? value) {
     setState(() {
       _selectedQuantity = value;
-      _quantityController.text = value.toString();
+
     });
   }
 
-  void _setSize(int value) {
+  void _setSize(int? value) {
     setState(() {
       _selectedSize = value;
-      _sizeController.text = value.toString();
+
     });
   }
 
-  void _setRatio(String value) {
+  void _setRatio(double value) {
     setState(() {
-      _selectedRatio = Helper.stringToRatio(value);
-      _ratioController.text = value;
+      _selectedRatio = value;
     });
   }
 
   Map<String, String?> _validateSelections(String lang) {
-    final quantity = int.tryParse(_quantityController.text.trim());
-    final size = int.tryParse(_sizeController.text.trim());
-    final ratio = Helper.stringToRatio(_ratioController.text.trim());
+    final quantity = _selectedQuantity;
+    final size = _selectedSize;
+    final ratio = _selectedRatio;
 
     return {
       'doughType': _selectedDoughType == null
@@ -226,7 +209,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       'size': (size == null || size <= 0)
           ? AppStrings.get('validSizeMsg', lang)
           : null,
-      'ratio': (ratio <= 0) ? AppStrings.get('validRatioMsg', lang) : null,
+      'ratio': (ratio == null || ratio <= 0 || ratio >= 1) ? AppStrings.get('validRatioMsg', lang) : null,
     };
   }
 
@@ -238,9 +221,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
       _doughRecipeError = validationErrors['doughRecipe'];
       _fillingTypeError = validationErrors['fillingType'];
       _fillingRecipeError = validationErrors['fillingRecipe'];
-      _quantityError = validationErrors['quantity'];
-      _sizeError = validationErrors['size'];
-      _ratioError = validationErrors['ratio'];
+
     });
 
     final firstError = validationErrors.values.firstWhere(
@@ -257,14 +238,14 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
     setState(() => _isCalculating = true);
 
     try {
-      final ratio = Helper.stringToRatio(_ratioController.text.trim());
+      final ratio = _selectedRatio;
       final newTask = TaskRepository.createFromRecipes(
         id: const Uuid().v4(),
         doughRecipe: _selectedDoughRecipe!,
         fillingRecipe: _selectedFillingRecipe!,
-        quantity: int.parse(_quantityController.text.trim()),
-        size: int.parse(_sizeController.text.trim()),
-        ratio: ratio,
+        quantity: _selectedQuantity!,
+        size: _selectedSize!,
+        ratio: ratio!,
       );
       final provider = context.read<TaskProvider>();
       await provider.insertTask(newTask);
@@ -308,7 +289,7 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
             scrollDirection: Axis.horizontal,
-            
+
             itemCount: types.length,
             itemBuilder: (context, index) {
               final type = types[index];
@@ -374,10 +355,12 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                   vertical: 8,
                 ),
                 child: Text(
-                  AppStrings.get(
-                    'noRecipesForType',
-                    lang,
-                  ).replaceAll('{type}', SeedsStrings.get(selectedType?.name ?? '', lang).isNotEmpty ? SeedsStrings.get(selectedType?.name ?? '', lang) : selectedType?.name ?? ''),
+                  AppStrings.get('noRecipesForType', lang).replaceAll(
+                    '{type}',
+                    SeedsStrings.get(selectedType?.name ?? '', lang).isNotEmpty
+                        ? SeedsStrings.get(selectedType?.name ?? '', lang)
+                        : selectedType?.name ?? '',
+                  ),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     //decoration: TextDecoration.underline,
@@ -412,7 +395,9 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                   size: 20,
                 ),
                 label: Text(
-                  SeedsStrings.get(recipe.name, lang).isNotEmpty ? SeedsStrings.get(recipe.name, lang) : recipe.name,
+                  SeedsStrings.get(recipe.name, lang).isNotEmpty
+                      ? SeedsStrings.get(recipe.name, lang)
+                      : recipe.name,
                   style: TextStyle(
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w300,
                     color: selected
@@ -497,34 +482,21 @@ class _AddTaskPageState extends State<AddTaskPage> with WidgetsBindingObserver {
                       _selectedFillingRecipe = recipe;
                     });
                   },
-                ),
-                const SizedBox(height: 24),
-                McConfigurationFields(
-                  quantityController: _quantityController,
-                  sizeController: _sizeController,
-                  ratioController: _ratioController,
-                  quantityError: _quantityError,
-                  sizeError: _sizeError,
-                  ratioError: _ratioError,
-                  selectedQuantity: _selectedQuantity,
-                  selectedSize: _selectedSize,
-                  selectedRatio: _selectedRatio != null
-                      ? Helper.ratioToString(_selectedRatio!)
-                      : null,
-                  onQuantitySelected: (value) {
-                    _quantityError = null;
+                ),               
+
+                McConfig(
+                  onQuantitySelected: (value) {              
                     _setQuantity(value);
                   },
-                  onSizeSelected: (value) {
-                    _sizeError = null;
+                  onSizeSelected: (value) {       
                     _setSize(value);
                   },
-                  onRatioSelected: (value) {
-                    _ratioError = null;
+                  onRatioSelected: (value) {       
                     _setRatio(value);
                   },
                 ),
-                const SizedBox(height: 24),
+               
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(

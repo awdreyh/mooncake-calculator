@@ -249,9 +249,7 @@ class _AddTypePageState extends State<AddTypePage> {
                   controller: _nameController,
                   maxLength: 20,
                   decoration: InputDecoration(
-                    labelText: SeedsStrings.get('name', lang).isNotEmpty
-                        ? SeedsStrings.get('name', lang)
-                        : 'Name',
+                    labelText: AppStrings.get('name', lang),
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {

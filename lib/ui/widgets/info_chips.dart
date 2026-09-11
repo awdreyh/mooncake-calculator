@@ -7,8 +7,6 @@ class InfoChips extends StatelessWidget {
   final int size;
   final String ratio;
 
-
-
   const InfoChips({
     super.key,
     required this.qty,

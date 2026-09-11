@@ -10,7 +10,6 @@ class AppStrings {
       'type_list_title': 'Types',
       'recipe_list_title': 'Recipes',
       'type_details_title': 'Type Details',
-      'task_details_title': 'Task Details',
       'ingredients_sheet': 'Ingredients Sheet',
       'cantonese': 'Cantonese-style',
       'snowSkin': 'Snow skin',
@@ -143,6 +142,7 @@ class AppStrings {
       'terms_of_service': 'Terms of Service',
       'feedback': 'Feedback',
       'rate_this_app': 'Rate this App',
+      'validNumberMsg': 'Please enter a valid number.'
     },
     'zh': {
       'moonCakeCalculator': '月饼计算器',
@@ -230,7 +230,7 @@ class AppStrings {
       'recipeSaveSuccessfulMsg': '食谱成功保存。',
       'category': '类别',
       'unknown': '未知',
-      'quantity': '数量',
+      'quantity': '月饼数量',
       'created_at': '创建日期',
       'used_in_tasks': '已用于 {count} 个任务',
       'used_in_recipes': '此类型已经有 {count} 个食谱',
@@ -248,7 +248,7 @@ class AppStrings {
       'validIngredientNameMsg': '请输入配料名称。',
       'validIngredientAmountMsg': '请输入配料数量。',
       'validQuantityMsg': '请输入有效的数量。',
-      'validSizeMsg': '请输入有效的尺寸。',
+      'validSizeMsg': '请输入有效的月饼大小。',
       'validRatioMsg': '请输入有效的比例（例如 4:6)。',
       'validMatchedDoughTypesMsg': '请选择至少一个匹配的饼皮类型。',
       'validMatchedFillingTypesMsg': '请选择至少一个匹配的馅料类型。',
@@ -285,6 +285,7 @@ class AppStrings {
       'terms_of_service': '服务条款',
       'feedback': '联系与反馈',
       'rate_this_app': '给此应用评分',
+      'validNumberMsg': '请输入有效的数字。',
     },
   };
 

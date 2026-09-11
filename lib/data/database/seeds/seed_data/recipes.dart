@@ -33,7 +33,8 @@ final List<Map<String, dynamic>> recipesSeed = [
       { 'id': 'a19f2e3d-4c6b-48d2-9e1f-2a3b4c5d6e07',  'name': 'gluten_free_flour', 'amount': 26.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'c8f7e6d5-b4a3-4c2d-9e1f-0a1b2c3d4e05',  'name': 'rice_flour', 'amount': 34.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
       { 'id': 'f2d1c3b4-a5e6-4d7c-9f8a-0b1c2d3e4f06',  'name': 'milk', 'amount': 172.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
-      { 'id': 'b3c4d5e6-f7a8-4b9c-8d0e-1f2a3b4c5d07',  'name': 'vegetable_oil', 'amount': 25.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name }
+      { 'id': 'b3c4d5e6-f7a8-4b9c-8d0e-1f2a3b4c5d07',  'name': 'vegetable_oil', 'amount': 25.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
+      { 'id': 'd1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f08',  'name': 'sugar', 'amount': 25.0, 'unit': UnitType.g.name, 'category': IngredientCategory.recipe.name },
     ],
     'isFavorite': false,
     'rating': 0,

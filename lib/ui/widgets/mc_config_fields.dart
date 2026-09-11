@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../utils/app_strings.dart';
 import '../utils/language_provider.dart';
 import 'package:provider/provider.dart';
-
 import 'selection_buttons.dart';
 
 /// The quantity, size, and dough-to-filling ratio inputs used when configuring
@@ -74,6 +73,7 @@ class McConfigurationFields extends StatelessWidget {
           inputStyle: text.titleSmall,
           errorText: sizeError,
         ),
+                   
         const SizedBox(height: 8),
         OptionButtons(
           values: const [35, 50, 75, 100],

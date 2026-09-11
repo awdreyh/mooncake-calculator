@@ -11,9 +11,9 @@ import '../../../provider/type.dart';
 import '../../utils/app_strings.dart';
 import '../../utils/language_provider.dart';
 import '../../widgets/image_button.dart';
-import '../../widgets/mc_config_fields.dart';
 import '../../core/nav_bottom.dart';
 import '../../widgets/selection_categories.dart';
+import '../../widgets/mc_config.dart';
 
 class AddRecipePage extends StatefulWidget {
   const AddRecipePage({super.key, this.initialType});
@@ -58,18 +58,10 @@ class _AddRecipePageState extends State<AddRecipePage> {
   bool _isSaving = false;
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController(
-    text: '8',
-  );
-  final TextEditingController _sizeController = TextEditingController(
-    text: '100',
-  );
-  final TextEditingController _ratioController = TextEditingController(
-    text: '4:6',
-  );
-  int? _selectedQuantity;
-  int? _selectedSize;
-  String? _selectedRatio;
+
+  int _selectedQuantity = 8;
+  int _selectedSize = 100;
+  double _selectedRatio = 0.4;
   final List<_IngredientInput> _ingredients = List.generate(
     3,
     (_) => _IngredientInput(),
@@ -80,18 +72,13 @@ class _AddRecipePageState extends State<AddRecipePage> {
   @override
   void initState() {
     super.initState();
-    _selectedQuantity = int.tryParse(_quantityController.text);
-    _selectedSize = int.tryParse(_sizeController.text);
-    _selectedRatio = _ratioController.text;
+
     _loadTypes();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _quantityController.dispose();
-    _sizeController.dispose();
-    _ratioController.dispose();
     for (final ingredient in _ingredients) {
       ingredient.dispose();
     }
@@ -135,21 +122,19 @@ class _AddRecipePageState extends State<AddRecipePage> {
   void _setQuantity(int value) {
     setState(() {
       _selectedQuantity = value;
-      _quantityController.text = value.toString();
     });
   }
 
   void _setSize(int value) {
     setState(() {
       _selectedSize = value;
-      _sizeController.text = value.toString();
     });
   }
 
-  void _setRatio(String value) {
+  void _setRatio(double value) {
     setState(() {
       _selectedRatio = value;
-      _ratioController.text = value;
+  
     });
   }
 
@@ -200,9 +185,9 @@ class _AddRecipePageState extends State<AddRecipePage> {
 
     try {
       final name = _nameController.text.trim();
-      final quantity = int.tryParse(_quantityController.text.trim()) ?? 1;
-      final size = int.tryParse(_sizeController.text.trim()) ?? 1;
-      final ratio = double.tryParse(_ratioController.text.trim()) ?? 0.4;
+      final quantity = _selectedQuantity;
+      final size = _selectedSize;
+      final ratio = _selectedRatio;
 
       final newRecipe = Recipe(
         id: const Uuid().v4(),
@@ -305,29 +290,23 @@ class _AddRecipePageState extends State<AddRecipePage> {
                       _selectedType = type;
                     });
                   },
-                  // showMatchedDoughTypes: isDoughtTypeSelected ? false : true,
-                  // matchedDoughLabel: isDoughtTypeSelected
-                  //     ? ''
-                  //     : AppStrings.get('matched_dough_types', lang),
-                 // doughTypes: _doughTypes,
-                  // selectedMatchedDoughTypes: _selectedMatchedDoughTypes,
-                  // onMatchedDoughTypeToggled: _toggleMatchedDoughType,
+
                 ),
               ],
               SizedBox(height: 16),
+              McConfig(
+                  onQuantitySelected: (value) {              
+                    _setQuantity(value);
+                  },
+                  onSizeSelected: (value) {       
+                    _setSize(value);
+                  },
+                  onRatioSelected: (value) {       
+                    _setRatio(value);
+                  },
+                ),
 
-              McConfigurationFields(
-                quantityController: _quantityController,
-                sizeController: _sizeController,
-                ratioController: _ratioController,
-                selectedQuantity: _selectedQuantity,
-                selectedSize: _selectedSize,
-                selectedRatio: _selectedRatio,
-                onQuantitySelected: _setQuantity,
-                onSizeSelected: _setSize,
-                onRatioSelected: _setRatio,
-              ),
-              const SizedBox(height: 24),
+               const SizedBox(height: 24),
               Text(
                 AppStrings.get('ingredients', lang),
                 style: TextStyle(fontWeight: FontWeight.bold),
