@@ -22,6 +22,7 @@ class AppBottomNavigationBar extends StatelessWidget {
 
     if (index == 1) {
       var foundTaskList = false;
+      FocusManager.instance.primaryFocus?.unfocus();
       Navigator.of(context).popUntil((route) {
         if (route.settings.name == 'task/list') {
           foundTaskList = true;
@@ -29,8 +30,10 @@ class AppBottomNavigationBar extends StatelessWidget {
         }
         return route.isFirst;
       });
+      
 
       if (!foundTaskList) {
+        FocusManager.instance.primaryFocus?.unfocus();
         Navigator.of(context).push(
           PageRouteBuilder(
             pageBuilder: (_, _, _) => const TaskListPage(),
@@ -45,6 +48,7 @@ class AppBottomNavigationBar extends StatelessWidget {
 
     if (index == 2) {
       var foundRecipeList = false;
+      FocusManager.instance.primaryFocus?.unfocus();
       Navigator.of(context).popUntil((route) {
         if (route.settings.name == 'recipe/list') {
           foundRecipeList = true;
@@ -68,6 +72,7 @@ class AppBottomNavigationBar extends StatelessWidget {
 
     if (index == 3) {
       var foundTypeList = false;
+      FocusManager.instance.primaryFocus?.unfocus();
       Navigator.of(context).popUntil((route) {
         if (route.settings.name == 'type/list') {
           foundTypeList = true;
